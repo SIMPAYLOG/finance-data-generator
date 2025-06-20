@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':generator-core') // generator-core 모듈 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+tasks.named('test') {
+    useJUnitPlatform()
+}
