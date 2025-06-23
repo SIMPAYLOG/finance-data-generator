@@ -11,7 +11,6 @@ CREATE TABLE user_behavior_profiles
     average_saving_amount_ratio       DECIMAL(2, 1),
     average_spending_amount_range     JSONB,
     active_hours                      JSONB,
-    behavior_type                     VARCHAR(50),
     income_value                      DECIMAL(15, 2),
     asset_value                       DECIMAL(15, 2),
     groceries_non_alcoholic_beverages DECIMAL(5, 2),
