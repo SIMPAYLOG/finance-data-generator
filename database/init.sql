@@ -1,5 +1,4 @@
 CREATE TYPE gender AS ENUM ('M', 'F');
-CREATE TYPE income_level_value AS ENUM ('L', 'M', 'H');
 CREATE TYPE transaction_frequency_pattern AS ENUM ('daily', 'weekly', 'bi-weekly', 'random');
 CREATE TABLE user_behavior_profiles
 (
@@ -38,7 +37,6 @@ CREATE TABLE users
     gender       gender,
     balance      BIGINT,
     debt         BIGINT,
-    income_level income_level_value,
     job          VARCHAR(100)
 );
 
