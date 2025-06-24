@@ -31,19 +31,19 @@ CREATE TABLE user_behavior_profiles
 
 CREATE TABLE users
 (
-    id           BIGSERIAL PRIMARY KEY,
-    profile_id   BIGINT UNIQUE NOT NULL REFERENCES user_behavior_profiles (id) ON DELETE CASCADE,
-    age          SMALLINT,
-    gender       gender,
-    balance      BIGINT,
-    debt         BIGINT,
-    job          VARCHAR(100)
+    id                BIGSERIAL PRIMARY KEY,
+    profile_id        BIGINT UNIQUE NOT NULL REFERENCES user_behavior_profiles (id) ON DELETE CASCADE,
+    age               SMALLINT,
+    gender            gender,
+    balance           BIGINT,
+    debt              BIGINT,
+    occupation_code   SMALLINT,
+    job_number        SMALLINT
 );
 
 CREATE TABLE income_level
 (
     id                                BIGSERIAL PRIMARY KEY,
-    income_range                      JSONB,
     asset_range                       JSONB,
     groceries_non_alcoholic_beverages DECIMAL(5, 2),
     alcoholic_beverages_tobacco       DECIMAL(5, 2),
@@ -65,6 +65,13 @@ CREATE TABLE income_level
 CREATE TABLE occupational_wages
 (
     id                                BIGSERIAL PRIMARY KEY,
-    occupation                        varchar(20),
+    occupation                        varchar(100),
     monthly_wage                      Integer
-)
+);
+
+CREATE TABLE wage_increase_rate
+(
+    id            SMALLSERIAL PRIMARY KEY,
+    age_group     SMALLINT,
+    increase_rate SMALLINT
+);
