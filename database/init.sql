@@ -1,6 +1,7 @@
 CREATE TABLE user_behavior_profiles
 (
     id                                BIGSERIAL PRIMARY KEY,
+    preference_id                     Integer,
     spending_probability              DECIMAL(2, 1),
     transaction_frequency_pattern     varchar(50),
     income_day_of_month               SMALLINT,
