@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "users")
@@ -27,9 +28,9 @@ public class User{
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    private Long balance;
+    private BigDecimal balance;
 
-    private Long debt;
+    private BigDecimal debt;
 
     private String job;
 }

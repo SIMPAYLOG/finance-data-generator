@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "occupational_wages")
@@ -19,5 +20,5 @@ public class OccupationalWage{
 
     private String occupation;
 
-    private Integer monthlyWage;
+    private BigDecimal monthlyWage;
 }
