@@ -16,6 +16,8 @@ public class UserBehaviorProfile{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Integer preferenceId;
+
     private BigDecimal spendingProbability;
 
     @Enumerated(EnumType.STRING)
