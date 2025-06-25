@@ -27,6 +27,7 @@ public class UserBehaviorProfile{
 
     private BigDecimal averageSavingAmountRatio;
 
+    @Column(columnDefinition = "jsonb")
     private String averageSpendingAmountRange;
 
     @Column(columnDefinition = "jsonb")
