@@ -24,23 +24,18 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id", unique = true, nullable = false)
+    @OneToOne
+    @JoinColumn(name = "profile_id")
     private UserBehaviorProfile userBehaviorProfile;
 
-    @Column(name = "age")
     private Integer age;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "balance")
     private Long balance;
 
-    @Column(name = "debt")
     private Long debt;
 
-    @Column(name = "job", length = 100)
     private String job;
 }

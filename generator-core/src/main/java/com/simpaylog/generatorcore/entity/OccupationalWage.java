@@ -19,9 +19,7 @@ public class OccupationalWage implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "occupation", length = 20)
     private String occupation;
 
-    @Column(name = "monthly_wage")
-    private Integer monthlyWage; // Integer로 매핑
+    private Integer monthlyWage;
 }
