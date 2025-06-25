@@ -1,8 +1,8 @@
 package com.simpaylog.generatorcore.enums;
 
 public enum TransactionFrequencyPattern {
-    daily,
-    weekly,
-    bi_weekly,
-    random
+    DAILY,
+    WEEKLY,
+    BI_WEEKLY,
+    RANDOM
 }
