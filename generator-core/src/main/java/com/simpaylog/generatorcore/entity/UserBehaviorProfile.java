@@ -3,8 +3,6 @@ package com.simpaylog.generatorcore.entity;
 import com.simpaylog.generatorcore.enums.TransactionFrequencyPattern;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Entity
@@ -13,8 +11,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserBehaviorProfile implements Serializable {
-
+public class UserBehaviorProfile{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

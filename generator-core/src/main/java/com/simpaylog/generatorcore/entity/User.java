@@ -1,16 +1,11 @@
 package com.simpaylog.generatorcore.entity;
 
-import java.io.Serializable;
-
 import com.simpaylog.generatorcore.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor; // 모든 필드를 포함하는 생성자가 필요할 경우
-import lombok.ToString;
-import lombok.EqualsAndHashCode; // equals()와 hashCode() 자동 생성
-
+import lombok.AllArgsConstructor;
 
 @Entity
 @Table(name = "users")
@@ -18,8 +13,7 @@ import lombok.EqualsAndHashCode; // equals()와 hashCode() 자동 생성
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements Serializable {
-
+public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
