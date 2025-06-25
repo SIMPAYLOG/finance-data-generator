@@ -70,13 +70,6 @@ CREATE TABLE occupational_wages
     monthly_wage                      Integer
 );
 
-CREATE TABLE wage_increase_rate
-(
-    id            SMALLSERIAL PRIMARY KEY,
-    age_group     SMALLINT,
-    increase_rate SMALLINT
-);
-
 -- 데이터 insert 부분
 INSERT INTO occupational_wages (occupation, monthly_wage) VALUES
 ('농업, 임업 및 어업', 2878),
@@ -97,13 +90,6 @@ INSERT INTO occupational_wages (occupation, monthly_wage) VALUES
 ('보건업 및 사회복지 서비스업', 2632),
 ('예술, 스포츠 및 여가 관련 서비스업', 2575),
 ('협회 및 단체, 수리 및 기타 개인 서비스업', 2547);
-
-INSERT INTO wage_increase_rate (age_group, increase_rate) VALUES
-(20, 69.60),
-(30, 107.19),
-(40, 121.59),
-(50, 111.66),
-(60, 72.30);
 
 INSERT INTO income_level (
     id,
