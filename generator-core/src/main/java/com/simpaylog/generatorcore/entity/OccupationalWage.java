@@ -14,6 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OccupationalWage{
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String occupation;

@@ -18,9 +18,6 @@ public class IncomeLevel{
     private Long id;
 
     @Column(columnDefinition = "jsonb")
-    private String incomeRange;
-
-    @Column(columnDefinition = "jsonb")
     private String assetRange;
 
     private BigDecimal groceriesNonAlcoholicBeverages;
@@ -46,6 +43,8 @@ public class IncomeLevel{
     private BigDecimal foodAccommodation;
 
     private BigDecimal otherGoodsServices;
+
+    private BigDecimal ConsumptionExpenditure;
 
     private BigDecimal nonConsumptionExpenditure;
 

@@ -62,6 +62,8 @@ public class UserBehaviorProfile{
 
     private BigDecimal otherGoodsServices;
 
+    private BigDecimal ConsumptionExpenditure;
+
     private BigDecimal nonConsumptionExpenditure;
 
     private BigDecimal surplusRatePct;
