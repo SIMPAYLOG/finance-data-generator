@@ -90,7 +90,7 @@ public class SimulationService {
         }
         // 직업별 인원 수
         System.out.println("[직업별 인원 수]");
-        for(int i = 1; i < numOfAge.length; i++) {
+        for(int i = 1; i < numOfOccupation.length; i++) {
             System.out.printf("%s: %2d명%n", localCache.get(i).occupationCategory(), numOfOccupation[i]);
         }
 
