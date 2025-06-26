@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
+import static com.simpaylog.generatorapi.utils.MultinomialAllocator.normalize;
+import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultinomial;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -72,58 +74,23 @@ public class UserGeneratorTest extends TestConfig {
         int code = 2;
         int[] totalCntByAge = {0, 10, 12, 37, 25, 13, 0};
         char[] gender = {'M', 'F'};
+        OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
         List<User> result = new ArrayList<>();
 
         // When & Then
         for (int age = 0; age < totalCntByAge.length; age++) {
             for (int num = 0; num < totalCntByAge[age]; num++) {
-                OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
+
                 int[] dominantDeciles = occupation.ageGroupInfo().get(age).dominantDeciles();
                 Random random = new Random();
-                int bracket = random.nextInt(dominantDeciles[1] - dominantDeciles[0] + 1) + dominantDeciles[0];
+                int decile = random.nextInt(dominantDeciles[1] - dominantDeciles[0] + 1) + dominantDeciles[0];
                 int genderIdx = random.nextInt(2);
-                BigDecimal balance = BigDecimal.valueOf(occupation.decileDistribution()[bracket - 1] * occupation.averageMonthlyWage());
+                BigDecimal balance = BigDecimal.valueOf(occupation.decileDistribution()[decile - 1] * occupation.averageMonthlyWage());
 
-                result.add(new User((age + 1) * 10, gender[genderIdx], bracket, balance, code));
+                result.add(new User((age + 1) * 10, gender[genderIdx], decile, balance, code));
                 System.out.println(result.get(result.size() - 1));
             }
         }
-    }
-
-    /**
-     * Multinomial 방식으로 N명을 주어진 확률 분포에 따라 무작위로 할당
-     *
-     * @param probabilities 정규화된 확률 배열 (합이 1이어야 함)
-     * @param totalCount    총 인원 수 (샘플 수)
-     * @return 각 그룹에 배정된 인원 수 배열
-     */
-    public static int[] sampleMultinomial(double[] probabilities, int totalCount) {
-        int[] counts = new int[probabilities.length];
-        Random rand = new Random();
-
-        for (int i = 0; i < totalCount; i++) {
-            double r = rand.nextDouble();
-            double acc = 0.0;
-            for (int j = 0; j < probabilities.length; j++) {
-                acc += probabilities[j];
-                if (r <= acc) {
-                    counts[j]++;
-                    break;
-                }
-            }
-        }
-        return counts;
-    }
-
-    /**
-     * 배열을 정규화하여 합이 1이 되도록 변환
-     *
-     * @param arr 임의의 수 배열
-     * @return 정규화된 배열 (비율 형태)
-     */
-    public static double[] normalize(double[] arr) {
-        double sum = Arrays.stream(arr).sum();
-        return Arrays.stream(arr).map(v -> v / sum).toArray();
     }
 
     private static IntStream numberProvider() {
