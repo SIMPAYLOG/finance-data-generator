@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.contoller;
+package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
 import com.simpaylog.generatorapi.dto.response.CommonResponse;
