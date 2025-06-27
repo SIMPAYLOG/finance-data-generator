@@ -1,15 +1,12 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
-import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
 import com.simpaylog.generatorapi.dto.OccupationInfos;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
 import com.simpaylog.generatorcore.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -25,8 +22,8 @@ public class SimulationService {
     private final UserService userService;
     private final OccupationalLocalCache localCache;
 
-    public ResponseEntity<Response<Void>> startSimution(SimulationStartRequestDto simulationStartRequestDto) {
-        return ResponseEntity.ok(Response.success(HttpStatus.CREATED.value()));
+    public void startSimution(SimulationStartRequestDto simulationStartRequestDto) {
+        return;
     }
 
     public void startSimulation(int totalUserCnt) {
