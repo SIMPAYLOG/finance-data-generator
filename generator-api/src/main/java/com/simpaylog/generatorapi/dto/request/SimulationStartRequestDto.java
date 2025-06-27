@@ -1,7 +1,6 @@
 package com.simpaylog.generatorapi.dto.request;
 
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Getter

@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
-import com.simpaylog.generatorapi.dto.response.CommonResponse;
+import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.service.SimulationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +25,7 @@ public class SimulationController {
         simulationService.startSimulation(userCnt);
         }
     @PostMapping("/start")
-    public ResponseEntity<CommonResponse<Void>> startSimulation(@RequestBody SimulationStartRequestDto simulationStartRequestDto) {
+    public ResponseEntity<Response<Void>> startSimulation(@RequestBody SimulationStartRequestDto simulationStartRequestDto) {
         return simulationService.startSimution(simulationStartRequestDto);
     }
 

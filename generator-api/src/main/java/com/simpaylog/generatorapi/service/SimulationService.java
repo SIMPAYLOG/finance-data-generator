@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
-import com.simpaylog.generatorapi.dto.response.CommonResponse;
+import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
 import com.simpaylog.generatorapi.dto.OccupationInfos;
 import com.simpaylog.generatorcore.entity.User;
@@ -11,13 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
 import static com.simpaylog.generatorapi.utils.MultinomialAllocator.normalize;
 import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultinomial;
 
@@ -26,6 +24,10 @@ import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultin
 public class SimulationService {
     private final UserService userService;
     private final OccupationalLocalCache localCache;
+
+    public ResponseEntity<Response<Void>> startSimution(SimulationStartRequestDto simulationStartRequestDto) {
+        return ResponseEntity.ok(Response.success(HttpStatus.CREATED.value()));
+    }
 
     public void startSimulation(int totalUserCnt) {
         // TODO: 비동기 처리 모듈과 연결하여 이후 작업 필요
@@ -102,9 +104,5 @@ public class SimulationService {
         System.out.println("[성별 인원 수]");
         System.out.printf("남: %2d명%n", numOfGender[1]);
         System.out.printf("여: %2d명%n", numOfGender[0]);
-        }
-
-    public ResponseEntity<CommonResponse<Void>> startSimution(SimulationStartRequestDto simulationStartRequestDto) {
-        return ResponseEntity.ok(CommonResponse.success(HttpStatus.CREATED.value()));
     }
 }
