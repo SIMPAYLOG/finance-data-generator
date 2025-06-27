@@ -1,0 +1,906 @@
+{
+  "lastUpdated": "2025-06-24",
+  "ratios": [0.4, 0.3, 16.8, 0.9, 0.7, 7.8, 14.2, 5.7, 9.3, 3.6, 3.1, 2.8, 6.0, 5.4, 7.0, 10.2, 2.0, 3.8],
+  "occupations": [
+    {
+      "code": 1,
+      "occupationCategory": "A.농업, 임업 및 어업",
+      "averageMonthlyWage": 3193000,
+      "decileDistribution": [0.35, 0.50, 0.65, 0.80, 1.00, 1.15, 1.30, 1.50, 1.75, 2.00],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 6,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 5,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 7.7,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 17.8,
+          "dominantDeciles": [5, 7]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 31,
+          "dominantDeciles": [7, 9]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 32.5,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 2,
+      "occupationCategory": "B.광업",
+      "averageMonthlyWage": 4538000,
+      "decileDistribution": [0.50, 0.65, 0.75, 0.90, 1.00, 1.15, 1.35, 1.60, 1.90, 2.20],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 10,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 20,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 25,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 25,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 15,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 3,
+      "occupationCategory": "C.제조업",
+      "averageMonthlyWage": 4487000,
+      "decileDistribution": [0.45, 0.60, 0.75, 0.90, 1.00, 1.10, 1.25, 1.40, 1.70, 2.00],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 15,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 25,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 30,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 20,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 5,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 4,
+      "occupationCategory": "D.전기, 가스, 증기 및 공기 조절 공급업",
+      "averageMonthlyWage": 6607000,
+      "decileDistribution": [0.60, 0.75, 0.85, 0.95, 1.00, 1.10, 1.30, 1.55, 1.85, 2.20],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 6,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 15,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 25,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 30,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 15,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 9,
+          "dominantDeciles": [9, 10]
+        }
+      ]
+    },
+    {
+      "code": 5,
+      "occupationCategory": "E.수도, 하수 및 폐기물 처리, 원료 재생업",
+      "averageMonthlyWage": 4226000,
+      "decileDistribution": [0.45, 0.60, 0.75, 0.85, 1.00, 1.10, 1.25, 1.45, 1.70, 2.00],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 10,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 20,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 30,
+          "dominantDeciles": [5, 7]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 20,
+          "dominantDeciles": [7, 9]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 15,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 6,
+      "occupationCategory": "F.건설업",
+      "averageMonthlyWage": 3284000,
+      "decileDistribution": [0.40, 0.55, 0.70, 0.85, 1.00, 1.15, 1.35, 1.60, 1.90, 2.20],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 13,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 18,
+          "dominantDeciles": [4, 6]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 33,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 27,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 4,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 7,
+      "occupationCategory": "G.도매 및 소매업",
+      "averageMonthlyWage": 3579000,
+      "decileDistribution": [0.35, 0.50, 0.65, 0.80, 1.00, 1.15, 1.35, 1.60, 1.90, 2.30],
+      "ageGroupInfo": [
+        {
+          "range": [17, 19],
+          "label": "10대",
+          "ratio": 7.5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 30,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 20.4,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 24.7,
+          "dominantDeciles": [3, 6]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 14.9,
+          "dominantDeciles": [5, 8]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 2,
+          "dominantDeciles": [7, 9]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0.5,
+          "dominantDeciles": [7, 9]
+        }
+      ]
+    },
+    {
+      "code": 8,
+      "occupationCategory": "H.운수 및 창고업",
+      "averageMonthlyWage": 3947000,
+      "decileDistribution": [0.40, 0.55, 0.70, 0.85, 1.00, 1.15, 1.35, 1.60, 1.90, 2.25],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 6,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 15,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 25,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 30,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 20,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 4,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 9,
+      "occupationCategory": "I.숙박 및 음식점업",
+      "averageMonthlyWage": 1857000,
+      "decileDistribution": [0.30, 0.45, 0.60, 0.75, 1.00, 1.10, 1.25, 1.40, 1.60, 1.90],
+      "ageGroupInfo": [
+        {
+          "range": [17, 19],
+          "label": "10대",
+          "ratio": 10.5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 27,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 20.4,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 24.7,
+          "dominantDeciles": [3, 6]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 14.9,
+          "dominantDeciles": [5, 8]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 2.5,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [6, 9]
+        }
+      ]
+    },
+    {
+      "code": 10,
+      "occupationCategory": "J.정보통신업",
+      "averageMonthlyWage": 4921000,
+      "decileDistribution": [0.40, 0.60, 0.75, 0.90, 1.00, 1.20, 1.40, 1.70, 2.00, 2.40],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 24,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 26,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 25,
+          "dominantDeciles": [5, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 15,
+          "dominantDeciles": [7, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 10,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 11,
+      "occupationCategory": "K.금융 및 보험업",
+      "averageMonthlyWage": 6991000,
+      "decileDistribution": [0.35, 0.55, 0.70, 0.85, 1.00, 1.20, 1.45, 1.70, 2.00, 2.50],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 22,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 40,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 28,
+          "dominantDeciles": [5, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 8,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 2.4,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 12,
+      "occupationCategory": "L.부동산업",
+      "averageMonthlyWage": 2932000,
+      "decileDistribution": [0.35, 0.50, 0.65, 0.80, 1.00, 1.20, 1.50, 1.80, 2.20, 2.70],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 5,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 8.3,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 16.7,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 34.6,
+          "dominantDeciles": [5, 8]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 25.2,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 10.2,
+          "dominantDeciles": [7, 10]
+        }
+      ]
+    },
+    {
+      "code": 13,
+      "occupationCategory": "M.전문, 과학 및 기술 서비스업",
+      "averageMonthlyWage": 5194000,
+      "decileDistribution": [0.40, 0.60, 0.75, 0.90, 1.00, 1.20, 1.50, 1.80, 2.20, 2.70],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 10,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 27,
+          "dominantDeciles": [3, 6]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 33,
+          "dominantDeciles": [5, 8]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 20,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 10,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 14,
+      "occupationCategory": "N.사업시설 관리, 사업 지원 및 임대 서비스업",
+      "averageMonthlyWage": 3360000,
+      "decileDistribution": [0.35, 0.55, 0.70, 0.85, 1.00, 1.20, 1.45, 1.70, 2.00, 2.50],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 18,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 30,
+          "dominantDeciles": [2, 4]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 24,
+          "dominantDeciles": [3, 5]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 20,
+          "dominantDeciles": [5, 7]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 7,
+          "dominantDeciles": [7, 9]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 3,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 15,
+      "occupationCategory": "P.교육 서비스업",
+      "averageMonthlyWage": 3276000,
+      "decileDistribution": [0.35, 0.55, 0.70, 0.85, 1.00, 1.20, 1.45, 1.70, 2.00, 2.50],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 37,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 25,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 18,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 12,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 8,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 16,
+      "occupationCategory": "Q.보건업 및 사회복지서비스업",
+      "averageMonthlyWage": 2763000,
+      "decileDistribution": [0.35, 0.55, 0.70, 0.85, 1.00, 1.20, 1.50, 1.80, 2.20, 2.60],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 18.7,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 28.1,
+          "dominantDeciles": [2, 6]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 25,
+          "dominantDeciles": [2, 6]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 20,
+          "dominantDeciles": [5, 8]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 10,
+          "dominantDeciles": [7, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 17,
+      "occupationCategory": "R.예술, 스포츠 및 여가관련 서비스업",
+      "averageMonthlyWage": 2703000,
+      "decileDistribution": [0.30, 0.50, 0.70, 0.85, 1.00, 1.30, 1.60, 2.00, 2.50, 3.00],
+      "ageGroupInfo": [
+        {
+          "range": [17, 19],
+          "label": "10대",
+          "ratio": 3,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 12,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 25,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 30,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 20,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 10,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    },
+    {
+      "code": 18,
+      "occupationCategory": "S.협회 및 단체, 수리 및 기타 개인 서비스업",
+      "averageMonthlyWage": 2702000,
+      "decileDistribution": [0.30, 0.50, 0.70, 0.85, 1.00, 1.20, 1.50, 1.80, 2.20, 2.70],
+      "ageGroupInfo": [
+        {
+          "range": [10, 19],
+          "label": "10대",
+          "ratio": 0,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [20, 29],
+          "label": "20대",
+          "ratio": 10,
+          "dominantDeciles": [1, 3]
+        },
+        {
+          "range": [30, 39],
+          "label": "30대",
+          "ratio": 25,
+          "dominantDeciles": [2, 5]
+        },
+        {
+          "range": [40, 49],
+          "label": "40대",
+          "ratio": 30,
+          "dominantDeciles": [4, 7]
+        },
+        {
+          "range": [50, 59],
+          "label": "50대",
+          "ratio": 25,
+          "dominantDeciles": [6, 9]
+        },
+        {
+          "range": [60, 69],
+          "label": "60대",
+          "ratio": 10,
+          "dominantDeciles": [8, 10]
+        },
+        {
+          "range": [70, 79],
+          "label": "70대",
+          "ratio": 0,
+          "dominantDeciles": [8, 10]
+        }
+      ]
+    }
+  ]
+}

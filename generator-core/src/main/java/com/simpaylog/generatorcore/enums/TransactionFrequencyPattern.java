@@ -4,5 +4,6 @@ public enum TransactionFrequencyPattern {
     DAILY,
     WEEKLY,
     BI_WEEKLY,
+    REGULAR,
     RANDOM
 }
