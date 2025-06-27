@@ -22,10 +22,10 @@ public class PreferenceInfosLocalCacheTest {
          Map<Integer, PreferenceInfos> preferences = preferenceCache.getAll();
          assertNotNull(preferences);
          for(int i = 1; i <= 5; i++){
-             assertEquals(preferenceNames[i], preferences.get(i).getName());
-             assertNotNull(preferences.get(i).getTotalConsumeRange());
-             assertFalse(preferences.get(i).getTagConsumeRange().isEmpty());
-             assertEquals(12, preferences.get(i).getTagConsumeRange().size());
+             assertEquals(preferenceNames[i], preferences.get(i).name());
+             assertNotNull(preferences.get(i).totalConsumeRange());
+             assertFalse(preferences.get(i).tagConsumeRange().isEmpty());
+             assertEquals(12, preferences.get(i).tagConsumeRange().size());
          }
      }
 }

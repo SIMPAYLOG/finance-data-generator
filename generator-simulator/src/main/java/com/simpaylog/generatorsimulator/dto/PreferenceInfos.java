@@ -1,6 +1,5 @@
 package com.simpaylog.generatorsimulator.dto;
 
-import com.simpaylog.generatorsimulator.dto.internaldata.TotalConsumeRange;
 import java.util.List;
 
 public record PreferenceInfos (
