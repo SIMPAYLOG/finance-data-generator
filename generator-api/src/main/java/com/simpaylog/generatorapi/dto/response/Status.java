@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.dto;
+package com.simpaylog.generatorapi.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,8 +1,5 @@
 package com.simpaylog.generatorapi.dto.response;
 
-import com.simpaylog.generatorapi.dto.ErrorCode;
-import com.simpaylog.generatorapi.dto.Status;
-
 public record Response<T>(Status status, T result) {
     public static <T> Response<T> success(int httpStatus, T result) {
         return new Response<>(new Status("SUCCESS", null, httpStatus), result);
