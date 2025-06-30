@@ -1,6 +1,5 @@
 package com.simpaylog.generatorsimulator.dto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record MonthlyConsumptionCost (

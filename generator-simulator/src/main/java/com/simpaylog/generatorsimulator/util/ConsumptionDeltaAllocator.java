@@ -208,8 +208,8 @@ public class ConsumptionDeltaAllocator {
     /**
      * 유저의 소득분위와 월 수입을 기반으로, 한 달간의 소비지출량을 구함
      *
-     * @param incomeLevelInfos
-     * @param income
+     * @param incomeLevelInfos 소득분위 정보
+     * @param income 월급(수입)
      * @return 유저의 한 달간 소비지출 총량
      */
     public static long calcOriginalTotalConsumption(IncomeLevelInfo incomeLevelInfos, long income){
