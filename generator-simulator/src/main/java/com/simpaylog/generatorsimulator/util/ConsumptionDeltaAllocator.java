@@ -5,6 +5,8 @@ import com.simpaylog.generatorsimulator.dto.IncomeLevelInfos;
 import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
 import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
 
+import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.*;
 
 public class ConsumptionDeltaAllocator {
@@ -39,8 +41,9 @@ public class ConsumptionDeltaAllocator {
                 sum += delta;
                 putSum += delta + incomeLevelInfos.getCost(type).intValue();
             }
-            result.put("totalChangedDelta", sum); //변화량 총합
-            result.put("totalDelta", putSum); //소비량 퍼센트 총합
+            //실제 금액 계산시 소수점 버림이기 때문에, 변화량은 근사값으로 나옴
+            result.put("totalChangedDelta", sum); //변화량 총합 근사값
+            result.put("totalDelta", putSum); //소비량 퍼센트 총합 근사값
             if(totalMin <= sum && sum <= totalMax){
                 isSucceed = true;
                 break;
@@ -52,7 +55,8 @@ public class ConsumptionDeltaAllocator {
                 String type = tag.type();
                 result.put(type, 0);
             }
-            result.put("total", 0);
+            result.put("totalChangedDelta", 0);
+            result.put("totalDelta", 0);
         }
 
         return result;
@@ -63,31 +67,34 @@ public class ConsumptionDeltaAllocator {
      *
      * @param consumptionDeltaData 유저가 사용한 한 달 소비지출 정보
      * @param income 유저 수입
+     * @param originalTotalConsumptionCost 성향이 적용되지 않은 유저의 총 소비지출 금액
+     * @param yearMonth 일별 지출을 구할 날짜(년도 및 월)
      * @return result 월간 일일 지출량 정보
      */
-    public static MonthlyConsumptionCost calculateConsumption(Map<String, Integer> consumptionDeltaData, long income) {
+    public static MonthlyConsumptionCost calculateConsumption(Map<String, Integer> consumptionDeltaData, long income, long originalTotalConsumptionCost, YearMonth yearMonth) {
         MonthlyConsumptionCost result = new MonthlyConsumptionCost();
 //        1. 유저의 소득 + 유저 성향의 평균소비성향을 기반으로 소비금액 계산
-        int totalDay = 31; //총 일수
-        int totalConsumptionPercent = consumptionDeltaData.get("totalDelta");
-        long originalTotalConsumptionCost = (income * totalConsumptionPercent) / 100;
+        int totalDay = yearMonth.lengthOfMonth(); //해당 달의 총 일수
         long totalConsumptionCost = 0;
 //        2. 상세태그별 소비증감량 확인
         List<DailyConsumptionCost> dailyConsumptionCostList = new ArrayList<>();
+
         for(int day = 0; day < totalDay; day++){
             DailyConsumptionCost dailyConsumptionCost = new DailyConsumptionCost();
-            dailyConsumptionCost.setDate(day + ""); //임시코드, 날짜로 바꿔줘야함
+            dailyConsumptionCost.setDate(day + ""); /* 임시 날짜, 날짜로 바꿔줘야함 */
+
             for(String key : consumptionDeltaData.keySet()){
-                if(key.equals("totalDelta")) continue;
+                if(key.equals("totalDelta") || key.equals("totalChangedDelta")) continue;
                 int changeDelta = consumptionDeltaData.get(key);
                 long cost = (originalTotalConsumptionCost * changeDelta) / 100; //현재 태그 월간 총 cost
-                cost /= 30; //현재 태그 일간 cost 사용량, 현재 총 일수와 상관 없는 기준값으로 나누기(한 달로 나눔)
+                cost /= totalDay; //현재 태그 일간 cost 사용량, 해당 달의 총 일수로 나눔
 
                 //상세 소비타입과 이름이 같은 set 함수 호출하여 저장
                 dailyConsumptionCost.setDailyCost(key, cost);
-
                 totalConsumptionCost += cost;
             }
+
+            dailyConsumptionCostList.add(dailyConsumptionCost);
         }
 
         result.setTotalConsumptionCost(totalConsumptionCost); //월간 총 소비량
@@ -98,5 +105,9 @@ public class ConsumptionDeltaAllocator {
 
     public static int getRandomConsumeDelta (int min, int max){
         return min + (int) (Math.random() * (max - min + 1));
+    }
+
+    public static long calcOriginalTotalConsumption(IncomeLevelInfos incomeLevelInfos, long income){
+        return (income * incomeLevelInfos.getAvgPropensityToConsumePct().longValue()) / 100;
     }
 }

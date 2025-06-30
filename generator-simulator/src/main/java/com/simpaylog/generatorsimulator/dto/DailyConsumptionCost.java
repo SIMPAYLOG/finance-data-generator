@@ -33,7 +33,7 @@ public class DailyConsumptionCost {
             case "clothingFootwear":
                 setClothingFootwear(cost);
                 break;
-            case "housingUtilitiesFel":
+            case "housingUtilitiesFuel":
                 setHousingUtilitiesFuel(cost);
                 break;
             case "householdGoodsServices":

@@ -11,12 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
+import java.time.YearMonth;
 import java.util.*;
 
+import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.calculateConsumption;
-import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.getRandomConsumeDelta;
-import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.getRandomTagConsumeDelta;
 
 @SpringBootTest
 @Import({IncomeLevelLocalCache.class, PreferenceLocalCache.class})
@@ -80,19 +79,39 @@ public class ConsumptionDeltaAllocatorTest {
     @DisplayName("상세 태그 퍼센트 증감량을 기반으로 소비 금액 계산")
     void calculateConsumptionTest(){
         IncomeLevelInfos incomeLevelInfos = incomeLevelCache.get(1);
+        long income = 4_000_000; // 월 수입
+        long originalTotalConsumptionCost = calcOriginalTotalConsumption(incomeLevelInfos, income); //성향X 소비지출 총 금액
+        System.out.printf("수입 : %d || 기존 지출 : %d\n", income, originalTotalConsumptionCost);
         for (int i = 1; i <= 5; i++) {
-            long income = 4_000_000; // 월 수입
             PreferenceInfos preferenceInfos = preferences.get(i);
             Map<String, Integer> consumeDeltaData = getRandomTagConsumeDelta(incomeLevelInfos, preferenceInfos);
-            MonthlyConsumptionCost results = calculateConsumption(consumeDeltaData, income);
-            assertEquals(income, results.getTotalConsumptionCost() + results.getTotalSurplusCost()); //수입 == 저축 + 지출인지 확인
-            for(DailyConsumptionCost result : results.getDailyConsumptionCostList()){ //모든 지출의 합이 총지출값과 같은지
-                assertEquals(result.getClothingFootwear() + result.getAlcoholicBeveragesTobacco() + result.getGroceriesNonAlcoholicBeverages()
-                        + result.getEducation() + result.getCommunication() + result.getFoodAccommodation()
-                        + result.getHealth() + result.getHousingUtilitiesFuel() + result.getOtherGoodsServices()
-                        + result.getRecreationCulture() + result.getHouseholdGoodsServices() + result.getTransportation(), (long) results.getTotalConsumptionCost());
+
+            //계산할 달(날짜) 지정
+            int year = 2025;
+            for(int month = 1; month <= 1; month++) {
+                //각 월의 일별 지출량 계산
+                MonthlyConsumptionCost results = calculateConsumption(consumeDeltaData, income, originalTotalConsumptionCost, YearMonth.of(year, month));
+
+                //수입 == 저축 + 지출인지 확인
+                assertEquals(income, results.getTotalConsumptionCost() + results.getTotalSurplusCost());
+
+                //모든 지출의 합이 총 지출값과 같은지 확인
+                long costSum = getCostSum(results);
+                assertEquals(costSum, results.getTotalConsumptionCost());
+                System.out.printf(preferenceInfos.name() + "의 총 소비지출 : %d || 기존과의 변화량 : 약 %d\n", results.getTotalConsumptionCost(), consumeDeltaData.get("totalDelta"));
             }
 
         }
+    }
+
+    private static long getCostSum(MonthlyConsumptionCost results) {
+        long costSum = 0;
+        for (DailyConsumptionCost result : results.getDailyConsumptionCostList()) {
+            costSum += result.getClothingFootwear() + result.getAlcoholicBeveragesTobacco() + result.getGroceriesNonAlcoholicBeverages()
+                    + result.getEducation() + result.getCommunication() + result.getFoodAccommodation()
+                    + result.getHealth() + result.getHousingUtilitiesFuel() + result.getOtherGoodsServices()
+                    + result.getRecreationCulture() + result.getHouseholdGoodsServices() + result.getTransportation();
+        }
+        return costSum;
     }
 }

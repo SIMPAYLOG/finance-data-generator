@@ -20,6 +20,7 @@ public class IncomeLevelInfos {
     private BigDecimal education;
     private BigDecimal foodAccommodation;
     private BigDecimal otherGoodsServices;
+    private BigDecimal avgPropensityToConsumePct;
 
     public BigDecimal getCost(String tag){
         BigDecimal cost = BigDecimal.ZERO;

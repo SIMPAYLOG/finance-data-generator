@@ -1,5 +1,6 @@
 {
   "1": {
+    "avg_propensity_to_consume_pct" : 201.3,
     "groceries_non_alcoholic_beverages": 22.5,
     "alcoholic_beverages_tobacco": 2.05,
     "clothing_footwear": 3.41,
@@ -14,6 +15,7 @@
     "other_goods_services": 6.31
   },
   "2": {
+    "avg_propensity_to_consume_pct" : 107.5,
     "groceries_non_alcoholic_beverages": 21.87,
     "alcoholic_beverages_tobacco": 1.83,
     "clothing_footwear": 3.8,
@@ -28,6 +30,7 @@
     "other_goods_services": 6.67
   },
   "3": {
+    "avg_propensity_to_consume_pct" : 87.6,
     "groceries_non_alcoholic_beverages": 18.77,
     "alcoholic_beverages_tobacco": 1.71,
     "clothing_footwear": 4.15,
@@ -42,6 +45,7 @@
     "other_goods_services": 7.23
   },
   "4": {
+    "avg_propensity_to_consume_pct" : 77.9,
     "groceries_non_alcoholic_beverages": 17.03,
     "alcoholic_beverages_tobacco": 1.72,
     "clothing_footwear": 4.47,
@@ -56,6 +60,7 @@
     "other_goods_services": 7.58
   },
   "5": {
+    "avg_propensity_to_consume_pct" : 76.3,
     "groceries_non_alcoholic_beverages": 15.9,
     "alcoholic_beverages_tobacco": 1.54,
     "clothing_footwear": 4.44,
@@ -70,6 +75,7 @@
     "other_goods_services": 7.78
   },
   "6": {
+    "avg_propensity_to_consume_pct" : 75.8,
     "groceries_non_alcoholic_beverages": 15.54,
     "alcoholic_beverages_tobacco": 1.48,
     "clothing_footwear": 4.74,
@@ -84,6 +90,7 @@
     "other_goods_services": 7.93
   },
   "7": {
+    "avg_propensity_to_consume_pct" : 72.4,
     "groceries_non_alcoholic_beverages": 14.88,
     "alcoholic_beverages_tobacco": 1.26,
     "clothing_footwear": 4.74,
@@ -98,6 +105,7 @@
     "other_goods_services": 8.09
   },
   "8": {
+    "avg_propensity_to_consume_pct" : 69.7,
     "groceries_non_alcoholic_beverages": 14.3,
     "alcoholic_beverages_tobacco": 1.12,
     "clothing_footwear": 4.89,
@@ -112,6 +120,7 @@
     "other_goods_services": 7.85
   },
   "9": {
+    "avg_propensity_to_consume_pct" : 63.7,
     "groceries_non_alcoholic_beverages": 13.91,
     "alcoholic_beverages_tobacco": 1.04,
     "clothing_footwear": 5.08,
@@ -126,6 +135,7 @@
     "other_goods_services": 8.26
   },
   "10": {
+    "avg_propensity_to_consume_pct" : 53,
     "groceries_non_alcoholic_beverages": 11.66,
     "alcoholic_beverages_tobacco": 0.82,
     "clothing_footwear": 5.23,
