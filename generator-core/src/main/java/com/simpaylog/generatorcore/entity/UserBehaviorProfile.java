@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Table(name = "user_behavior_profiles")
 public class UserBehaviorProfile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private Integer preferenceId;
     @Enumerated(EnumType.STRING)

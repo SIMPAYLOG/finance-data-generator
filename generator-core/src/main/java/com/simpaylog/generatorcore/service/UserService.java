@@ -1,6 +1,7 @@
 package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
 
     @Transactional
@@ -21,7 +23,8 @@ public class UserService {
 
     @Transactional
     public void deleteUserAll() {
-        userRepository.deleteAll();
+        userBehaviorProfileRepository.deleteAllProfiles();
+        userRepository.deleteAllUsers();
     }
 
     public List<User> generateUser(int totalUserCnt) {
