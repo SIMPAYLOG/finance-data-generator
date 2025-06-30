@@ -1,8 +1,8 @@
-package com.simpaylog.generatorapi.configuration;
+package com.simpaylog.generatorcore.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorapi.dto.IncomeLevelInfo;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

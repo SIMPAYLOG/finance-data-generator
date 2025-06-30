@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.dto;
+package com.simpaylog.generatorcore.cache.dto;
 
 import com.simpaylog.generatorcore.enums.WageType;
 
