@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.TestConfig;
-import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
+import com.simpaylog.generatorapi.configuration.OccupationLocalCache;
 import com.simpaylog.generatorapi.dto.OccupationInfos;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
@@ -15,16 +15,16 @@ import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 
-@Import({OccupationalLocalCache.class, SimulationService.class})
+@Import({OccupationLocalCache.class, SimulationService.class})
 class SimulationServiceTest extends TestConfig {
     private final UserService userService = mock(UserService.class);
-    private final OccupationalLocalCache occupationalLocalCache = mock(OccupationalLocalCache.class);
-    private final SimulationService sut = new SimulationService(userService, occupationalLocalCache);
+    private final OccupationLocalCache occupationLocalCache = mock(OccupationLocalCache.class);
+    private final SimulationService sut = new SimulationService(userService, occupationLocalCache);
 
     @BeforeEach
     void setup() {
         // 직업 비율이 하나만 있다고 가정
-        when(occupationalLocalCache.getRatios()).thenReturn(new double[]{1.0});
+        when(occupationLocalCache.getRatios()).thenReturn(new double[]{1.0});
         // 직업 정보 Mock
         OccupationInfos.AgeGroupInfo ageGroupInfo = mock(OccupationInfos.AgeGroupInfo.class);
         when(ageGroupInfo.ratio()).thenReturn(1.0);
@@ -34,7 +34,7 @@ class SimulationServiceTest extends TestConfig {
         when(occupation.decileDistribution()).thenReturn(new double[]{1.0});
         when(occupation.averageMonthlyWage()).thenReturn(100000);
         when(occupation.occupationCategory()).thenReturn("테스트직업");
-        when(occupationalLocalCache.get(anyInt())).thenReturn(occupation);
+        when(occupationLocalCache.get(anyInt())).thenReturn(occupation);
 
         // userService.createUser가 호출될 때마다 dummy User 반환
         when(userService.createUser(anyInt(), any(Gender.class), any(BigDecimal.class), anyInt(), anyInt()))

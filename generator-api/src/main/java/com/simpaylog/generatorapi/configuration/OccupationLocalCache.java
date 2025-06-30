@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Getter
 @Component
-public class OccupationalLocalCache {
+public class OccupationLocalCache {
     private String lastUpdated;
     private double[] ratios;
     private final Map<Integer, Occupation> cache = new ConcurrentHashMap<>();
