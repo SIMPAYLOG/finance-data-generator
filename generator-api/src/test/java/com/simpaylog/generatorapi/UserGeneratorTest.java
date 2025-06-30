@@ -1,6 +1,6 @@
 package com.simpaylog.generatorapi;
 
-import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
+import com.simpaylog.generatorapi.configuration.OccupationLocalCache;
 import com.simpaylog.generatorapi.dto.OccupationInfos;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -21,11 +21,11 @@ import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultin
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@Import(OccupationalLocalCache.class)
+@Import(OccupationLocalCache.class)
 public class UserGeneratorTest extends TestConfig {
 
     @Autowired
-    OccupationalLocalCache occupationalLocalCache;
+    OccupationLocalCache occupationLocalCache;
 
     @RepeatedTest(10)
     void 비율이_주어졌을_때_비율만큼_무작위로_사용자를_배치한다() {
@@ -50,7 +50,7 @@ public class UserGeneratorTest extends TestConfig {
     void 직업코드가_주어지고_직업사용자풀이_정해졌을때_연령별_비율만큼_무작위로_사용자를_배치한다(int code) {
         // Given
         int totalCnt = 97;
-        OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
+        OccupationInfos.Occupation occupation = occupationLocalCache.get(code);
         double[] ageGroupRatio = occupation.ageGroupInfo()
                 .stream()
                 .mapToDouble(OccupationInfos.AgeGroupInfo::ratio)
@@ -74,7 +74,7 @@ public class UserGeneratorTest extends TestConfig {
         int code = 2;
         int[] totalCntByAge = {0, 10, 12, 37, 25, 13, 0};
         char[] gender = {'M', 'F'};
-        OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
+        OccupationInfos.Occupation occupation = occupationLocalCache.get(code);
         List<User> result = new ArrayList<>();
 
         // When & Then

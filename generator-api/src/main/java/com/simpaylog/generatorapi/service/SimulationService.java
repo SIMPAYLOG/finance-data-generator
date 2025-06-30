@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
-import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
+import com.simpaylog.generatorapi.configuration.OccupationLocalCache;
 import com.simpaylog.generatorapi.dto.OccupationInfos;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
@@ -20,7 +20,7 @@ import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultin
 @RequiredArgsConstructor
 public class SimulationService {
     private final UserService userService;
-    private final OccupationalLocalCache localCache;
+    private final OccupationLocalCache localCache;
 
     public void startSimution(SimulationStartRequestDto simulationStartRequestDto) {
         return;

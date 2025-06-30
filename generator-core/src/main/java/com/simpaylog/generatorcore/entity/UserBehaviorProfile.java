@@ -1,6 +1,6 @@
 package com.simpaylog.generatorcore.entity;
 
-import com.simpaylog.generatorcore.enums.TransactionFrequencyPattern;
+import com.simpaylog.generatorcore.enums.WageType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnTransformer;
@@ -16,7 +16,7 @@ public class UserBehaviorProfile {
     private Long id;
     private Integer preferenceId;
     @Enumerated(EnumType.STRING)
-    private TransactionFrequencyPattern transactionFrequencyPattern;
+    private WageType transactionFrequencyPattern;
     private Integer incomeDayOfMonth;
     private Integer autoTransferDayOfMonth;
     @Column(columnDefinition = "jsonb")
@@ -30,7 +30,7 @@ public class UserBehaviorProfile {
 
     protected UserBehaviorProfile( BigDecimal incomeValue, int preferenceId, int incomeDayOfMonth, int autoTransferDayOfMonth) {
         this.preferenceId = preferenceId;
-        this.transactionFrequencyPattern = TransactionFrequencyPattern.REGULAR;
+        this.transactionFrequencyPattern = WageType.REGULAR;
         this.incomeDayOfMonth = incomeDayOfMonth;
         this.incomeValue = incomeValue;
         this.autoTransferDayOfMonth = autoTransferDayOfMonth;
