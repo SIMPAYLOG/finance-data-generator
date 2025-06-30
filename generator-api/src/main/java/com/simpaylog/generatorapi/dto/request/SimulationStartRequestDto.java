@@ -1,14 +1,10 @@
 package com.simpaylog.generatorapi.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public record SimulationStartRequestDto(
-        Long userCount,
-        LocalDateTime durationStart,
-        LocalDateTime durationEnd
+        int userCount,
+        LocalDate durationStart,
+        LocalDate durationEnd
 ) {
-
-    public static SimulationStartRequestDto of(Long userCount, LocalDateTime durationStart, LocalDateTime durationEnd) {
-        return new SimulationStartRequestDto(userCount, durationStart, durationEnd);
-    }
 }
