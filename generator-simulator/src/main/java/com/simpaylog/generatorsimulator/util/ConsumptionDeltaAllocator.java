@@ -1,14 +1,31 @@
 package com.simpaylog.generatorsimulator.util;
 
-import com.simpaylog.generatorsimulator.dto.DailyConsumptionCost;
-import com.simpaylog.generatorsimulator.dto.IncomeLevelInfos;
-import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
+import com.simpaylog.generatorapi.dto.IncomeLevelInfo;
+import com.simpaylog.generatorsimulator.dto.ConsumptionDelta;
 import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
+import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
+import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost.DailyConsumptionCost;
 
 import java.time.YearMonth;
 import java.util.*;
+import java.util.function.Function;
 
 public class ConsumptionDeltaAllocator {
+    //공통 반복되는 태그를 TAG_FIELDS로 분리
+    private static final List<String> TAG_FIELDS = List.of(
+            "groceriesNonAlcoholicBeverages",
+            "alcoholicBeveragesTobacco",
+            "clothingFootwear",
+            "housingUtilitiesFuel",
+            "householdGoodsServices",
+            "health",
+            "transportation",
+            "communication",
+            "recreationCulture",
+            "education",
+            "foodAccommodation",
+            "otherGoodsServices"
+    );
 
     /**
      * 각 태그별 소비증감량을 구한 후, 그 합이 총 소비증감량 합 범위와 일치하는지 확인
@@ -18,95 +35,184 @@ public class ConsumptionDeltaAllocator {
      * @param incomeLevelInfos 유저의 소득분위 정보
      * @return result 유저의 소비지출 증감량 퍼센트를 담은 Map
      */
-    public static Map<String, Integer> getRandomTagConsumeDelta(IncomeLevelInfos incomeLevelInfos, PreferenceInfos preferenceInfos) {
-        List<PreferenceInfos.TagConsumeRange> tagRanges = preferenceInfos.tagConsumeRange();
+    public static ConsumptionDelta getRandomTagConsumeDelta(IncomeLevelInfo incomeLevelInfos, PreferenceInfos preferenceInfos) {
         int totalMin = preferenceInfos.totalConsumeRange().min();
         int totalMax = preferenceInfos.totalConsumeRange().max();
         int MAX_RETRY = 100;
-        Map<String, Integer> result = new HashMap<>();
-        List<PreferenceInfos.TagConsumeRange> shuffled = new ArrayList<>(tagRanges);
-        Collections.shuffle(shuffled);
-        int retry = 0;
-        boolean isSucceed = false;
-        while (retry++ < MAX_RETRY) {
-            int sum = 0;
-            int putSum = 0;
-            for (PreferenceInfos.TagConsumeRange tag : shuffled) {
-                String type = tag.type();
-                int min = tag.min();
-                int max = tag.max();
-                int delta = getRandomConsumeDelta(min, max);
-                result.put(type, delta + incomeLevelInfos.getCost(type).intValue());
-                sum += delta;
-                putSum += delta + incomeLevelInfos.getCost(type).intValue();
+
+        Map<String, Integer> deltas = new HashMap<>(); //변화량을 담을 map 객체
+        List<PreferenceInfos.TagConsumeRange> shuffled = new ArrayList<>(preferenceInfos.tagConsumeRange());
+        Collections.shuffle(shuffled); //태그별 변화율 다양성을 위함
+
+        for (int retry = 0; retry < MAX_RETRY; retry++) {
+            deltas.clear();
+            int totalDelta = calculateDeltas(shuffled, incomeLevelInfos, deltas);
+
+            if (totalMin <= totalDelta && totalDelta <= totalMax) {
+                return buildConsumptionDelta(deltas, totalDelta);
             }
-            //실제 금액 계산시 소수점 버림이기 때문에, 변화량은 근사값으로 나옴
-            result.put("totalChangedDelta", sum); //변화량 총합 근사값
-            result.put("totalDelta", putSum); //소비량 퍼센트 총합 근사값
-            if(totalMin <= sum && sum <= totalMax){
-                isSucceed = true;
-                break;
-            }
-        }
-        //작업 실패 -> 작업 실패시 모든 값이 0인 result 반환
-        if(!isSucceed){
-            for(PreferenceInfos.TagConsumeRange tag : tagRanges){
-                String type = tag.type();
-                result.put(type, 0);
-            }
-            result.put("totalChangedDelta", 0);
-            result.put("totalDelta", 0);
         }
 
-        return result;
+        return buildConsumptionDelta(new HashMap<>(), 0); // 실패 시 초기화된 값 반환
     }
 
     /**
-     * user의 한달 소비지출 퍼센트(소비증감량)와 수입을 기반으로 월간 일별 소비지출량 계산
+     * 소비 변화량 퍼센트를 계산하여 Map 객체에 담은 후, 총 소비량 변화율 반환
+     * getRandomTagConsumeDelta에서 호출
      *
-     * @param consumptionDeltaData 유저가 사용한 한 달 소비지출 정보
-     * @param income 유저 수입
-     * @param originalTotalConsumptionCost 성향이 적용되지 않은 유저의 총 소비지출 금액
-     * @param yearMonth 일별 지출을 구할 날짜(년도 및 월)
-     * @return result 월간 일일 지출량 정보
+     * @param shuffled 무작위로 태그를 섞은 리스트(태그별 변화율에 다양성을 주기 위함)
+     * @param incomeLevelInfos 소득분위 정보
+     * @param deltas 변화율을 담은 map 객체
+     * @return totalDelta 변화율 총합
      */
-    public static MonthlyConsumptionCost calculateConsumption(Map<String, Integer> consumptionDeltaData, long income, long originalTotalConsumptionCost, YearMonth yearMonth) {
-        MonthlyConsumptionCost result = new MonthlyConsumptionCost();
-//        1. 유저의 소득 + 유저 성향의 평균소비성향을 기반으로 소비금액 계산
-        int totalDay = yearMonth.lengthOfMonth(); //해당 달의 총 일수
-        long totalConsumptionCost = 0;
-//        2. 상세태그별 소비증감량 확인
-        List<DailyConsumptionCost> dailyConsumptionCostList = new ArrayList<>();
-
-        for(int day = 0; day < totalDay; day++){
-            DailyConsumptionCost dailyConsumptionCost = new DailyConsumptionCost();
-            dailyConsumptionCost.setDate(day + ""); /* 임시 날짜, 날짜로 바꿔줘야함 */
-
-            for(String key : consumptionDeltaData.keySet()){
-                if(key.equals("totalDelta") || key.equals("totalChangedDelta")) continue;
-                int changeDelta = consumptionDeltaData.get(key);
-                long cost = (originalTotalConsumptionCost * changeDelta) / 100; //현재 태그 월간 총 cost
-                cost /= totalDay; //현재 태그 일간 cost 사용량, 해당 달의 총 일수로 나눔
-
-                //상세 소비타입과 이름이 같은 set 함수 호출하여 저장
-                dailyConsumptionCost.setDailyCost(key, cost);
-                totalConsumptionCost += cost;
-            }
-
-            dailyConsumptionCostList.add(dailyConsumptionCost);
+    private static int calculateDeltas(List<PreferenceInfos.TagConsumeRange> shuffled,
+                                       IncomeLevelInfo incomeLevelInfos,
+                                       Map<String, Integer> deltas) {
+        int totalDelta = 0;
+        for (PreferenceInfos.TagConsumeRange tag : shuffled) {
+            String tagName = tag.type();
+            int delta = getRandomConsumeDelta(tag.min(), tag.max());
+            int baseValue = getIncomeLevelValue(incomeLevelInfos, tagName);
+            deltas.put(tagName, delta + baseValue);
+            totalDelta += delta;
         }
-
-        result.setTotalConsumptionCost(totalConsumptionCost); //월간 총 소비량
-        result.setTotalSurplusCost(income - totalConsumptionCost); //월간 총 저축량
-        result.setDailyConsumptionCostList(dailyConsumptionCostList); //일간 소비량 리스트
-        return result;
+        return totalDelta;
     }
+
 
     public static int getRandomConsumeDelta (int min, int max){
         return min + (int) (Math.random() * (max - min + 1));
     }
 
-    public static long calcOriginalTotalConsumption(IncomeLevelInfos incomeLevelInfos, long income){
-        return (income * incomeLevelInfos.getAvgPropensityToConsumePct().longValue()) / 100;
+    /**
+     * 소득분위의 각 태그별 기본값 소비량을 반환
+     * calculateDeltas에서 호출
+     *
+     * @param info 소득분위 정보
+     * @param tagName 세부 소비지출 이름
+     * @return 해당 소득분위의 tagName 소비지출 기본값
+     */
+    private static int getIncomeLevelValue(IncomeLevelInfo info, String tagName) {
+        return switch (tagName) {
+            case "groceriesNonAlcoholicBeverages" -> info.groceriesNonAlcoholicBeverages().intValue();
+            case "alcoholicBeveragesTobacco" -> info.alcoholicBeveragesTobacco().intValue();
+            case "clothingFootwear" -> info.clothingFootwear().intValue();
+            case "housingUtilitiesFuel" -> info.housingUtilitiesFuel().intValue();
+            case "householdGoodsServices" -> info.householdGoodsServices().intValue();
+            case "health" -> info.health().intValue();
+            case "transportation" -> info.transportation().intValue();
+            case "communication" -> info.communication().intValue();
+            case "recreationCulture" -> info.recreationCulture().intValue();
+            case "education" -> info.education().intValue();
+            case "foodAccommodation" -> info.foodAccommodation().intValue();
+            case "otherGoodsServices" -> info.otherGoodsServices().intValue();
+            default -> 0;
+        };
+    }
+
+    private static ConsumptionDelta buildConsumptionDelta(Map<String, Integer> deltas, int totalDelta) {
+        return new ConsumptionDelta(
+                totalDelta,
+                deltas.getOrDefault("groceriesNonAlcoholicBeverages", 0),
+                deltas.getOrDefault("alcoholicBeveragesTobacco", 0),
+                deltas.getOrDefault("clothingFootwear", 0),
+                deltas.getOrDefault("housingUtilitiesFuel", 0),
+                deltas.getOrDefault("householdGoodsServices", 0),
+                deltas.getOrDefault("health", 0),
+                deltas.getOrDefault("transportation", 0),
+                deltas.getOrDefault("communication", 0),
+                deltas.getOrDefault("recreationCulture", 0),
+                deltas.getOrDefault("education", 0),
+                deltas.getOrDefault("foodAccommodation", 0),
+                deltas.getOrDefault("otherGoodsServices", 0)
+        );
+    }
+
+    /**
+     * user의 한달 소비지출 퍼센트(소비증감량)와 수입을 기반으로 월간 일별 소비지출량 계산
+     *
+     * @param consumptionDelta 유저가 사용한 한 달 소비지출 정보
+     * @param income 유저 수입
+     * @param originalTotalConsumptionCost 성향이 적용되지 않은 유저의 총 소비지출 금액
+     * @param yearMonth 일별 지출을 구할 날짜(년도 및 월)
+     * @return result 월간 일일 지출량 정보
+     */
+    public static MonthlyConsumptionCost calculateConsumption(
+            ConsumptionDelta consumptionDelta,
+            long income,
+            long originalTotalConsumptionCost,
+            YearMonth yearMonth) {
+
+        int totalDay = yearMonth.lengthOfMonth();
+        long totalConsumptionCost = 0;
+        List<DailyConsumptionCost> dailyConsumptionCostList = new ArrayList<>();
+
+        Map<String, Function<ConsumptionDelta, Integer>> getters = getDeltaGetters();
+
+        for (int day = 0; day < totalDay; day++) {
+            String date = yearMonth.getMonth().toString(); //해당 월 정보만 저장, 추후 날짜 정보 추가 필요시 수정
+            Map<String, Long> dailyValues = new HashMap<>();
+            long dailyTotal = 0;
+
+            for (String tag : TAG_FIELDS) {
+                long cost = calcDailyTagCost(totalDay, getters.get(tag).apply(consumptionDelta), originalTotalConsumptionCost);
+                dailyValues.put(tag, cost);
+                dailyTotal += cost;
+            }
+
+            DailyConsumptionCost daily = new DailyConsumptionCost(
+                    date,
+                    dailyValues.get("groceriesNonAlcoholicBeverages"),
+                    dailyValues.get("alcoholicBeveragesTobacco"),
+                    dailyValues.get("clothingFootwear"),
+                    dailyValues.get("housingUtilitiesFuel"),
+                    dailyValues.get("householdGoodsServices"),
+                    dailyValues.get("health"),
+                    dailyValues.get("transportation"),
+                    dailyValues.get("communication"),
+                    dailyValues.get("recreationCulture"),
+                    dailyValues.get("education"),
+                    dailyValues.get("foodAccommodation"),
+                    dailyValues.get("otherGoodsServices")
+            );
+
+            totalConsumptionCost += dailyTotal;
+            dailyConsumptionCostList.add(daily);
+        }
+
+        return new MonthlyConsumptionCost(totalConsumptionCost, income - totalConsumptionCost, dailyConsumptionCostList);
+    }
+
+    public static long calcDailyTagCost(int totalDay, int changeDelta, long originalTotalConsumptionCost){
+        long cost = (originalTotalConsumptionCost * changeDelta) / 100; //현재 태그 월간 총 cost
+        return cost / totalDay; //현재 태그 일간 cost 사용량, 해당 달의 총 일수로 나눔
+    }
+
+    public static Map<String, Function<ConsumptionDelta, Integer>> getDeltaGetters() {
+        return Map.ofEntries(
+                Map.entry("groceriesNonAlcoholicBeverages", ConsumptionDelta::groceriesNonAlcoholicBeverages),
+                Map.entry("alcoholicBeveragesTobacco", ConsumptionDelta::alcoholicBeveragesTobacco),
+                Map.entry("clothingFootwear", ConsumptionDelta::clothingFootwear),
+                Map.entry("housingUtilitiesFuel", ConsumptionDelta::housingUtilitiesFuel),
+                Map.entry("householdGoodsServices", ConsumptionDelta::householdGoodsServices),
+                Map.entry("health", ConsumptionDelta::health),
+                Map.entry("transportation", ConsumptionDelta::transportation),
+                Map.entry("communication", ConsumptionDelta::communication),
+                Map.entry("recreationCulture", ConsumptionDelta::recreationCulture),
+                Map.entry("education", ConsumptionDelta::education),
+                Map.entry("foodAccommodation", ConsumptionDelta::foodAccommodation),
+                Map.entry("otherGoodsServices", ConsumptionDelta::otherGoodsServices)
+        );
+    }
+
+    /**
+     * 유저의 소득분위와 월 수입을 기반으로, 한 달간의 소비지출량을 구함
+     *
+     * @param incomeLevelInfos
+     * @param income
+     * @return 유저의 한 달간 소비지출 총량
+     */
+    public static long calcOriginalTotalConsumption(IncomeLevelInfo incomeLevelInfos, long income){
+        return (income * incomeLevelInfos.avgPropensityToConsumePct().longValue()) / 100;
     }
 }

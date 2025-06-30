@@ -1,16 +1,26 @@
 package com.simpaylog.generatorsimulator.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
-@ToString
-public class MonthlyConsumptionCost {
-    private List<DailyConsumptionCost> dailyConsumptionCostList;
-    private Long totalConsumptionCost;
-    private Long totalSurplusCost;
+public record MonthlyConsumptionCost (
+    Long totalConsumptionCost,
+    Long totalSurplusCost,
+    List<DailyConsumptionCost> dailyConsumptionCostList
+) {
+    public record DailyConsumptionCost (
+    String date,
+    Long groceriesNonAlcoholicBeverages,
+    Long alcoholicBeveragesTobacco,
+    Long clothingFootwear,
+    Long housingUtilitiesFuel,
+    Long householdGoodsServices,
+    Long health,
+    Long transportation,
+    Long communication,
+    Long recreationCulture,
+    Long education,
+    Long foodAccommodation,
+    Long otherGoodsServices
+) {}
 }

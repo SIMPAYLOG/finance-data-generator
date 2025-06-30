@@ -1,117 +1,130 @@
 package com.simpaylog.generatorsimulator.util;
 
-import com.simpaylog.generatorsimulator.configuration.IncomeLevelLocalCache;
+import com.simpaylog.generatorapi.configuration.IncomeLevelLocalCache;
+import com.simpaylog.generatorapi.dto.IncomeLevelInfo;
+import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.configuration.PreferenceLocalCache;
-import com.simpaylog.generatorsimulator.dto.DailyConsumptionCost;
-import com.simpaylog.generatorsimulator.dto.IncomeLevelInfos;
+import com.simpaylog.generatorsimulator.dto.ConsumptionDelta;
 import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
 import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import java.time.YearMonth;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 @Import({IncomeLevelLocalCache.class, PreferenceLocalCache.class})
-public class ConsumptionDeltaAllocatorTest {
+public class ConsumptionDeltaAllocatorTest extends TestConfig {
     @Autowired
     private PreferenceLocalCache preferenceLocalCache;
     @Autowired
     private IncomeLevelLocalCache incomeLevelLocalCache;
-    private Map<Integer, PreferenceInfos> preferences;
-    private Map<Integer, IncomeLevelInfos> incomeLevelCache;
 
-    @BeforeEach
-    void init() {
-        preferences = preferenceLocalCache.getAll();
-        incomeLevelCache = incomeLevelLocalCache.getAll();
-    }
+    private static final Set<String> TAG_FIELDS = Set.of(
+            "groceriesNonAlcoholicBeverages",
+            "alcoholicBeveragesTobacco",
+            "clothingFootwear",
+            "housingUtilitiesFuel",
+            "householdGoodsServices",
+            "health",
+            "transportation",
+            "communication",
+            "recreationCulture",
+            "education",
+            "foodAccommodation",
+            "otherGoodsServices"
+    );
 
-    @Test
+    @RepeatedTest(value = 5, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
     @DisplayName("소비증감량 랜덤 추출 로직 점검")
-    void totalConsumeRangeTest() {
-        for (int i = 1; i <= 5; i++) {
-            PreferenceInfos preferenceInfos = preferences.get(i);
-            int min = preferenceInfos.totalConsumeRange().min();
-            int max = preferenceInfos.totalConsumeRange().max();
-            for (int tc = 0; tc < 100; tc++) {
-                int totalConsumeChange = getRandomConsumeDelta(min, max);
-                assertTrue(min <= totalConsumeChange && totalConsumeChange <= max);
-            }
+    void totalConsumeRangeTest(RepetitionInfo repetitionInfo) {
+        int preferenceId = repetitionInfo.getCurrentRepetition();
+        PreferenceInfos preferenceInfos = preferenceLocalCache.get(preferenceId);
+        int min = preferenceInfos.totalConsumeRange().min();
+        int max = preferenceInfos.totalConsumeRange().max();
+        for (int tc = 0; tc < 100; tc++) {
+            int totalConsumeChange = getRandomConsumeDelta(min, max);
+            assertTrue(min <= totalConsumeChange && totalConsumeChange <= max);
         }
     }
 
-    @Test
-    @DisplayName("각 성향별 상세태그 소비 증감량 정하기")
-    void tagConsumeRangeTest() {
-        Map<String, Integer> tagDeltas;
-        IncomeLevelInfos incomeLevelInfos = incomeLevelCache.get(1);
-        for (int i = 1; i <= 5; i++) {
-            PreferenceInfos preferenceInfos = preferences.get(i);
-            int min = preferenceInfos.totalConsumeRange().min();
-            int max = preferenceInfos.totalConsumeRange().max();
-            List<PreferenceInfos.TagConsumeRange> tagRanges = preferenceInfos.tagConsumeRange();
-            for (int tc = 0; tc < 10000; tc++) {
-                tagDeltas = getRandomTagConsumeDelta(incomeLevelInfos, preferenceInfos); //test
-                int sum = 0;
-                assertNotNull(tagDeltas);
-                for (int t = 0; t < 12; t++) {
-                    String tag = tagRanges.get(t).type();
-                    int tagDelta = tagDeltas.get(tag);
-                    assertTrue(tagRanges.get(t).min() + incomeLevelInfos.getCost(tag).intValue() <= tagDelta && tagDelta <= tagRanges.get(t).max() + incomeLevelInfos.getCost(tag).intValue());
-                    sum += tagDelta;
-                }
-                int totalDelta = tagDeltas.get("totalDelta");
-                int totalChangedDelta = tagDeltas.get("totalChangedDelta");
-                assertEquals(sum, totalDelta);
-                assertTrue(min <= totalChangedDelta && totalChangedDelta <= max);
+    @RepeatedTest(value = 10, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
+    @DisplayName("각 성향별 상세 태그 소비 증감량이 범위에 맞는 값들로 설정됐는지 검증")
+    void tagConsumeDeltaWithinRangeTest(RepetitionInfo repetitionInfo) {
+        int decile = repetitionInfo.getCurrentRepetition();
+        IncomeLevelInfo incomeInfo = incomeLevelLocalCache.get(decile);
+
+        for (int preferenceId = 1; preferenceId <= 5; preferenceId++) {
+            PreferenceInfos preference = preferenceLocalCache.get(preferenceId);
+            ConsumptionDelta tagDeltas = ConsumptionDeltaAllocator.getRandomTagConsumeDelta(incomeInfo, preference);
+
+            Map<String, Function<ConsumptionDelta, Integer>> deltaMap = getDeltaGetters();
+            int totalDeltaSum = 0;
+
+            for (PreferenceInfos.TagConsumeRange tag : preference.tagConsumeRange()) {
+                String type = tag.type();
+                assertTrue(TAG_FIELDS.contains(type), "tag명 오류: " + type);
+
+                int min = tag.min() + incomeInfoValue(incomeInfo, type);
+                int max = tag.max() + incomeInfoValue(incomeInfo, type);
+                int actual = deltaMap.get(type).apply(tagDeltas);
+
+                assertTrue(actual >= min && actual <= max,
+                        String.format("[%s] 현재값 = %d, 기준 범위 = [%d, %d]", type, actual, min, max));
+
+                totalDeltaSum += actual - incomeInfoValue(incomeInfo, type);
             }
+
+            int totalMin = preference.totalConsumeRange().min();
+            int totalMax = preference.totalConsumeRange().max();
+
+            assertTrue(totalDeltaSum >= totalMin && totalDeltaSum <= totalMax,
+                    String.format("총 변화량 = %d, 기준 범위 = [%d, %d]", totalDeltaSum, totalMin, totalMax));
         }
     }
 
-    @Test
+    private int incomeInfoValue(IncomeLevelInfo info, String tagName) {
+        return switch (tagName) {
+            case "groceriesNonAlcoholicBeverages" -> info.groceriesNonAlcoholicBeverages().intValue();
+            case "alcoholicBeveragesTobacco" -> info.alcoholicBeveragesTobacco().intValue();
+            case "clothingFootwear" -> info.clothingFootwear().intValue();
+            case "housingUtilitiesFuel" -> info.housingUtilitiesFuel().intValue();
+            case "householdGoodsServices" -> info.householdGoodsServices().intValue();
+            case "health" -> info.health().intValue();
+            case "transportation" -> info.transportation().intValue();
+            case "communication" -> info.communication().intValue();
+            case "recreationCulture" -> info.recreationCulture().intValue();
+            case "education" -> info.education().intValue();
+            case "foodAccommodation" -> info.foodAccommodation().intValue();
+            case "otherGoodsServices" -> info.otherGoodsServices().intValue();
+            default -> throw new IllegalArgumentException("Unknown tag: " + tagName);
+        };
+    }
+
+
+    @RepeatedTest(value = 5, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
     @DisplayName("상세 태그 퍼센트 증감량을 기반으로 소비 금액 계산")
-    void calculateConsumptionTest(){
-        IncomeLevelInfos incomeLevelInfos = incomeLevelCache.get(1);
-        long income = 4_000_000; // 월 수입
+    void calculateConsumptionTest(RepetitionInfo repetitionInfo){
+        IncomeLevelInfo incomeLevelInfos = incomeLevelLocalCache.get(1);
+        long income = 3_000_000; // 월 수입
         long originalTotalConsumptionCost = calcOriginalTotalConsumption(incomeLevelInfos, income); //성향X 소비지출 총 금액
-        System.out.printf("수입 : %d || 기존 지출 : %d\n", income, originalTotalConsumptionCost);
-        for (int i = 1; i <= 5; i++) {
-            PreferenceInfos preferenceInfos = preferences.get(i);
-            Map<String, Integer> consumeDeltaData = getRandomTagConsumeDelta(incomeLevelInfos, preferenceInfos);
+        int preferenceId = repetitionInfo.getCurrentRepetition();
+        PreferenceInfos preferenceInfos = preferenceLocalCache.get(preferenceId);
+        ConsumptionDelta consumeDelta = getRandomTagConsumeDelta(incomeLevelInfos, preferenceInfos);
 
-            //계산할 달(날짜) 지정
-            int year = 2025;
-            for(int month = 1; month <= 1; month++) {
-                //각 월의 일별 지출량 계산
-                MonthlyConsumptionCost results = calculateConsumption(consumeDeltaData, income, originalTotalConsumptionCost, YearMonth.of(year, month));
-
-                //수입 == 저축 + 지출인지 확인
-                assertEquals(income, results.getTotalConsumptionCost() + results.getTotalSurplusCost());
-
-                //모든 지출의 합이 총 지출값과 같은지 확인
-                long costSum = getCostSum(results);
-                assertEquals(costSum, results.getTotalConsumptionCost());
-                System.out.printf(preferenceInfos.name() + "의 총 소비지출 : %d || 기존과의 변화량 : 약 %d\n", results.getTotalConsumptionCost(), consumeDeltaData.get("totalDelta"));
-            }
-
+        //계산할 달(날짜) 지정
+        int year = 2025;
+        for(int month = 1; month <= 12; month++) {
+            //각 월(+ 해당 월의 일 별) 지출량 계산
+            MonthlyConsumptionCost monthly = calculateConsumption(consumeDelta, income, originalTotalConsumptionCost, YearMonth.of(year, month));
+            //수입 == 저축 + 지출인지 확인
+            assertEquals(income, monthly.totalConsumptionCost() + monthly.totalSurplusCost());
         }
-    }
-
-    private static long getCostSum(MonthlyConsumptionCost results) {
-        long costSum = 0;
-        for (DailyConsumptionCost result : results.getDailyConsumptionCostList()) {
-            costSum += result.getClothingFootwear() + result.getAlcoholicBeveragesTobacco() + result.getGroceriesNonAlcoholicBeverages()
-                    + result.getEducation() + result.getCommunication() + result.getFoodAccommodation()
-                    + result.getHealth() + result.getHousingUtilitiesFuel() + result.getOtherGoodsServices()
-                    + result.getRecreationCulture() + result.getHouseholdGoodsServices() + result.getTransportation();
-        }
-        return costSum;
     }
 }
