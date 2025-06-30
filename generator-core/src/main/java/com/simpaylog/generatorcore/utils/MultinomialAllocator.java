@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.utils;
+package com.simpaylog.generatorcore.utils;
 
 import java.util.Arrays;
 import java.util.Random;

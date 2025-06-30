@@ -1,13 +1,13 @@
-package com.simpaylog.generatorapi;
+package com.simpaylog.generatorcore.service;
 
-import com.simpaylog.generatorapi.configuration.OccupationLocalCache;
-import com.simpaylog.generatorapi.dto.OccupationInfos;
+import com.simpaylog.generatorcore.TestConfig;
+import com.simpaylog.generatorcore.cache.OccupationLocalCache;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,13 +16,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static com.simpaylog.generatorapi.utils.MultinomialAllocator.normalize;
-import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultinomial;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.simpaylog.generatorcore.utils.MultinomialAllocator.normalize;
+import static com.simpaylog.generatorcore.utils.MultinomialAllocator.sampleMultinomial;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-@Import(OccupationLocalCache.class)
-public class UserGeneratorTest extends TestConfig {
+class UserGeneratorTest extends TestConfig {
 
     @Autowired
     OccupationLocalCache occupationLocalCache;
@@ -123,5 +121,4 @@ public class UserGeneratorTest extends TestConfig {
                     '}';
         }
     }
-
 }
