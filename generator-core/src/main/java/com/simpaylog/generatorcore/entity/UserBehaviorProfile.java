@@ -16,8 +16,7 @@ public class UserBehaviorProfile {
     private Long id;
     private Integer preferenceId;
     @Enumerated(EnumType.STRING)
-    private WageType transactionFrequencyPattern;
-    private Integer incomeDayOfMonth;
+    private WageType wageType;
     private Integer autoTransferDayOfMonth;
     @Column(columnDefinition = "jsonb")
     @ColumnTransformer(write = "?::jsonb")
@@ -28,17 +27,16 @@ public class UserBehaviorProfile {
     protected UserBehaviorProfile() {
     }
 
-    protected UserBehaviorProfile( BigDecimal incomeValue, int preferenceId, int incomeDayOfMonth, int autoTransferDayOfMonth) {
+    protected UserBehaviorProfile( BigDecimal incomeValue, int preferenceId, WageType wageType, int autoTransferDayOfMonth) {
         this.preferenceId = preferenceId;
-        this.transactionFrequencyPattern = WageType.REGULAR;
-        this.incomeDayOfMonth = incomeDayOfMonth;
+        this.wageType = wageType;
         this.incomeValue = incomeValue;
         this.autoTransferDayOfMonth = autoTransferDayOfMonth;
-        this.activeHours = "\"hello\"";
+        this.activeHours = "{\"min\": 7, \"max\": 23}";
         this.assetValue = BigDecimal.ZERO;
     }
 
-    public static UserBehaviorProfile of(BigDecimal incomeValue, int preferenceId, int incomeDayOfMonth, int autoTransferDayOfMonth) {
-        return new UserBehaviorProfile(incomeValue, preferenceId, incomeDayOfMonth, autoTransferDayOfMonth);
+    public static UserBehaviorProfile of(BigDecimal incomeValue, int preferenceId, WageType wageType, int autoTransferDayOfMonth) {
+        return new UserBehaviorProfile(incomeValue, preferenceId, wageType, autoTransferDayOfMonth);
     }
 }
