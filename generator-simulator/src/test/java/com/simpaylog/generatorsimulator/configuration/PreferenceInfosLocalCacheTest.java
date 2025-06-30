@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(classes = {PreferenceLocalCache.class})
 public class PreferenceInfosLocalCacheTest {
      private final String[] preferenceNames = new String[] {"", "소비지향형", "저축지향형", "무계획형", "투자지향형", "안정추구형"};
 
