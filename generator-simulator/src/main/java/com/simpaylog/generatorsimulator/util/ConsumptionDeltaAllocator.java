@@ -5,7 +5,6 @@ import com.simpaylog.generatorsimulator.dto.IncomeLevelInfos;
 import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
 import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
 
-import java.math.BigDecimal;
 import java.time.YearMonth;
 import java.util.*;
 

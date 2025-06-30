@@ -22,7 +22,7 @@ public class DailyConsumptionCost {
     private Long foodAccommodation;
     private Long otherGoodsServices;
 
-    public boolean setDailyCost(String tag, long cost){
+    public void setDailyCost(String tag, long cost){
         switch (tag){
             case "groceriesNonAlcoholicBeverages":
                 setGroceriesNonAlcoholicBeverages(cost);
@@ -62,9 +62,6 @@ public class DailyConsumptionCost {
                 break;
             default:
                 System.out.println("tag 이름이 일치하는 set 함수 없음 (" + tag + ")");
-                return false;
         }
-
-        return true;
     }
 }
