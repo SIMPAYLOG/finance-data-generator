@@ -24,11 +24,12 @@ public class User {
     private BigDecimal balance;
     private int jobNumber;
     private int occupationCode;
+    private String occupationName;
 
     protected User() {
     }
 
-    private User(UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode) {
+    private User(UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName) {
         this.userBehaviorProfile = profile;
         this.decile = decile;
         this.age = age;
@@ -36,9 +37,10 @@ public class User {
         this.balance = balance;
         this.jobNumber = jobNumber;
         this.occupationCode = occupationCode;
+        this.occupationName = occupationName;
     }
 
-    public static User of(UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode) {
-        return new User(profile, decile, age, gender, balance, jobNumber, occupationCode);
+    public static User of(UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName) {
+        return new User(profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName);
     }
 }
