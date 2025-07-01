@@ -1,6 +1,6 @@
 package com.simpaylog.generatorsimulator.util;
 
-import com.simpaylog.generatorapi.dto.IncomeLevelInfo;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
 import com.simpaylog.generatorsimulator.dto.ConsumptionDelta;
 import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
 import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;

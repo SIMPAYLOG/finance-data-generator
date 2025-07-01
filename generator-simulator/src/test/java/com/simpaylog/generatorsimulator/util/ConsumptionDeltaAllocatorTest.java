@@ -1,7 +1,7 @@
 package com.simpaylog.generatorsimulator.util;
 
-import com.simpaylog.generatorapi.configuration.IncomeLevelLocalCache;
-import com.simpaylog.generatorapi.dto.IncomeLevelInfo;
+import com.simpaylog.generatorcore.cache.IncomeLevelLocalCache;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.configuration.PreferenceLocalCache;
 import com.simpaylog.generatorsimulator.dto.ConsumptionDelta;
@@ -19,7 +19,7 @@ import java.util.function.Function;
 import static com.simpaylog.generatorsimulator.util.ConsumptionDeltaAllocator.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import({IncomeLevelLocalCache.class, PreferenceLocalCache.class})
+@Import(PreferenceLocalCache.class)
 public class ConsumptionDeltaAllocatorTest extends TestConfig {
     @Autowired
     private PreferenceLocalCache preferenceLocalCache;
