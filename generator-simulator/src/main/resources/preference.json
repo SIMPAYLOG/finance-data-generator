@@ -1,0 +1,412 @@
+{
+  "1": {
+    "id": 1,
+    "name": "소비지향형",
+    "totalConsumeRange": {
+      "min": 10,
+      "max": 30
+    },
+    "tagConsumeRange": [
+      {
+        "type": "groceriesNonAlcoholicBeverages",
+        "min": 1,
+        "max": 5,
+        "typeKor": "식료품 · 비주류"
+      },
+      {
+        "type": "alcoholicBeveragesTobacco",
+        "min": 1,
+        "max": 4,
+        "typeKor": "주류 · 담배"
+      },
+      {
+        "type": "clothingFootwear",
+        "min": 1,
+        "max": 4,
+        "typeKor": "의류 · 신발"
+      },
+      {
+        "type": "housingUtilitiesFuel",
+        "min": 0,
+        "max": 2,
+        "typeKor": "주거 · 수도 · 광열"
+      },
+      {
+        "type": "householdGoodsServices",
+        "min": 0,
+        "max": 3,
+        "typeKor": "가정용품 · 가사서비스"
+      },
+      {
+        "type": "health",
+        "min": 0,
+        "max": 2,
+        "typeKor": "보건"
+      },
+      {
+        "type": "transportation",
+        "min": 0,
+        "max": 3,
+        "typeKor": "교통 · 운송"
+      },
+      {
+        "type": "communication",
+        "min": 0,
+        "max": 2,
+        "typeKor": "정보통신"
+      },
+      {
+        "type": "recreationCulture",
+        "min": 1,
+        "max": 4,
+        "typeKor": "오락 · 문화"
+      },
+      {
+        "type": "education",
+        "min": 0,
+        "max": 3,
+        "typeKor": "교육"
+      },
+      {
+        "type": "foodAccommodation",
+        "min": 1,
+        "max": 5,
+        "typeKor": "음식 · 숙박"
+      },
+      {
+        "type": "otherGoodsServices",
+        "min": 1,
+        "max": 4,
+        "typeKor": "기타상품 · 서비스"
+      }
+    ]
+  },
+  "2": {
+    "id": 2,
+    "name": "저축지향형",
+    "totalConsumeRange": {
+      "min": -30,
+      "max": -10
+    },
+    "tagConsumeRange": [
+      {
+        "type": "groceriesNonAlcoholicBeverages",
+        "min": -5,
+        "max": -3,
+        "typeKor": "식료품 · 비주류"
+      },
+      {
+        "type": "alcoholicBeveragesTobacco",
+        "min": -3,
+        "max": -1,
+        "typeKor": "주류 · 담배"
+      },
+      {
+        "type": "clothingFootwear",
+        "min": -5,
+        "max": -2,
+        "typeKor": "의류 · 신발"
+      },
+      {
+        "type": "housingUtilitiesFuel",
+        "min": -3,
+        "max": 0,
+        "typeKor": "주거 · 수도 · 광열"
+      },
+      {
+        "type": "householdGoodsServices",
+        "min": -3,
+        "max": -1,
+        "typeKor": "가정용품 · 가사서비스"
+      },
+      {
+        "type": "health",
+        "min": -2,
+        "max": 0,
+        "typeKor": "보건"
+      },
+      {
+        "type": "transportation",
+        "min": -4,
+        "max": -1,
+        "typeKor": "교통 · 운송"
+      },
+      {
+        "type": "communication",
+        "min": -2,
+        "max": 0,
+        "typeKor": "정보통신"
+      },
+      {
+        "type": "recreationCulture",
+        "min": -4,
+        "max": -1,
+        "typeKor": "오락 · 문화"
+      },
+      {
+        "type": "education",
+        "min": -3,
+        "max": -1,
+        "typeKor": "교육"
+      },
+      {
+        "type": "foodAccommodation",
+        "min": -5,
+        "max": -2,
+        "typeKor": "음식 · 숙박"
+      },
+      {
+        "type": "otherGoodsServices",
+        "min": -3,
+        "max": -1,
+        "typeKor": "기타상품 · 서비스"
+      }
+    ]
+  },
+  "3": {
+    "id": 3,
+    "name": "무계획형",
+    "totalConsumeRange": {
+      "min": -5,
+      "max": 5
+    },
+    "tagConsumeRange": [
+      {
+        "type": "groceriesNonAlcoholicBeverages",
+        "min": -1,
+        "max": 2,
+        "typeKor": "식료품 · 비주류"
+      },
+      {
+        "type": "alcoholicBeveragesTobacco",
+        "min": -1,
+        "max": 2,
+        "typeKor": "주류 · 담배"
+      },
+      {
+        "type": "clothingFootwear",
+        "min": -2,
+        "max": 3,
+        "typeKor": "의류 · 신발"
+      },
+      {
+        "type": "housingUtilitiesFuel",
+        "min": -1,
+        "max": 1,
+        "typeKor": "주거 · 수도 · 광열"
+      },
+      {
+        "type": "householdGoodsServices",
+        "min": -1,
+        "max": 2,
+        "typeKor": "가정용품 · 가사서비스"
+      },
+      {
+        "type": "health",
+        "min": -1,
+        "max": 1,
+        "typeKor": "보건"
+      },
+      {
+        "type": "transportation",
+        "min": -2,
+        "max": 2,
+        "typeKor": "교통 · 운송"
+      },
+      {
+        "type": "communication",
+        "min": -1,
+        "max": 1,
+        "typeKor": "정보통신"
+      },
+      {
+        "type": "recreationCulture",
+        "min": -4,
+        "max": 5,
+        "typeKor": "오락 · 문화"
+      },
+      {
+        "type": "education",
+        "min": -2,
+        "max": 2,
+        "typeKor": "교육"
+      },
+      {
+        "type": "foodAccommodation",
+        "min": -3,
+        "max": 3,
+        "typeKor": "음식 · 숙박"
+      },
+      {
+        "type": "otherGoodsServices",
+        "min": -2,
+        "max": 3,
+        "typeKor": "기타상품 · 서비스"
+      }
+    ]
+  },
+  "4": {
+    "id": 4,
+    "name": "투자지향형",
+    "totalConsumeRange": {
+      "min": 5,
+      "max": 20
+    },
+    "tagConsumeRange": [
+      {
+        "type": "groceriesNonAlcoholicBeverages",
+        "min": -1,
+        "max": 2,
+        "typeKor": "식료품 · 비주류"
+      },
+      {
+        "type": "alcoholicBeveragesTobacco",
+        "min": -2,
+        "max": 0,
+        "typeKor": "주류 · 담배"
+      },
+      {
+        "type": "clothingFootwear",
+        "min": -1,
+        "max": 1,
+        "typeKor": "의류 · 신발"
+      },
+      {
+        "type": "housingUtilitiesFuel",
+        "min": 0,
+        "max": 2,
+        "typeKor": "주거 · 수도 · 광열"
+      },
+      {
+        "type": "householdGoodsServices",
+        "min": 0,
+        "max": 1,
+        "typeKor": "가정용품 · 가사서비스"
+      },
+      {
+        "type": "health",
+        "min": 1,
+        "max": 2,
+        "typeKor": "보건"
+      },
+      {
+        "type": "transportation",
+        "min": 1,
+        "max": 4,
+        "typeKor": "교통 · 운송"
+      },
+      {
+        "type": "communication",
+        "min": 2,
+        "max": 5,
+        "typeKor": "정보통신"
+      },
+      {
+        "type": "recreationCulture",
+        "min": 0,
+        "max": 2,
+        "typeKor": "오락 · 문화"
+      },
+      {
+        "type": "education",
+        "min": 3,
+        "max": 6,
+        "typeKor": "교육"
+      },
+      {
+        "type": "foodAccommodation",
+        "min": 0,
+        "max": 3,
+        "typeKor": "음식 · 숙박"
+      },
+      {
+        "type": "otherGoodsServices",
+        "min": 0,
+        "max": 2,
+        "typeKor": "기타상품 · 서비스"
+      }
+    ]
+  },
+  "5": {
+    "id": 5,
+    "name": "안정추구형",
+    "totalConsumeRange": {
+      "min": -15,
+      "max": 5
+    },
+    "tagConsumeRange": [
+      {
+        "type": "groceriesNonAlcoholicBeverages",
+        "min": 0,
+        "max": 2,
+        "typeKor": "식료품 · 비주류"
+      },
+      {
+        "type": "alcoholicBeveragesTobacco",
+        "min": -3,
+        "max": -1,
+        "typeKor": "주류 · 담배"
+      },
+      {
+        "type": "clothingFootwear",
+        "min": -3,
+        "max": 0,
+        "typeKor": "의류 · 신발"
+      },
+      {
+        "type": "housingUtilitiesFuel",
+        "min": 1,
+        "max": 3,
+        "typeKor": "주거 · 수도 · 광열"
+      },
+      {
+        "type": "householdGoodsServices",
+        "min": -1,
+        "max": 1,
+        "typeKor": "가정용품 · 가사서비스"
+      },
+      {
+        "type": "health",
+        "min": 1,
+        "max": 3,
+        "typeKor": "보건"
+      },
+      {
+        "type": "transportation",
+        "min": -2,
+        "max": 1,
+        "typeKor": "교통 · 운송"
+      },
+      {
+        "type": "communication",
+        "min": -1,
+        "max": 1,
+        "typeKor": "정보통신"
+      },
+      {
+        "type": "recreationCulture",
+        "min": -2,
+        "max": 0,
+        "typeKor": "오락 · 문화"
+      },
+      {
+        "type": "education",
+        "min": -1,
+        "max": 1,
+        "typeKor": "교육"
+      },
+      {
+        "type": "foodAccommodation",
+        "min": -3,
+        "max": 0,
+        "typeKor": "음식 · 숙박"
+      },
+      {
+        "type": "otherGoodsServices",
+        "min": -2,
+        "max": 0,
+        "typeKor": "기타상품 · 서비스"
+      }
+    ]
+  }
+}
