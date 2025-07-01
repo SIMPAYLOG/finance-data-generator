@@ -1,6 +1,6 @@
 package com.simpaylog.generatorcore.entity;
 
-import com.simpaylog.generatorcore.enums.TransactionFrequencyPattern;
+import com.simpaylog.generatorcore.enums.WageType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.ColumnTransformer;
@@ -12,12 +12,11 @@ import java.math.BigDecimal;
 @Table(name = "user_behavior_profiles")
 public class UserBehaviorProfile {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private Integer preferenceId;
     @Enumerated(EnumType.STRING)
-    private TransactionFrequencyPattern transactionFrequencyPattern;
-    private Integer incomeDayOfMonth;
+    private WageType wageType;
     private Integer autoTransferDayOfMonth;
     @Column(columnDefinition = "jsonb")
     @ColumnTransformer(write = "?::jsonb")
@@ -28,17 +27,16 @@ public class UserBehaviorProfile {
     protected UserBehaviorProfile() {
     }
 
-    protected UserBehaviorProfile( BigDecimal incomeValue, int preferenceId, int incomeDayOfMonth, int autoTransferDayOfMonth) {
+    protected UserBehaviorProfile( BigDecimal incomeValue, int preferenceId, WageType wageType, int autoTransferDayOfMonth) {
         this.preferenceId = preferenceId;
-        this.transactionFrequencyPattern = TransactionFrequencyPattern.REGULAR;
-        this.incomeDayOfMonth = incomeDayOfMonth;
+        this.wageType = wageType;
         this.incomeValue = incomeValue;
         this.autoTransferDayOfMonth = autoTransferDayOfMonth;
-        this.activeHours = "\"hello\"";
+        this.activeHours = "{\"min\": 7, \"max\": 23}";
         this.assetValue = BigDecimal.ZERO;
     }
 
-    public static UserBehaviorProfile of(BigDecimal incomeValue, int preferenceId, int incomeDayOfMonth, int autoTransferDayOfMonth) {
-        return new UserBehaviorProfile(incomeValue, preferenceId, incomeDayOfMonth, autoTransferDayOfMonth);
+    public static UserBehaviorProfile of(BigDecimal incomeValue, int preferenceId, WageType wageType, int autoTransferDayOfMonth) {
+        return new UserBehaviorProfile(incomeValue, preferenceId, wageType, autoTransferDayOfMonth);
     }
 }

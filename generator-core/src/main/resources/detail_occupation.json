@@ -1,0 +1,3012 @@
+{
+  "A": {
+    "occupationCode": 1,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "농장 일용직",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "비닐하우스 보조 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "임산물 채취 보조원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "임산물 채취자",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "농장 단기 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "과수 수확 보조원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "농기계 운전 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "벼 수확 담당자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "노지작물 운반원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "논벼 재배자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "노지채소 재배자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "과수원 재배 보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "과수 재배자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "농산물 유통 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "축산물 처리 인력",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "시설채소 재배자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "축산업 종사자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농장 생산 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "농업기술 컨설턴트",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농산물 품질관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "축사 운영 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "농업협동조합 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농산물 가공 업체 운영자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형농장 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "농업 전문경영인",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "스마트팜 기술 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농기계 유통업체 대표",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "스마트팜 대표",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농산물 수출업체 대표",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "농업 스타트업 CEO",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "B": {
+    "occupationCode": 2,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "광산 갱내 운반 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "수작업 광석 채취 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "채석장 청소 인력",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "시추 현장 인부",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "야외 발파 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "채굴 도우미",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "시추 장비 조작 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "발파 준비 작업자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "광석 분류 및 적재 인력",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "석탄 채굴원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "광산 기계 조작원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "지하 굴착 장비 운전원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "광산 물류 운반원",
+            "wageType": "BI_WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "지하 자원 추출 기계기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "광산 시설 정비 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "시추 현장 안전관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "광업 설비 유지보수 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지하 광산 운영 주임",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "시추 품질 검사관",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "광산 개발 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지질 탐사 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "채굴공정 기술 컨설턴트",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "광산 프로젝트 총괄 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지질 분석 연구원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "자원탐사 팀 리더",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "자원 개발 프로젝트 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지하광산 운영 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "자원탐사 기업 기술이사",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "자원개발 대기업 임원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 광산 투자사 대표",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에너지 자원개발 그룹 CEO",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "C": {
+    "occupationCode": 3,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "단순 포장 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "제품 검수 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "청소 및 생산 보조 인력",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "부품 조립 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "식품 생산 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "라벨 부착 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "단순조립 생산보조",
+            "wageType": "BI_WEEKLY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "프레스 조작 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "금속 부품 검사원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "조립라인 생산직",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "전자기기 조립 기술자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "플라스틱 사출 오퍼레이터",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "식품 가공기 조작원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "CNC 선반 조작원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기계 가공 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "용접 기능공",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "기계 설비 유지보수기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "자동화설비 운영자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생산 공정 기술자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "품질관리 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생산계획 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "공정개선 연구원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "제조업 생산관리팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "품질보증 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "R&D 개발 엔지니어",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "생산본부 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "제조설비 총괄 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생산기술 고문",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "대기업 제조공장 공장장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "제조업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 생산법인 대표",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "D": {
+    "occupationCode": 4,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "전기 시설 청소 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "발전소 보조 인부",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "에너지 설비 단순 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "전기 배선 설치 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "가스 배관 설치 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "보일러 유지 보조원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "전기 계기 검침원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "소형 발전설비 점검 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "열공급 설비 운전 보조원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "전기 설비 운전원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "가스 생산 장비 조작원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "중형 보일러 조작원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "전력설비 유지보수 기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "가스 공급 설비 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에너지 저장장치 운영자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "에너지설비 공정 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "스마트그리드 설비 운영자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전기 발전소 중간 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "에너지 관리 시스템 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전기 안전 기술 컨설턴트",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전력 품질 분석 전문가",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "전력 공급 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "발전소 설비 기술 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에너지 기술 R&D 매니저",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "발전설비 운영 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에너지관리공단 부서장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전기설비 엔지니어링 책임자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "발전소 총괄 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국가 에너지 인프라 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "공기업 에너지부문 CEO",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "E":{
+    "occupationCode": 5,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "청소 및 하수관 보조 인부",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "폐기물 분리 선별 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "재활용품 수거원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "하수도 유지보수 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "재활용 센터 분류작업자",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "음식물 쓰레기 처리 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "폐기물 수거차량 운전원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "하수 처리장 현장근로자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "생활폐기물 수거 운반원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "재활용품 압축기 조작원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "슬러지 탈수 장비 운전원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "하수처리 설비 운영 보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "하수처리 설비 운전기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "폐기물 소각로 조작원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "재활용 시설 기술자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "정수장 설비 관리원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "슬러지 처리기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "하수처리 공정 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "재활용 분류 작업자",
+            "wageType": "BI_WEEKLY"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "정수장 품질관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "환경안전 컨설턴트",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에너지 회수 설비 엔지니어",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "하수처리장 공정 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "재활용 시설 운영 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "환경설비팀 팀장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "정수/하수 부문 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지자체 폐기물 처리 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "환경기초시설 운영 본부장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "지자체 환경국장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "환경공단 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "폐기물 처리 전문기업 CEO",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "F": {
+    "occupationCode": 6,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "건설현장 청소 인부",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "철거 작업 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "자재 운반 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "철근 조립 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "콘크리트 타설 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "비계 설치 보조 인부",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "건축 내장 목공",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "형틀목공 작업자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "도장 작업 인부",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "건설현장 장비 반장",
+            "wageType": "BI_WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "건설기계 조작원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "용접 기술 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "토공사 작업원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "전기배선 설치기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기계설비 시공기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건축 마감 기술자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "건축 시공 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "현장 안전 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설 품질 검사원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "건축 구조설계 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "토목설계 기술자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설 공정 관리 전문가",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "건축현장 소장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설공사 공무팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건축사업 기획 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "건설사업 부문 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설현장 총괄 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설기획 부서장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "종합건설사 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설 대기업 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건설 기술 법인 대표",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "G": {
+    "occupationCode": 7,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "편의점 야간 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "마트 진열 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "전단지 배포 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "슈퍼마켓 계산원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "매장 재고 정리 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "마트 시식행사 보조원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "편의점 점장 대행",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "중소형 매장 영업사원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "매장 배송/납품 기사",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "매장 운영 관리자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "상품 진열 및 프로모션 담당",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "영업 사원 (지역 담당)",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "소형 매장 점주",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "소매 영업 지원 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "도매 거래처 영업담당",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "온라인몰 상품 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "유통업체 품목 바이어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "도매 물류팀 실무자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "프랜차이즈 매장 슈퍼바이저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "도소매 영업기획 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "상품 소싱/마케팅 전문가",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "지점장 (대형마트)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지역 유통본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형유통사 영업부장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "국내 유통사업 총괄 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전국 가맹점 관리 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 유통사 전략 부문장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "유통 대기업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "프랜차이즈 본사 대표",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 소매유통 법인장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "H": {
+    "occupationCode": 8,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "이삿짐 운반 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "화물 분류작업 인부",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "택배 상하차 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "택배 배송 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "물류센터 포장 작업원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "퀵서비스 배달 기사",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "소형 화물차 운전기사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "도심 배달 라이더",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "지게차 운전원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "택배 상하차 아르바이트",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "버스 정비 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "배송 루트 기사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "물류센터 입출고 담당자",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "장거리 화물차 운전자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "버스 운전기사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "물류팀 현장 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "물류센터 운영 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "운송 서비스 기획 담당",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "차량 배차 및 관제 책임자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "운송 물류 시스템 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "운송 안전교육 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "복합물류 운영 매니저",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "지점장 (운송 물류)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "물류 운영 부문 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "운송서비스 총괄 매니저",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "운송 물류 법인 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전국물류 운영 총책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "물류 전략기획 본부장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "운송 물류 대기업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 물류 법인장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "종합물류 그룹 회장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "I": {
+    "occupationCode": 9,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "주방 보조 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "홀서빙 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "청소 및 식기세척 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "분식점 주방 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "카페 바리스타 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "모텔 객실 정리 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "레스토랑 서빙 직원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "패스트푸드 매장 직원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "소형 호텔 청소 스태프",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "창고 상하차 일용직",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "주방장 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "중소형 식당 주방장",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "숙박업소 프런트 직원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "카페 점장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "뷔페 운영 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "숙박 서비스 관리 담당",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "체인점 매장 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "외식업체 인사/교육 담당",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "호텔 객실관리 책임자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "외식 브랜드 기획자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "호텔 F&B 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "프랜차이즈 운영 매니저",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "외식사업 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "호텔 총지배인",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 리조트 운영 총괄",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "외식법인 영업이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "호텔 체인 사업기획이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "숙박 프랜차이즈 본부장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "대형 외식그룹 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국내 호텔그룹 대표이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국제 리조트 법인장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "J": {
+    "occupationCode": 10,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "PC방 알바",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "스마트폰 매장 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "IT센터 청소·단기 업무 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "PC 수리 기사 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "통신기기 매장 직원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "정보통신 장비 운반 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "IT 고객센터 상담원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "컴퓨터 조립 기사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "인터넷 설치 기사",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "전산실 유지보수 직원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "정보통신 인프라 기술자",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "통신케이블 설치 기술자",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "프론트엔드 개발자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "백엔드 개발자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "네트워크 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "식당 보조 조리사",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "데이터베이스 관리자(DBA)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "클라우드 인프라 엔지니어",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보안 솔루션 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "웹디자인 프리랜서",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "정보통신 PM",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기술기획자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "IT 서비스 운영 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "IT 기업 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "플랫폼 서비스 총괄",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "시스템 통합 컨설턴트",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "CTO(최고기술책임자)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "정보보호최고책임자(CISO)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 서비스 운영 총괄",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "IT 기업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "플랫폼 그룹 회장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 ICT 기업 대표",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "K": {
+    "occupationCode": 11,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "보험 판촉 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "은행 창구 보조 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "금융 마케팅 자료 정리 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "보험 상품 홍보원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "카드 모집인",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "신용대출 상담사",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "텔러(창구직원)",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험설계사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "은행 콜센터 상담원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "영업점 고객상담원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험 심사 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "카드사 고객 응대 직원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "지점 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험지점 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대출 심사 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "리스크 분석가",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "자산관리사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험 상품 기획자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "신용평가사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험 언더라이터",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "금융기관 마케팅 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "은행 부지점장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "자산운용사 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험사 전략기획 담당",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "은행 지점장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험사 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "신용카드사 임원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "금융지주 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험사 대표이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국제투자은행 고위 임원",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "L": {
+    "occupationCode": 12,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "전단지 배포 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "오피스텔 관리 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "공인중개사 사무소 청소원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "임대 안내 알바",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "중개사무소 사무보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "계약서 출력 및 정리 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "부동산 사무직",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "임대 관리 사원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "부동산 고객 응대 직원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "중소형 부동산 중개보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "전세 관리 보조 담당",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "건물 임대관리 보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "공인중개사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "상가 임대 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "소형 건물 자산 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "부동산 개발 보조 PM",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건물 리노베이션 실무자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "부동산 자산운용 사원",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "오피스 임대 전략기획자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "부동산 리서치 애널리스트",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "중형 자산 매입/매각 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보험 설계 컨설턴트",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "부동산 자산운용팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "부동산 투자 심사역",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "복합 부동산 운영 책임자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "부동산 리츠 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 부동산 개발사 임원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 자산운용사 부사장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "부동산 그룹 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 리츠 펀드 대표",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국내 부동산 투자법인 회장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "M": {
+    "occupationCode": 13,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "실험실 정리 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "문서 스캔 및 정리 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "현장 조사 도우미",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "데이터 수집 조사원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "리서치 보조원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "통계 입력 보조",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "실험실 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "기술 사무 지원직",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "기초 리서치 분석보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "설계지원 사무직",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "현장 계측 보조원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "기술 문서 작성 담당자",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "기술연구원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "산업기술 설계자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "엔지니어링 사무직",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "특허출원 담당자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기술평가사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "R&D 중간 관리자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "연구개발팀 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "과학기술 정책 분석가",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기술 컨설턴트",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "기술기획실장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전문 엔지니어링 디렉터",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "R&D 센터장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "기술기업 부사장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국책 연구소 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기술 스타트업 CTO",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "글로벌 R&D 총괄",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "기술 컨설팅 그룹 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "공공기술연구기관 원장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "N": {
+    "occupationCode": 14,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "건물 청소 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "사무실 정리 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "택배 분류 보조원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "경비 보조 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "건물 주차 안내원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "사무보조 아르바이트",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "건물 청소 및 시설 관리원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "시설 보안 요원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "사무실 지원 스태프",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "임대 계약 관리 지원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "시설팀 운영 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "비서실 지원직",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "건물 유지보수 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "임대 관리 사무직",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보안 및 안전관리 실무자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "시설운영 관리 매니저",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "사무지원팀 주임",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "임대 지원팀 선임",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "사업지원 부서 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "건물 관리 총괄",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "임대운영 기획담당",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "사업지원본부 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "부동산 임대운영 관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "시설관리팀장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "사업시설 운영 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "임대서비스 회사 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "B2B 관리사업 총괄",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "시설관리 전문기업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "임대지원 대기업 경영진",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "사업지원 전문 그룹 회장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "P": {
+    "occupationCode": 15,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "학원 청소 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "교재 배포 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "입시 설명회 안내원",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "보조교사",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "교육자료 정리 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "강의실 운영 도우미",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "유치원 교사 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "방과후 수업 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "초등 학습지도 보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "학습관리 튜터",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "소형 학원 강사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "교육 행정 보조",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "중등학원 전임강사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "초등 교육연구원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "교육기관 행정직",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "고등학원 대표 강사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "교육 콘텐츠 개발자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "공교육 교육행정직",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "대형 학원 원장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "교과과정 연구원",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "교육기획팀 팀장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "교육 콘텐츠 스타트업 CTO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "사교육 그룹 부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국공립 교육기관 책임자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "프랜차이즈 교육그룹 이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대학 입시전략실장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "에듀테크 기업 부사장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "교육 스타트업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "교육전문가 그룹 회장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "국가 교육개발원 원장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "Q": {
+    "occupationCode": 16,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "요양보호사 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "병원 청소 인력",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "의료시설 안내 도우미",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "간병인",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "요양원 식사 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "의료센터 물품 정리",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "사회복지시설 생활지도원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "병동 보조 인력",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "재활보조 요원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "요양병원 간호조무사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "복지센터 프로그램 운영보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "정신보건시설 요원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "보건소 행정직",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "사회복지관 실무자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지역 아동센터 생활복지사",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "요양병원 책임간호사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "사회복지사 선임",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "의료기록 관리주임",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "공공의료기관 중간관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "장기요양기관 운영팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지역복지 정책담당자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "종합병원 간호과장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보건복지서비스 기획실장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "노인복지재단 실장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "복지법인 상임이사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "보건복지부 정책관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "의료재단 부원장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "보건복지공단 이사장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형병원 병원장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "복지서비스 기업 CEO",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "R": {
+    "occupationCode": 17,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "공연장 청소 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "문화행사 진행 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "스포츠시설 청소 인력",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "전단 배포 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "놀이공원 아르바이트",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "문화센터 보조 인력",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "실내체육관 운영보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "지역 예술강사 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "레저시설 안내원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "헬스장 트레이너 보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "지역 문화예술 강사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "체험관 해설사",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "실용음악 강사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생활체육 강사",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "스포츠센터 트레이너",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "문화센터 프로그램 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "스포츠센터 운영관리자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지자체 문화기획 담당자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "문화기획자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "예술단체 실장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생활체육회 간부",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "문화재단 운영 책임자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 스포츠시설 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "예술교육기업 운영자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "공공예술정책 기획자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "프로스포츠단 단장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "예술기획회사 부사장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "문화예술기업 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "스포츠재단 이사장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "문화체육관광부 고위직",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  },
+  "S": {
+    "occupationCode": 18,
+    "subOccupations": {
+      "1": {
+        "jobs": [
+          {
+            "jobTitle": "가전제품 수리 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "세탁소 배달원",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "이발소 보조 인력",
+            "wageType": "DAILY"
+          }
+        ]
+      },
+      "2": {
+        "jobs": [
+          {
+            "jobTitle": "자전거 수리공 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "건물 유지보수 보조",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "개인 서비스업 보조직",
+            "wageType": "DAILY"
+          },
+          {
+            "jobTitle": "가정 방문 수리 기사",
+            "wageType": "RANDOM"
+          }
+        ]
+      },
+      "3": {
+        "jobs": [
+          {
+            "jobTitle": "중고가전 수리원",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "미용실 어시스턴트",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "생활편의 출장서비스 인력",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "4": {
+        "jobs": [
+          {
+            "jobTitle": "가정용 전자제품 수리기사",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "협회 사무보조",
+            "wageType": "WEEKLY"
+          },
+          {
+            "jobTitle": "이사 서비스 팀원",
+            "wageType": "WEEKLY"
+          }
+        ]
+      },
+      "5": {
+        "jobs": [
+          {
+            "jobTitle": "수리 서비스 센터 사무직",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "미용실 디자이너",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생활서비스 매장 운영자",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "6": {
+        "jobs": [
+          {
+            "jobTitle": "수리업체 팀장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "개인서비스 창업자",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "지역협회 운영담당",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "7": {
+        "jobs": [
+          {
+            "jobTitle": "협회 사무국장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "프랜차이즈 본사 교육담당",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "서비스업 매장 총괄",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "8": {
+        "jobs": [
+          {
+            "jobTitle": "업종별 조합 본부장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전국단위 협회 부이사장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 수리업체 지점장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "9": {
+        "jobs": [
+          {
+            "jobTitle": "중앙협회 사무총장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "대형 프랜차이즈 COO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "전문수리업체 부사장",
+            "wageType": "REGULAR"
+          }
+        ]
+      },
+      "10": {
+        "jobs": [
+          {
+            "jobTitle": "전국단체 연합회 이사장",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "글로벌 서비스 프랜차이즈 CEO",
+            "wageType": "REGULAR"
+          },
+          {
+            "jobTitle": "생활편의서비스 기업 회장",
+            "wageType": "REGULAR"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,13 +1,13 @@
-package com.simpaylog.generatorapi;
+package com.simpaylog.generatorcore.service;
 
-import com.simpaylog.generatorapi.configuration.OccupationalLocalCache;
-import com.simpaylog.generatorapi.dto.OccupationInfos;
+import com.simpaylog.generatorcore.TestConfig;
+import com.simpaylog.generatorcore.cache.OccupationLocalCache;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -16,16 +16,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-import static com.simpaylog.generatorapi.utils.MultinomialAllocator.normalize;
-import static com.simpaylog.generatorapi.utils.MultinomialAllocator.sampleMultinomial;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.simpaylog.generatorcore.utils.MultinomialAllocator.normalize;
+import static com.simpaylog.generatorcore.utils.MultinomialAllocator.sampleMultinomial;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-@Import(OccupationalLocalCache.class)
-public class UserGeneratorTest extends TestConfig {
+class UserGeneratorTest extends TestConfig {
 
     @Autowired
-    OccupationalLocalCache occupationalLocalCache;
+    OccupationLocalCache occupationLocalCache;
 
     @RepeatedTest(10)
     void 비율이_주어졌을_때_비율만큼_무작위로_사용자를_배치한다() {
@@ -50,7 +48,7 @@ public class UserGeneratorTest extends TestConfig {
     void 직업코드가_주어지고_직업사용자풀이_정해졌을때_연령별_비율만큼_무작위로_사용자를_배치한다(int code) {
         // Given
         int totalCnt = 97;
-        OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
+        OccupationInfos.Occupation occupation = occupationLocalCache.get(code);
         double[] ageGroupRatio = occupation.ageGroupInfo()
                 .stream()
                 .mapToDouble(OccupationInfos.AgeGroupInfo::ratio)
@@ -74,7 +72,7 @@ public class UserGeneratorTest extends TestConfig {
         int code = 2;
         int[] totalCntByAge = {0, 10, 12, 37, 25, 13, 0};
         char[] gender = {'M', 'F'};
-        OccupationInfos.Occupation occupation = occupationalLocalCache.get(code);
+        OccupationInfos.Occupation occupation = occupationLocalCache.get(code);
         List<User> result = new ArrayList<>();
 
         // When & Then
@@ -123,5 +121,4 @@ public class UserGeneratorTest extends TestConfig {
                     '}';
         }
     }
-
 }

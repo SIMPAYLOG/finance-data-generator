@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.dto;
+package com.simpaylog.generatorcore.cache.dto;
 
 import java.math.BigDecimal;
 
@@ -17,8 +17,8 @@ public record IncomeLevelInfo(
         BigDecimal education,
         BigDecimal foodAccommodation,
         BigDecimal otherGoodsServices,
-        BigDecimal consumption_expenditure,
-        BigDecimal nonConsumption_expenditure,
+        BigDecimal consumptionExpenditure,
+        BigDecimal nonConsumptionExpenditure,
         BigDecimal surplusRatePct,
         BigDecimal avgPropensityToConsumePct
 ) {

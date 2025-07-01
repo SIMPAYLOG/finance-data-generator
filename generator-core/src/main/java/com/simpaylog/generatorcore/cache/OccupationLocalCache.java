@@ -1,8 +1,8 @@
-package com.simpaylog.generatorapi.configuration;
+package com.simpaylog.generatorcore.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorapi.dto.OccupationInfos;
-import com.simpaylog.generatorapi.dto.OccupationInfos.Occupation;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos.*;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Getter
 @Component
-public class OccupationalLocalCache {
+public class OccupationLocalCache {
     private String lastUpdated;
     private double[] ratios;
     private final Map<Integer, Occupation> cache = new ConcurrentHashMap<>();

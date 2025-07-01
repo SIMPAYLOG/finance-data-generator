@@ -21,6 +21,9 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        jdbc:
+          batch_size: 100
+        order_inserts: true
         format_sql: true
     show-sql: true
 
