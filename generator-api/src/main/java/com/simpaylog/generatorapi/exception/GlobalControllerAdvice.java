@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestControllerAdvice
@@ -30,7 +29,6 @@ public class GlobalControllerAdvice {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
         return Response.clientError(String.valueOf(errors));
-        //return ResponseEntity.badRequest().body(Map.of("errors", errors));
     }
 
     @ExceptionHandler(CoreException.class)
