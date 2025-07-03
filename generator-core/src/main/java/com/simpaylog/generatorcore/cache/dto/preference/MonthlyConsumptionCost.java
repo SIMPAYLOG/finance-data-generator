@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorcore.cache.dto.preference;
 
 import java.util.List;
 
