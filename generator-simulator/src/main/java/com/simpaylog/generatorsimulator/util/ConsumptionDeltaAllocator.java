@@ -1,10 +1,10 @@
 package com.simpaylog.generatorsimulator.util;
 
 import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
-import com.simpaylog.generatorsimulator.dto.ConsumptionDelta;
-import com.simpaylog.generatorsimulator.dto.PreferenceInfos;
-import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost;
-import com.simpaylog.generatorsimulator.dto.MonthlyConsumptionCost.DailyConsumptionCost;
+import com.simpaylog.generatorcore.cache.dto.preference.ConsumptionDelta;
+import com.simpaylog.generatorcore.cache.dto.preference.PreferenceInfos;
+import com.simpaylog.generatorcore.cache.dto.preference.MonthlyConsumptionCost;
+import com.simpaylog.generatorcore.cache.dto.preference.MonthlyConsumptionCost.DailyConsumptionCost;
 
 import java.time.YearMonth;
 import java.util.*;

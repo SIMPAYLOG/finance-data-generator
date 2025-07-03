@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.dto.response;
+package com.simpaylog.generatorapi.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorcore.cache.dto.preference;
 
 public record ConsumptionDelta (
     int totalDelta,
