@@ -17,6 +17,7 @@ public class User {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_id")
     private UserBehaviorProfile userBehaviorProfile;
+    private String name;
     private Integer decile;
     private Integer age;
     @Enumerated(EnumType.STRING)
@@ -25,6 +26,7 @@ public class User {
     private int jobNumber;
     private int occupationCode;
     private String occupationName;
+    private Integer conditionId;
 
     protected User() {
     }

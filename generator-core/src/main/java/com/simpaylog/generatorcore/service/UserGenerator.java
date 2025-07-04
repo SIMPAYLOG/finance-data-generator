@@ -4,14 +4,13 @@ import com.simpaylog.generatorcore.cache.DetailOccupationLocalCache;
 import com.simpaylog.generatorcore.cache.IncomeLevelLocalCache;
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
-import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.Job;
-import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.SubOccupation;
-import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.AssetRange;
-import com.simpaylog.generatorcore.cache.dto.OccupationInfos.AgeGroupInfo;
-import com.simpaylog.generatorcore.cache.dto.OccupationInfos.Occupation;
+import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.*;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.*;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.UserBehaviorProfile;
 import com.simpaylog.generatorcore.enums.Gender;
+import com.simpaylog.generatorcore.utils.NameUtil;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.service.dto.UserGenerationCondition;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +35,7 @@ public class UserGenerator {
     private final DetailOccupationLocalCache detailOccupationLocalCache;
     private final PreferenceLocalCache preferenceLocalCache;
     private final Random random = new Random();
+    private final NameUtil nameUtil;
 
     public List<User> generateUserPool(UserGenerationCondition condition) {
         List<User> userPool = new ArrayList<>();
