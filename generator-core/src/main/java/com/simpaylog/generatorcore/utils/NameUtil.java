@@ -18,7 +18,7 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class NameUtil {
     private final Random random = new Random();
-    private HashMap<Character, HashMap<Integer, ArrayList<String>>> names = new HashMap<>();
+    private final HashMap<Character, HashMap<Integer, ArrayList<String>>> names = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -46,18 +46,9 @@ public class NameUtil {
         }
     }
 
-    public String getRandomName(char ch, int age) {
-        HashMap<Integer, ArrayList<String>> ageMap = names.get(ch);
-
-        if (ageMap == null) {
-            return "이수현";
-        }
-        ArrayList<String> nameList = ageMap.get(age);
-
-        if (nameList == null || nameList.isEmpty()) {
-            return "이수현";
-        }
-
+    public String getRandomName(char gender, int ageGroup) {
+        HashMap<Integer, ArrayList<String>> ageMap = names.get(gender);
+        ArrayList<String> nameList = ageMap.get(ageGroup);
         int randomIndex = random.nextInt(nameList.size());
 
         return nameList.get(randomIndex);

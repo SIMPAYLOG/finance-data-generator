@@ -5,9 +5,7 @@ import com.simpaylog.generatorapi.dto.request.SimulationStartRequestDto;
 import com.simpaylog.generatorapi.dto.request.UserGenerationConditionRequestDto;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.service.UserService;
-import com.simpaylog.generatorcore.service.dto.UserGenerationCondition;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDate;

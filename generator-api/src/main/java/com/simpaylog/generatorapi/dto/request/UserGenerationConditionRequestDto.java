@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.dto.request;
 
 import com.simpaylog.generatorapi.validator.NumericOrMix;
-import com.simpaylog.generatorcore.service.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
@@ -19,8 +19,9 @@ public record UserGenerationConditionRequestDto(
         @NumericOrMix(message = "직업군은 숫자 또는 MIX여야 합니다.")
         String occupationCode
 ) {
-    public static UserGenerationCondition toCore(UserGenerationConditionRequestDto dto) {
+    public static UserGenerationCondition toCore(UserGenerationConditionRequestDto dto, int id) {
         return new UserGenerationCondition(
+                id,
                 dto.userCount(),
                 dto.preferenceId(),
                 dto.ageGroup(),

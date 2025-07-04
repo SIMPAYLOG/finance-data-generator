@@ -21,7 +21,7 @@ public class SimulationService {
         // TODO: 비동기 처리 모듈과 연결하여 이후 작업 필요
         List<User> result = new ArrayList<>();
         for (UserGenerationConditionRequestDto dto : request.conditions()) {
-            result.addAll(userService.generateUser(UserGenerationConditionRequestDto.toCore(dto)));
+            result.addAll(userService.generateUser(UserGenerationConditionRequestDto.toCore(dto, 1)));
         }
         userService.createUser(result);
     }
