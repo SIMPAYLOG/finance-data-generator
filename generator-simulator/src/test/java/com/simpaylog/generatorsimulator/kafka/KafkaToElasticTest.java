@@ -14,22 +14,12 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb",  // H2 임시 메모리 DB
-        "spring.datasource.driver-class-name=org.h2.Driver",
-        "spring.datasource.username=sa",
-        "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=none",  // Hibernate가 테이블 생성 안함
-        "spring.sql.init.mode=never",          // SQL 스크립트(schema.sql 등) 실행 안함
-        "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect"
-})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class KafkaToElasticTest extends TestConfig {
 

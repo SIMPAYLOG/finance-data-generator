@@ -7,9 +7,3 @@ services:
       - xpack.security.enabled=false
     ports:
       - "9200:9200"
-    networks:
-      - kafka-net
-
-networks:
-  kafka-net:
-    external: true

@@ -81,4 +81,3 @@ services:
 
 networks:
   kafka-net:
-    external: true
