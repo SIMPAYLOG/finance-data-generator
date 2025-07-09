@@ -2,7 +2,7 @@ package com.simpaylog.generatorcore.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.cache.dto.preference.PreferenceInfos;
+import com.simpaylog.generatorcore.cache.dto.preference.PreferenceInfo;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Component
 public class PreferenceLocalCache {
-    private final Map<Integer, PreferenceInfos> cache = new ConcurrentHashMap<>();
+    private final Map<Integer, PreferenceInfo> cache = new ConcurrentHashMap<>();
 
-    public PreferenceInfos get(int id){
+    public PreferenceInfo get(int id){
         return cache.get(id);
     }
 
-    public Map<Integer, PreferenceInfos> getAll() {
+    public Map<Integer, PreferenceInfo> getAll() {
         return cache;
     }
 
