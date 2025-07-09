@@ -2,7 +2,7 @@ package com.simpaylog.generatorcore.cache.dto.preference;
 
 import java.math.BigDecimal;
 
-public record ConsumptionDeltas(
+public record ConsumptionDelta(
     BigDecimal totalDelta, //실제 변화량 표기(100% -> 125%가 됐다면 해당 값은 25)
     BigDecimal groceriesNonAlcoholicBeverages,
     BigDecimal alcoholicBeveragesTobacco,

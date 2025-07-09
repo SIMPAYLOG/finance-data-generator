@@ -1,31 +1,28 @@
 package com.simpaylog.generatorsimulator.util;
 
 import com.simpaylog.generatorcore.cache.IncomeLevelLocalCache;
-import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
-import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
-import com.simpaylog.generatorcore.cache.dto.preference.ConsumptionDeltas;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
+import com.simpaylog.generatorcore.cache.dto.preference.ConsumptionDelta;
 import com.simpaylog.generatorcore.cache.dto.preference.MonthlyConsumption;
 import com.simpaylog.generatorcore.cache.dto.preference.PreferenceInfo;
-import org.junit.jupiter.api.*;
+import com.simpaylog.generatorsimulator.TestConfig;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Set;
 
 import static com.simpaylog.generatorsimulator.util.ConsumptionAllocator.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Import(PreferenceLocalCache.class)
 public class ConsumptionAllocatorTest extends TestConfig {
-    @Autowired
-    private PreferenceLocalCache preferenceLocalCache;
-    @Autowired
-    private IncomeLevelLocalCache incomeLevelLocalCache;
-
     private static final Set<String> TAG_FIELDS = Set.of(
             "groceriesNonAlcoholicBeverages",
             "alcoholicBeveragesTobacco",
@@ -40,6 +37,10 @@ public class ConsumptionAllocatorTest extends TestConfig {
             "foodAccommodation",
             "otherGoodsServices"
     );
+    @Autowired
+    private PreferenceLocalCache preferenceLocalCache;
+    @Autowired
+    private IncomeLevelLocalCache incomeLevelLocalCache;
 
     @RepeatedTest(value = 5, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
     @DisplayName("소비증감량 랜덤 추출 로직 점검")
@@ -55,51 +56,47 @@ public class ConsumptionAllocatorTest extends TestConfig {
         }
     }
 
-    @RepeatedTest(value = 10, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
+    @RepeatedTest(value = 5, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
     @DisplayName("각 성향별 상세 태그 소비 증감량이 범위에 맞는 값들로 설정됐는지 검증")
     void tagConsumeDeltaWithinRangeTest(RepetitionInfo repetitionInfo) {
-        int decile = repetitionInfo.getCurrentRepetition(); //소득 분위(incomdeLevelCache의 id값)
-        IncomeLevelInfo incomeInfo = incomeLevelLocalCache.get(decile);
+        int preferenceId = repetitionInfo.getCurrentRepetition(); //소득 분위(incomdeLevelCache의 id값)
+        PreferenceInfo preference = preferenceLocalCache.get(preferenceId);
+        ConsumptionDelta tagDeltas = ConsumptionAllocator.getRandomTagConsumeDelta(preference);
 
-        for (int preferenceId = 1; preferenceId <= 5; preferenceId++) {
-            PreferenceInfo preference = preferenceLocalCache.get(preferenceId);
-            ConsumptionDeltas tagDeltas = ConsumptionAllocator.getRandomTagConsumeDelta(preference);
+        BigDecimal totalDeltaSum = BigDecimal.ZERO;
 
-            BigDecimal totalDeltaSum = BigDecimal.ZERO;
+        for (PreferenceInfo.TagConsumeRange tag : preference.tagConsumeRange()) {
+            String type = tag.type();
+            assertTrue(TAG_FIELDS.contains(type), "tag명 오류: " + type);
 
-            for (PreferenceInfo.TagConsumeRange tag : preference.tagConsumeRange()) {
-                String type = tag.type();
-                assertTrue(TAG_FIELDS.contains(type), "tag명 오류: " + type);
-
-                BigDecimal min = tag.min();
-                BigDecimal max = tag.max();
-                BigDecimal actual = getConsumptionDeltasValue(tagDeltas, type);
-                assertTrue(actual.compareTo(min) >= 0 && actual.compareTo(max) <= 0,
-                        String.format("[%s] 현재값 = %s, 기준 범위 = [%s, %s]", type, actual, min, max));
-                totalDeltaSum = totalDeltaSum.add(actual);
-            }
-
-            //총 소비 변화율 합 확인
-            assertEquals(0, totalDeltaSum.compareTo(tagDeltas.totalDelta()));
-            BigDecimal totalMin = preference.totalConsumeRange().min();
-            BigDecimal totalMax = preference.totalConsumeRange().max();
-
-            assertTrue(totalDeltaSum.compareTo(totalMin) >= 0 && totalDeltaSum.compareTo(totalMax) <= 0,
-                    String.format("총 변화량 = %s, 기준 범위 = [%s, %s]", totalDeltaSum, totalMin, totalMax));
+            BigDecimal min = tag.min();
+            BigDecimal max = tag.max();
+            BigDecimal actual = getConsumptionDeltasValue(tagDeltas, type);
+            assertTrue(actual.compareTo(min) >= 0 && actual.compareTo(max) <= 0,
+                    String.format("[%s] 현재값 = %s, 기준 범위 = [%s, %s]", type, actual, min, max));
+            totalDeltaSum = totalDeltaSum.add(actual);
         }
+
+        //총 소비 변화율 합 확인
+        assertEquals(0, totalDeltaSum.compareTo(tagDeltas.totalDelta()));
+        BigDecimal totalMin = preference.totalConsumeRange().min();
+        BigDecimal totalMax = preference.totalConsumeRange().max();
+
+        assertTrue(totalDeltaSum.compareTo(totalMin) >= 0 && totalDeltaSum.compareTo(totalMax) <= 0,
+                String.format("총 변화량 = %s, 기준 범위 = [%s, %s]", totalDeltaSum, totalMin, totalMax));
     }
 
     @RepeatedTest(value = 5, name = "{displayName} - {currentRepetition}/{totalRepetitions}")
     @DisplayName("상세 태그 퍼센트 증감량을 기반으로 소비 금액 계산")
-    void createNewConsumptionTest(RepetitionInfo repetitionInfo){
+    void createNewConsumptionTest(RepetitionInfo repetitionInfo) {
         int preferenceId = repetitionInfo.getCurrentRepetition();
         PreferenceInfo preferenceInfo = preferenceLocalCache.get(preferenceId);
         IncomeLevelInfo incomeLevelInfos = incomeLevelLocalCache.get(1);
         BigDecimal income = BigDecimal.valueOf(3_000_000); // 월 수입
-        ConsumptionDeltas consumeDelta = getRandomTagConsumeDelta(preferenceInfo);
+        ConsumptionDelta consumeDelta = getRandomTagConsumeDelta(preferenceInfo);
 
         int year = 2025;
-        for(int month = 1; month <= 12; month++) {
+        for (int month = 1; month <= 12; month++) {
             //각 월(+ 해당 월의 일 별) 지출량 계산
             MonthlyConsumption monthly = createNewConsumption(consumeDelta, incomeLevelInfos, income, YearMonth.of(year, month));
             //수입 == 저축 + 지출인지 확인

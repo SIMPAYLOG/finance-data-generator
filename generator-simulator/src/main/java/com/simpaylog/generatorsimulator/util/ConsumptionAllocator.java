@@ -1,7 +1,7 @@
 package com.simpaylog.generatorsimulator.util;
 
 import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo;
-import com.simpaylog.generatorcore.cache.dto.preference.ConsumptionDeltas;
+import com.simpaylog.generatorcore.cache.dto.preference.ConsumptionDelta;
 import com.simpaylog.generatorcore.cache.dto.preference.MonthlyConsumption;
 import com.simpaylog.generatorcore.cache.dto.preference.MonthlyConsumption.DailyConsumption;
 import com.simpaylog.generatorcore.cache.dto.preference.PreferenceInfo;
@@ -40,7 +40,7 @@ public class ConsumptionAllocator {
      * @param preferenceInfo 유저가 가진 성향의 소비지출 증감량 범위정보
      * @return result 유저의 소비지출 증감량 퍼센트를 담은 Map
      */
-    public static ConsumptionDeltas getRandomTagConsumeDelta(PreferenceInfo preferenceInfo) {
+    public static ConsumptionDelta getRandomTagConsumeDelta(PreferenceInfo preferenceInfo) {
         BigDecimal min = preferenceInfo.totalConsumeRange().min();
         BigDecimal max = preferenceInfo.totalConsumeRange().max();
         int MAX_RETRY = 100;
@@ -93,8 +93,8 @@ public class ConsumptionAllocator {
         return ThreadLocalRandom.current().nextInt(intMin, intMax + 1);
     }
 
-    private static ConsumptionDeltas buildConsumptionDelta(Map<String, BigDecimal> deltas, double totalDelta) {
-        return new ConsumptionDeltas(
+    private static ConsumptionDelta buildConsumptionDelta(Map<String, BigDecimal> deltas, double totalDelta) {
+        return new ConsumptionDelta(
                 BigDecimal.valueOf(totalDelta),
                 deltas.getOrDefault("groceriesNonAlcoholicBeverages", BigDecimal.ZERO),
                 deltas.getOrDefault("alcoholicBeveragesTobacco", BigDecimal.ZERO),
@@ -114,14 +114,14 @@ public class ConsumptionAllocator {
     /**
      * user의 한달 소비지출 퍼센트(소비증감량)와 수입을 기반으로 월간 일별 소비지출량 계산
      *
-     * @param consumptionDeltas 유저가 사용한 한 달 소비지출 정보
+     * @param consumptionDelta 유저가 사용한 한 달 소비지출 정보
      * @param incomeLevelInfo   유저의 소득분위 정보
      * @param income            유저 수입
      * @param yearMonth         일별 지출을 구할 날짜(년도 및 월)
      * @return result 월간 일일 지출량 정보
      */
     public static MonthlyConsumption createNewConsumption(
-            ConsumptionDeltas consumptionDeltas,
+            ConsumptionDelta consumptionDelta,
             IncomeLevelInfo incomeLevelInfo,
             BigDecimal income,
             YearMonth yearMonth) {
@@ -139,7 +139,7 @@ public class ConsumptionAllocator {
 
             for (String tag : TAG_FIELDS) {
                 //각 태그 일별 지출 금액 계산
-                BigDecimal tagConsumption = calcDailyTagConsumption(bigDecimalDays, getConsumptionDeltasValue(consumptionDeltas, tag),
+                BigDecimal tagConsumption = calcDailyTagConsumption(bigDecimalDays, getConsumptionDeltasValue(consumptionDelta, tag),
                         getIncomeLevelValue(incomeLevelInfo, tag), originalMonthlyConsumption);
                 dailyValues.put(tag, tagConsumption);
                 dailyConsumption = dailyConsumption.add(tagConsumption);
@@ -200,24 +200,24 @@ public class ConsumptionAllocator {
     /**
      * 소비증감량 정보 객체에서 각 소비태그에 해당하는 값을 반환
      *
-     * @param consumptionDeltas 유저의 소비지출량 변화율 정보
+     * @param consumptionDelta 유저의 소비지출량 변화율 정보
      * @param tagName           소비지출 태그명
      * @return tagName에 해당하는 소비지출 변화량
      */
-    public static BigDecimal getConsumptionDeltasValue(ConsumptionDeltas consumptionDeltas, String tagName) {
+    public static BigDecimal getConsumptionDeltasValue(ConsumptionDelta consumptionDelta, String tagName) {
         return switch (tagName) {
-            case "groceriesNonAlcoholicBeverages" -> consumptionDeltas.groceriesNonAlcoholicBeverages();
-            case "alcoholicBeveragesTobacco" -> consumptionDeltas.alcoholicBeveragesTobacco();
-            case "clothingFootwear" -> consumptionDeltas.clothingFootwear();
-            case "housingUtilitiesFuel" -> consumptionDeltas.housingUtilitiesFuel();
-            case "householdGoodsServices" -> consumptionDeltas.householdGoodsServices();
-            case "health" -> consumptionDeltas.health();
-            case "transportation" -> consumptionDeltas.transportation();
-            case "communication" -> consumptionDeltas.communication();
-            case "recreationCulture" -> consumptionDeltas.recreationCulture();
-            case "education" -> consumptionDeltas.education();
-            case "foodAccommodation" -> consumptionDeltas.foodAccommodation();
-            case "otherGoodsServices" -> consumptionDeltas.otherGoodsServices();
+            case "groceriesNonAlcoholicBeverages" -> consumptionDelta.groceriesNonAlcoholicBeverages();
+            case "alcoholicBeveragesTobacco" -> consumptionDelta.alcoholicBeveragesTobacco();
+            case "clothingFootwear" -> consumptionDelta.clothingFootwear();
+            case "housingUtilitiesFuel" -> consumptionDelta.housingUtilitiesFuel();
+            case "householdGoodsServices" -> consumptionDelta.householdGoodsServices();
+            case "health" -> consumptionDelta.health();
+            case "transportation" -> consumptionDelta.transportation();
+            case "communication" -> consumptionDelta.communication();
+            case "recreationCulture" -> consumptionDelta.recreationCulture();
+            case "education" -> consumptionDelta.education();
+            case "foodAccommodation" -> consumptionDelta.foodAccommodation();
+            case "otherGoodsServices" -> consumptionDelta.otherGoodsServices();
             default -> BigDecimal.ZERO;
         };
     }
