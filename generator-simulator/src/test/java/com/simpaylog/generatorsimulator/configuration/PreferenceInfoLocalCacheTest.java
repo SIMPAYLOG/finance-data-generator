@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Import(PreferenceLocalCache.class)
-public class PreferenceInfosLocalCacheTest extends TestConfig {
+public class PreferenceInfoLocalCacheTest extends TestConfig {
      private final String[] preferenceNames = new String[] {"", "소비지향형", "저축지향형", "무계획형", "투자지향형", "안정추구형"};
 
      @Autowired

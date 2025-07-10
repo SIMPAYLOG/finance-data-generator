@@ -1,9 +1,16 @@
 package com.simpaylog.generatorcore.cache.dto.preference;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
-public record ConsumptionDelta(
-    BigDecimal totalDelta, //실제 변화량 표기(100% -> 125%가 됐다면 해당 값은 25)
+public record MonthlyConsumption(
+    BigDecimal monthlyTotalConsumption,
+    BigDecimal monthlyTotalSurplus,
+    List<DailyConsumption> DailyConsumptionList
+) {
+    public record DailyConsumption (
+    LocalDate date,
     BigDecimal groceriesNonAlcoholicBeverages,
     BigDecimal alcoholicBeveragesTobacco,
     BigDecimal clothingFootwear,
@@ -15,5 +22,7 @@ public record ConsumptionDelta(
     BigDecimal recreationCulture,
     BigDecimal education,
     BigDecimal foodAccommodation,
-    BigDecimal otherGoodsServices
+    BigDecimal otherGoodsServices,
+    BigDecimal dailyTotalConsumption
 ) {}
+}
