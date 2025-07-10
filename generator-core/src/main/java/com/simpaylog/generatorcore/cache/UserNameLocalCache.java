@@ -23,7 +23,7 @@ public class UserNameLocalCache {
 
     @PostConstruct
     public void init() {
-        log.info("JSON 데이터 로딩을 시작합니다...");
+        log.info("JSON DATA LOADING...");
         ObjectMapper objectMapper = new ObjectMapper();
         ClassPathResource resource = new ClassPathResource("names.json");
 
@@ -32,15 +32,15 @@ public class UserNameLocalCache {
             });
 
             for (NameInfo user : users) {
-                char genderKey = user.getGender().charAt(0);
-                int ageGroupKey = user.getAgeGroup();
+                char genderKey = user.gender().charAt(0);
+                int ageGroupKey = user.ageGroup();
 
                 this.names.computeIfAbsent(genderKey, k -> new HashMap<>())
                         .computeIfAbsent(ageGroupKey, k -> new ArrayList<>())
-                        .add(user.getFullName());
+                        .add(user.fullName());
             }
 
-            log.info("JSON 데이터 로딩 완료.");
+            log.info("JSON DATA LOADING FINISH.");
 
         } catch (Exception e) {
             e.printStackTrace();

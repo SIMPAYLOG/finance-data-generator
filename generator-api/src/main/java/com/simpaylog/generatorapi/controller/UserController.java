@@ -39,6 +39,7 @@ public class UserController {
         for(int i = 0; i < createUserRequestDto.conditions().size(); i++){
             list.add(toUserGenerationCondition(createUserRequestDto.conditions().get(i), i));
         }
+        userService.createUser(list);
         return Response.success(HttpStatus.OK.value());
     }
 
