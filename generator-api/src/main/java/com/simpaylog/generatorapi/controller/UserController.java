@@ -3,10 +3,15 @@ package com.simpaylog.generatorapi.controller;
 import com.simpaylog.generatorapi.dto.request.CreateUserRequestDto;
 import com.simpaylog.generatorapi.dto.request.UserGenerationConditionRequestDto;
 import com.simpaylog.generatorapi.dto.response.Response;
+import com.simpaylog.generatorcore.dto.UserSimpleTypeInfo;
+import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +31,12 @@ public class UserController {
         return Response.success(HttpStatus.OK.value(), users);
     }
 
+    @DeleteMapping
+    public Response<Void> dropAllUsers() {
+        userService.deleteUserAll();
+        return Response.success(HttpStatus.OK.value());
+    }
+
     @PostMapping
     public Response<Void> createUser(@RequestBody @Valid CreateUserRequestDto createUserRequestDto) {
         List<User> result = new ArrayList<>();
@@ -35,5 +46,20 @@ public class UserController {
         }
         userService.createUser(result);
         return Response.success(HttpStatus.OK.value());
+    }
+
+    @GetMapping("/analyze")
+    public Response<UserAnalyzeResultResponse> analyzeUsers() {
+        UserAnalyzeResultResponse userAnalyzeResultResponse
+                = userService.analyzeUsers();
+        return Response.success(HttpStatus.OK.value(), userAnalyzeResultResponse);
+    }
+
+    @GetMapping("/list")
+    public Response<Page<UserSimpleTypeInfo>> getUsers(
+            @PageableDefault(size = 10, sort = "name") Pageable pageable
+    ) {
+        Page<UserSimpleTypeInfo> userPage = userService.findUsersByPage(pageable);
+        return Response.success(HttpStatus.OK.value(), userPage);
     }
 }
