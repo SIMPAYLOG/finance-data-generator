@@ -1,11 +1,10 @@
 package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.dto.request.CreateUserRequestDto;
-import com.simpaylog.generatorapi.dto.request.UserGenerationConditionRequestDto;
 import com.simpaylog.generatorapi.dto.response.Response;
-import com.simpaylog.generatorcore.dto.UserSimpleTypeInfo;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
-import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.dto.response.UserInfoResponse;
 import com.simpaylog.generatorcore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,17 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.simpaylog.generatorapi.dto.request.UserGenerationConditionRequestDto.toUserGenerationCondition;
+
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-
-    @GetMapping
-    public Response<List<User>> getAllUsers() {
-        List<User> users = userService.selectUserAll();
-        return Response.success(HttpStatus.OK.value(), users);
-    }
 
     @DeleteMapping
     public Response<Void> dropAllUsers() {
@@ -39,27 +35,22 @@ public class UserController {
 
     @PostMapping
     public Response<Void> createUser(@RequestBody @Valid CreateUserRequestDto createUserRequestDto) {
-        List<User> result = new ArrayList<>();
-        for (int i = 0; i < createUserRequestDto.conditions().size(); i++) {
-            UserGenerationConditionRequestDto dto = createUserRequestDto.conditions().get(i);
-            result.addAll(userService.generateUser(UserGenerationConditionRequestDto.toCore(dto, i)));
+        List<UserGenerationCondition> list = new ArrayList<>();
+        for(int i = 0; i < createUserRequestDto.conditions().size(); i++){
+            list.add(toUserGenerationCondition(createUserRequestDto.conditions().get(i), i));
         }
-        userService.createUser(result);
         return Response.success(HttpStatus.OK.value());
     }
 
     @GetMapping("/analyze")
     public Response<UserAnalyzeResultResponse> analyzeUsers() {
-        UserAnalyzeResultResponse userAnalyzeResultResponse
-                = userService.analyzeUsers();
-        return Response.success(HttpStatus.OK.value(), userAnalyzeResultResponse);
+        return Response.success(HttpStatus.OK.value(), userService.analyzeUsers());
     }
 
     @GetMapping("/list")
-    public Response<Page<UserSimpleTypeInfo>> getUsers(
+    public Response<Page<UserInfoResponse>> getUsers(
             @PageableDefault(size = 10, sort = "name") Pageable pageable
     ) {
-        Page<UserSimpleTypeInfo> userPage = userService.findUsersByPage(pageable);
-        return Response.success(HttpStatus.OK.value(), userPage);
+        return Response.success(HttpStatus.OK.value(), userService.findUsersByPage(pageable));
     }
 }

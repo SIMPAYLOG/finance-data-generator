@@ -1,8 +1,10 @@
-package com.simpaylog.generatorcore.dto;
+package com.simpaylog.generatorcore.cache.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
-public class NameDto {
+@Getter
+public class NameInfo {
     @JsonProperty("Full Name")
     private String fullName;
 
@@ -14,9 +16,4 @@ public class NameDto {
 
     @JsonProperty("Age Group")
     private int ageGroup;
-
-    public String getFullName() { return fullName; }
-    public String getGender() { return gender; }
-    public int getAge() { return age; }
-    public int getAgeGroup() { return ageGroup; }
 }

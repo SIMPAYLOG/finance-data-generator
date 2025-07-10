@@ -1,14 +1,16 @@
 package com.simpaylog.generatorcore.dto.response;
 
-import com.simpaylog.generatorcore.dto.*;
+import com.simpaylog.generatorcore.dto.analyze.AgeStat;
+import com.simpaylog.generatorcore.dto.analyze.GenderStat;
+import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 
 import java.util.List;
 
 public record UserAnalyzeResultResponse(
         Long totalUsers,
-        List<AgeStats> ageDistribution,
-        List<OccupationNameStats> occupationDistribution,
-        GenderStats genderDistribution
+        List<AgeStat> ageDistribution,
+        List<OccupationNameStat> occupationDistribution,
+        GenderStat genderDistribution
 ) {
 
 }

@@ -1,57 +1,23 @@
 package com.simpaylog.generatorcore.utils;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.dto.NameDto;
-import jakarta.annotation.PostConstruct;
+import com.simpaylog.generatorcore.cache.UserNameLocalCache;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
 public class NameUtil {
     private final Random random = new Random();
-    private final HashMap<Character, HashMap<Integer, ArrayList<String>>> names = new HashMap<>();
+    private final UserNameLocalCache userNameLocalCache;
 
-    @PostConstruct
-    public void init() {
-        System.out.println("JSON 데이터 로딩을 시작합니다...");
-        ObjectMapper objectMapper = new ObjectMapper();
-        ClassPathResource resource = new ClassPathResource("names.json");
-
-        try (InputStream inputStream = resource.getInputStream()) {
-            List<NameDto> users = objectMapper.readValue(inputStream, new TypeReference<List<NameDto>>() {
-            });
-
-            for (NameDto user : users) {
-                char genderKey = user.getGender().charAt(0);
-                int ageGroupKey = user.getAgeGroup();
-
-                this.names.computeIfAbsent(genderKey, k -> new HashMap<>())
-                        .computeIfAbsent(ageGroupKey, k -> new ArrayList<>())
-                        .add(user.getFullName());
-            }
-
-            System.out.println("JSON 데이터 로딩 완료.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    //TODO : 나이와 성별에 해당하는 이름이 적어서 중복된 이름이 다수 발생함으로 개선 필요.
     public String getRandomName(char gender, int ageGroup) {
-        HashMap<Integer, ArrayList<String>> ageMap = names.get(gender);
-        ArrayList<String> nameList = ageMap.get(ageGroup);
-        int randomIndex = random.nextInt(nameList.size());
+        ArrayList<String> nameList = userNameLocalCache.get(gender, ageGroup);
 
-        return nameList.get(randomIndex);
+        return nameList.get(random.nextInt(nameList.size()));
     }
 }
 

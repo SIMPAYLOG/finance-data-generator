@@ -1,9 +1,8 @@
 package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.TestConfig;
-import com.simpaylog.generatorcore.dto.AgeStats;
-import com.simpaylog.generatorcore.dto.GenderStats;
-import com.simpaylog.generatorcore.dto.OccupationNameStats;
+import com.simpaylog.generatorcore.dto.analyze.AgeStat;
+import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.UserBehaviorProfile;
@@ -62,10 +61,10 @@ public class UserAnalyzeTest extends TestConfig {
         UserAnalyzeResultResponse response = userService.analyzeUsers();
         Long realAgeGroupCnt = response.ageDistribution().stream()
                 .filter(stats -> stats.ageGroup() == targetAgeGroup)
-                .map(AgeStats::count).findFirst().get();
+                .map(AgeStat::count).findFirst().get();
         Long realOccupationCnt = response.occupationDistribution().stream()
                 .filter(stats -> targetOccupation.equals(stats.occupationCategory()))
-                .map(OccupationNameStats::count).findFirst().get();
+                .map(OccupationNameStat::count).findFirst().get();
 
         // then
         assertThat(userRepository.count()).isEqualTo(expectedTotalUser);

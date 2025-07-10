@@ -19,7 +19,7 @@ public record UserGenerationConditionRequestDto(
         @NumericOrMix(message = "직업군은 숫자 또는 MIX여야 합니다.")
         String occupationCode
 ) {
-    public static UserGenerationCondition toCore(UserGenerationConditionRequestDto dto, int id) {
+    public static UserGenerationCondition  toUserGenerationCondition(UserGenerationConditionRequestDto dto, int id) {
         return new UserGenerationCondition(
                 id,
                 dto.userCount(),

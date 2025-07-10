@@ -2,8 +2,11 @@ package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
+import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
+import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
 import com.simpaylog.generatorcore.dto.*;
+import com.simpaylog.generatorcore.dto.response.UserInfoResponse;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -13,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +30,11 @@ public class UserService {
     private final UserGenerator userGenerator;
 
     @Transactional
-    public void createUser(List<User> userList) {
+    public void createUser(List<UserGenerationCondition> userGenerationConditions) {
+        List<User> userList = new ArrayList<>();
+        for(UserGenerationCondition condition : userGenerationConditions) {
+            userList.addAll(generateUser(condition));
+        }
         userRepository.saveAll(userList);
     }
 
@@ -36,17 +44,12 @@ public class UserService {
         userRepository.deleteAllUsers();
     }
 
-    @Transactional(readOnly = true)
-    public List<User> selectUserAll() {
-        return userRepository.findAll();
-    }
-
-    public List<User> generateUser(UserGenerationCondition userGenerationCondition) {
+    private List<User> generateUser(UserGenerationCondition userGenerationCondition) {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        List<UserSimpleTypeInfo> users = perferenceIdtoType(userRepository.findAllSimpleInfo());
+        List<UserInfoResponse> users = perferenceIdtoType(userRepository.findAllSimpleInfo());
 
         UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
                 userRepository.count(),
@@ -58,9 +61,9 @@ public class UserService {
         return result;
     }
 
-    List<UserSimpleTypeInfo> perferenceIdtoType(List<UserSimpleIdInfo> users) {
+    List<UserInfoResponse> perferenceIdtoType(List<UserInfoDto> users) {
         return users.stream()
-                .map(user -> new UserSimpleTypeInfo(
+                .map(user -> new UserInfoResponse(
                         user.name(),
                         user.gender(),
                         user.age(),
@@ -70,24 +73,19 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    List<OccupationNameStats> occupationCodeToName(List<OccupationCodeStats> occupationCodeStats) {
+    List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
         return occupationCodeStats.stream()
-                .map(stat -> new OccupationNameStats(
+                .map(stat -> new OccupationNameStat(
                         occupationLocalCache.get(stat.occupationCategory()).occupationCategory(),
                         stat.count()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public Page<UserSimpleTypeInfo> findUsersByPage(Pageable pageable) {
-        Page<User> userPage = userRepository.findAllByOrderByNameAsc(pageable);
-
-        return userPage.map(user -> new UserSimpleTypeInfo(
-                user.getName(),
-                user.getGender(),
-                user.getAge(),
-                preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name(),
-                user.getOccupationName()
+    public Page<UserInfoResponse> findUsersByPage(Pageable pageable) {
+        return userRepository.findAllByOrderByNameAsc(pageable).map(user -> UserInfoResponse.userToUserInfoResponse(
+                user,
+                preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name()
         ));
     }
 }
