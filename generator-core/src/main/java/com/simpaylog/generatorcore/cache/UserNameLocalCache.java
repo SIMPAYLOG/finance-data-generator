@@ -23,7 +23,6 @@ public class UserNameLocalCache {
 
     @PostConstruct
     public void init() {
-        log.info("JSON DATA LOADING...");
         ObjectMapper objectMapper = new ObjectMapper();
         ClassPathResource resource = new ClassPathResource("names.json");
 
@@ -40,10 +39,10 @@ public class UserNameLocalCache {
                         .add(user.fullName());
             }
 
-            log.info("JSON DATA LOADING FINISH.");
+            log.info(String.format("[UserNameLocalCacheInitializer] 캐시 로딩 완료: %d개", users.size()));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(String.format("캐시 초기화 중 오류 발생: %s", e.getMessage()));
         }
     }
     public ArrayList<String> get(char gender, int ageGroup){

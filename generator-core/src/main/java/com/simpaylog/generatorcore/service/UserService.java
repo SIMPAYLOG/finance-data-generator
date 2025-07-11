@@ -49,7 +49,7 @@ public class UserService {
     }
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        List<UserInfoResponse> users = perferenceIdtoType(userRepository.findAllSimpleInfo());
+        List<UserInfoResponse> users = perferenceIdToType(userRepository.findAllSimpleInfo());
 
         UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
                 userRepository.count(),
@@ -61,7 +61,13 @@ public class UserService {
         return result;
     }
 
-    List<UserInfoResponse> perferenceIdtoType(List<UserInfoDto> users) {
+    /**
+     * 소비 성향 ID에 해당하는 이름을 반환받아 새로운 객체 생성하고 반환합니다.
+     *
+     * @param users : DB에 저장된 user 정보입니다.
+     * @return preferenceLocalCache에서 ID에 해당하는 소비성향을 찾아 새 객체를 만들어 반환합니다.
+     */
+    List<UserInfoResponse> perferenceIdToType(List<UserInfoDto> users) {
         return users.stream()
                 .map(user -> new UserInfoResponse(
                         user.name(),
@@ -73,6 +79,12 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 직업 ID에 해당하는 이름을 반환받아 새로운 객체 생성하고 반환합니다.
+     *
+     * @param occupationCodeStats : DB에 저장된 occupation 정보입니다.
+     * @return occupationLocalCache에서 ID에 해당하는 직업명을 찾아 새 객체를 만들어 반환합니다.
+     */
     List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
         return occupationCodeStats.stream()
                 .map(stat -> new OccupationNameStat(

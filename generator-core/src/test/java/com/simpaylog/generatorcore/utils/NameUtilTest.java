@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class NameGeneratorTest extends TestConfig {
+public class NameUtilTest extends TestConfig {
     @Autowired
     NameUtil nameUtil;
 
