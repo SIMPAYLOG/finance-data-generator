@@ -3,8 +3,7 @@ package com.simpaylog.generatorapi.controller;
 import com.simpaylog.generatorapi.dto.request.CreateUserRequestDto;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
-import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
-import com.simpaylog.generatorcore.dto.response.UserInfoResponse;
+import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +52,20 @@ public class UserController {
             @PageableDefault(size = 10, sort = "name") Pageable pageable
     ) {
         return Response.success(HttpStatus.OK.value(), userService.findUsersByPage(pageable));
+    }
+
+    @GetMapping("/ageGroup")
+    public Response<AgeGroupResponse> getAgeGroup(){
+        return Response.success(HttpStatus.OK.value(), userService.getAgeGroup());
+    }
+
+    @GetMapping("occupationCategory")
+    public Response<OccupationListResponse> getOccupationCategory(){
+        return Response.success(HttpStatus.OK.value(), userService.getOccupationCategory());
+    }
+
+    @GetMapping("preferenceList")
+    public Response<PreferenceListResponse> getPreference(){
+        return Response.success(HttpStatus.OK.value(), userService.getPreferenceList());
     }
 }
