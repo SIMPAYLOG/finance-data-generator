@@ -10,7 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,10 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class TradeInfoLocalCache {
 
-    // decile (Integer) -> categoryName (String) -> CategoryDetail
     private final Map<Integer, Map<String, TradeInfo.CategoryDetail>> cache = new ConcurrentHashMap<>();
 
-    public List<BigDecimal> getWeights(int decile, String categoryName) {
+    public List<Double> getWeights(int decile, String categoryName) {
         Map<String, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
         if (categoryMap != null) {
             TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryName);
@@ -52,7 +50,8 @@ public class TradeInfoLocalCache {
         try {
             ObjectMapper mapper = new ObjectMapper();
             InputStream input = new ClassPathResource("trade_info.json").getInputStream();
-            List<TradeInfo> dataList = mapper.readValue(input, new TypeReference<List<TradeInfo>>() {});
+            List<TradeInfo> dataList = mapper.readValue(input, new TypeReference<>() {
+            });
             Map<Integer, Map<String, TradeInfo.CategoryDetail>> tempCache = new HashMap<>();
 
             for (TradeInfo decileInfo : dataList) {
