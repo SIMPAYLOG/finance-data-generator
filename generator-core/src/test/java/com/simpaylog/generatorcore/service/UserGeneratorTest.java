@@ -4,7 +4,7 @@ import com.simpaylog.generatorcore.TestConfig;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.service.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,8 +21,9 @@ class UserGeneratorTest extends TestConfig {
     @Test
     void 주어진_조건이_전부_MIX일때_골고루_저장한다() {
         // Given
+        int id = 1;
         int userCount = 10;
-        UserGenerationCondition mockCondition = new UserGenerationCondition(userCount, "MIX", "MIX", "MIX", "MIX");
+        UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, "MIX", "MIX", "MIX", "MIX");
         // When
         List<User> result = userGenerator.generateUserPool(mockCondition);
         // Then(한 종류 이상인지 체크)
@@ -38,15 +39,17 @@ class UserGeneratorTest extends TestConfig {
     @Test
     void 특정_연령대_성별이_주어졌을때_연령대와_성별을_제외하고_골고루_저장한다() {
         // Given
+        int id = 1;
         int userCount = 10;
         String ageGroup = "30";
         String gender = "FEMALE";
-        UserGenerationCondition mockCondition = new UserGenerationCondition(userCount, "MIX", ageGroup, gender, "MIX");
+        UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, "MIX", ageGroup, gender, "MIX");
         // When
         List<User> result = userGenerator.generateUserPool(mockCondition);
         // Then
         assertEquals(userCount, result.size());
         assertThat(result.stream().map(user -> user.getUserBehaviorProfile().getPreferenceId()).distinct().count()).isGreaterThan(1);
+        assertThat(result).allMatch(user -> user.getConditionId() == 1);
         assertThat(result).allMatch(user -> user.getAge() == 30);
         assertThat(result).allMatch(user -> user.getGender() == Gender.F);
         assertThat(result.stream().map(User::getOccupationCode).distinct().count()).isGreaterThan(1);
@@ -57,16 +60,18 @@ class UserGeneratorTest extends TestConfig {
     @Test
     void 특정_연령대_성별_직업군_소비성향이_주어졌을때_연령대와_성별을_제외하고_골고루_저장한다() {
         // Given
+        int id = 1;
         int userCount = 10;
         String preferenceId = "3";
         String ageGroup = "30";
         String gender = "MALE";
         String occupationCode = "14";
-        UserGenerationCondition mockCondition = new UserGenerationCondition(userCount, preferenceId, ageGroup, gender, occupationCode);
+        UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, preferenceId, ageGroup, gender, occupationCode);
         // When
         List<User> result = userGenerator.generateUserPool(mockCondition);
         // Then
         assertEquals(userCount, result.size());
+        assertThat(result).allMatch(user -> user.getConditionId() == 1);
         assertThat(result).allMatch(user -> user.getUserBehaviorProfile().getPreferenceId() == 3);
         assertThat(result).allMatch(user -> user.getAge() == 30);
         assertThat(result).allMatch(user -> user.getGender() == Gender.M);
@@ -78,12 +83,13 @@ class UserGeneratorTest extends TestConfig {
     @Test
     void 존재하지_않는_직업코드를_넣으면_에러반환() {
         // Given
+        int id = 1;
         int userCount = 10;
         String preferenceId = "3";
         String ageGroup = "30";
         String gender = "MALE";
         String occupationCode = "999";
-        UserGenerationCondition mockCondition = new UserGenerationCondition(userCount, preferenceId, ageGroup, gender, occupationCode);
+        UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, preferenceId, ageGroup, gender, occupationCode);
         // When
         assertThatThrownBy(() -> userGenerator.generateUserPool(mockCondition))
                 .isInstanceOf(CoreException.class)
@@ -93,12 +99,13 @@ class UserGeneratorTest extends TestConfig {
     @Test
     void 존재하지_않는_성향ID를_넣으면_에러반환() {
         // Given
+        int id = 1;
         int userCount = 10;
         String preferenceId = "10";
         String ageGroup = "30";
         String gender = "MALE";
         String occupationCode = "10";
-        UserGenerationCondition mockCondition = new UserGenerationCondition(userCount, preferenceId, ageGroup, gender, occupationCode);
+        UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, preferenceId, ageGroup, gender, occupationCode);
         // When
         assertThatThrownBy(() -> userGenerator.generateUserPool(mockCondition))
                 .isInstanceOf(CoreException.class)

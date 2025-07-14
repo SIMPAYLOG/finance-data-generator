@@ -103,6 +103,6 @@ class WageStrategyExecutorTest extends TestConfig {
     }
 
     public static User userFixture(UserBehaviorProfile profile) {
-        return User.of(profile, 1, 20, Gender.M, BigDecimal.ZERO, 1, 1, "TEST-OCCUPATION");
+        return User.of("test", profile, 1, 20, Gender.M, BigDecimal.ZERO, 1, 1, "TEST-OCCUPATION", 1);
     }
 }
