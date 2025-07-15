@@ -30,12 +30,13 @@ public class TradeGeneratorUnitTest extends TestConfig {
             "alcoholicBeveragesTobacco",
             "clothingFootwear",
             "householdGoodsServices",
+            "housingUtilitiesFuel",
             "health",
             "transportation",
             "communication",
             "recreationCulture",
             "education",
-            "foodAccommodation", // JSON에 따라 이 이름으로 사용합니다.
+            "foodAccommodation",
             "otherGoodsServices"
     );
 
