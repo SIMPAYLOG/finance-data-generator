@@ -1,0 +1,704 @@
+{
+  "groceriesNonAlcoholicBeverages": {
+    "defaultPattern": {
+      "frequency": "DAILY",
+      "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "hourWeights": [
+        0.05, 0.05, 0.03, 0.03, 0.05, 0.1, 0.2, 0.5,
+        0.8, 0.9, 0.7, 1.0, 1.2, 1.3, 1.0, 1.0,
+        1.1, 1.2, 0.8, 0.6, 0.4, 0.2, 0.1, 0.05
+      ],
+      "activeThreshold": 0.7
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "DAILY",
+        "weekdayWeights": [1.1, 1.2, 1.1, 1.0, 1.0, 1.2, 1.3],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.09, 0.28, 0.47, 0.75,
+          1.13, 1.22, 1.13, 1.41, 1.5, 1.41, 1.31, 1.31,
+          1.22, 1.13, 0.94, 0.75, 0.56, 0.28, 0.19, 0.09
+        ],
+        "activeThreshold": 0.8
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "DAILY",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.30, 0.45,
+          0.65, 0.60, 0.80, 0.95, 0.90, 0.80, 0.70, 0.70,
+          0.65, 0.55, 0.40, 0.28, 0.18, 0.10, 0.05, 0.03
+        ],
+        "activeThreshold": 0.45
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.8, 1.0, 1.0, 0.9, 1.1, 1.3, 1.4],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.3, 0.5, 0.7,
+          1.0, 1.1, 1.0, 1.3, 1.3, 1.4, 1.3, 1.1,
+          1.0, 0.8, 0.6, 0.5, 0.4, 0.3, 0.2, 0.2
+        ],
+        "eventCount": 5,
+        "activeThreshold": 0.4
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.6, 0.6, 0.6, 0.6, 1.1, 1.3, 1.1],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.08, 0.15, 0.30,
+          0.50, 0.70, 0.85, 0.95, 1.00, 0.95, 0.80, 0.70,
+          0.60, 0.55, 0.45, 0.35, 0.25, 0.15, 0.08, 0.05
+        ],
+        "activeThreshold": 0.4
+      },
+      "STABLE": {
+        "frequency": "DAILY",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.1, 0.3, 0.5, 0.8,
+          1.0, 1.0, 1.0, 1.1, 1.1, 1.0, 1.0, 0.9,
+          0.8, 0.6, 0.5, 0.4, 0.2, 0.1, 0.05, 0.05
+        ],
+        "activeThreshold": 0.7
+      }
+    }
+  },
+  "alcoholicBeveragesTobacco": {
+    "defaultPattern": {
+      "frequency": "WEEKLY",
+      "weekdayWeights": [0.5, 0.5, 0.5, 0.6, 0.8, 1.2, 1.1],
+      "hourWeights": [
+        0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.08,
+        0.25, 0.40, 0.55, 0.70, 0.90, 1.10, 1.10, 1.10,
+        1.25, 1.25, 1.25, 1.25, 0.90, 0.25, 0.12, 0.05
+      ],
+      "activeThreshold": 0.55
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.5, 0.5, 0.5, 0.5, 1.0, 1.3, 1.3],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.04, 0.08, 0.17,
+          0.33, 0.50, 0.67, 0.83, 1.08, 1.25, 1.40, 1.40,
+          1.40, 1.25, 1.00, 0.67, 0.42, 0.25, 0.17, 0.08
+        ],
+        "activeThreshold": 0.72
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.3, 0.3, 0.2, 0.2, 0.5, 0.8, 0.8],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05,
+          0.10, 0.20, 0.30, 0.50, 0.90, 0.90, 0.90, 0.90,
+          0.75, 0.75, 0.40, 0.05, 0.03, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.2,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.5, 0.5, 0.6, 0.6, 0.9, 1.1, 1.1],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.08, 0.15, 0.22,
+          0.45, 0.60, 0.83, 1.05, 1.15, 1.15, 1.15, 1.15,
+          1.15, 1.00, 0.75, 0.45, 0.30, 0.15, 0.08, 0.08
+        ],
+        "activeThreshold": 0.60,
+        "eventCount": 3
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.3, 0.3, 0.3, 0.3, 0.6, 0.9, 0.8],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05,
+          0.10, 0.15, 0.25, 0.40, 0.55, 0.70, 0.90, 0.90,
+          0.90, 0.90, 0.90, 0.90, 0.90, 0.40, 0.03, 0.03
+        ],
+        "activeThreshold": 0.34,
+        "eventCount": 1
+      },
+      "STABLE": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.3, 0.3, 0.2, 0.2, 0.5, 0.9, 0.7],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05,
+          0.10, 0.20, 0.30, 0.40, 0.60, 0.90, 0.90, 0.75,
+          0.60, 0.50, 0.25, 0.12, 0.05, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.25
+      }
+    }
+  },
+  "clothingFootwear": {
+    "defaultPattern": {
+      "frequency": "RANDOM_FEW",
+      "weekdayWeights": [0.85, 0.85, 0.90, 1.00, 1.05, 1.10, 1.10],
+      "hourWeights": [
+        0.05, 0.05, 0.05, 0.05, 0.05, 0.08, 0.12, 0.25,
+        0.35, 0.50, 0.60, 0.70, 0.80, 0.95, 1.05, 1.05,
+        1.05, 1.05, 1.05, 1.00, 0.85, 0.65, 0.42, 0.30
+      ],
+      "eventCount": 2,
+      "activeThreshold": 0.55
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.84, 0.94, 1.03, 1.03, 1.22, 1.25, 1.30],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.08, 0.16,
+          0.24, 0.40, 0.56, 0.64, 0.80, 0.96, 1.11, 1.20,
+          1.20, 1.11, 1.28, 1.28, 1.11, 0.96, 0.72, 0.48
+        ],
+        "eventCount": 4,
+        "activeThreshold": 0.68
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0, 1.0, 0.9, 0.8, 0.8, 0.6, 0.5],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.1,
+          0.2, 0.4, 0.5, 0.5, 0.5, 0.6, 0.7, 0.6,
+          0.5, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.03
+        ],
+        "eventCount": 1,
+        "activeThreshold": 0.20
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0,1.0,1.0,1.0,1.15,1.15,1.20],
+        "hourWeights": [
+          0.08,0.08,0.08,0.08,0.08,0.08,0.15,0.25,
+          0.35,0.45,0.55,0.70,0.85,1.00,1.00,0.95,
+          0.95,1.00,1.05,1.10,1.05,0.90,0.70,0.50
+        ],
+        "eventCount": 3,
+        "activeThreshold": 0.55
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.9, 0.9, 0.9, 0.9, 0.95, 1.10, 1.10],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.10, 0.15,
+          0.25, 0.35, 0.50, 0.60, 0.70, 0.80, 0.80, 0.75,
+          0.65, 0.55, 0.45, 0.30, 0.20, 0.10, 0.08, 0.05
+        ],
+        "eventCount": 1,
+        "activeThreshold": 0.28
+      },
+      "STABLE": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.9, 0.9],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.2,
+          0.3, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.1,
+          1.0, 1.0, 0.9, 0.8, 0.7, 0.5, 0.3, 0.2
+        ],
+        "eventCount": 2,
+        "activeThreshold": 0.50
+      }
+    }
+  },
+  "housingUtilitiesFuel": {
+    "defaultPattern": {
+      "frequency": "FIXED",
+      "weekdayWeights": [],
+      "hourWeights": [
+        0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.6, 0.8,
+        1.0, 1.2, 1.2, 1.2, 1.0, 0.8, 0.6, 0.4,
+        0.3, 0.2, 0.2, 0.2, 0.2, 0.2, 0.1, 0.1
+      ],
+      "fixedDay": 5,
+      "activeThreshold": 0.4
+    },
+    "byPreference": {}
+  },
+  "householdGoodsServices": {
+    "defaultPattern": {
+      "frequency": "WEEKLY",
+      "weekdayWeights": [0.5, 0.5, 0.5, 0.6, 0.6, 1.0, 1.0],
+      "hourWeights": [
+        0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.2, 0.4,
+        0.6, 0.8, 1.0, 1.2, 1.3, 1.4, 1.3, 1.2,
+        1.1, 1.0, 0.8, 0.7, 0.6, 0.4, 0.2, 0.1
+      ],
+      "activeThreshold": 0.5
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.6, 0.6, 0.6, 0.8, 1.0, 1.2, 1.2],
+        "hourWeights": [
+          0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.4, 0.6,
+          0.8, 1.0, 1.2, 1.4, 1.5, 1.5, 1.4, 1.3,
+          1.2, 1.1, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2
+        ],
+        "activeThreshold": 0.6
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.8, 0.8, 0.8, 0.9, 0.9, 1.0, 1.0],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.1, 0.2, 0.3, 0.6,
+          0.8, 1.0, 1.0, 0.9, 0.8, 0.6, 0.4, 0.3,
+          0.2, 0.1, 0.05, 0.03, 0.03, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.25,
+        "eventCount": 2
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.9, 1.0, 1.0, 1.0, 1.1, 1.3, 1.4],
+        "hourWeights": [
+          0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.5, 0.6,
+          0.8, 1.0, 1.1, 1.3, 1.4, 1.4, 1.3, 1.3,
+          1.2, 1.1, 1.0, 0.8, 0.6, 0.5, 0.4, 0.3
+        ],
+        "activeThreshold": 0.4,
+        "eventCount": 3
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.8, 0.8, 0.8, 0.9, 1.0, 0.5, 0.4],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.2, 0.4,
+          0.5, 0.6, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1,
+          0.05, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.3,
+        "eventCount": 1
+      },
+      "STABLE": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.05, 0.1, 0.2, 0.4,
+          0.6, 0.9, 1.0, 1.1, 1.2, 1.2, 1.1, 1.0,
+          0.8, 0.7, 0.6, 0.5, 0.4, 0.2, 0.1, 0.05
+        ],
+        "activeThreshold": 0.5
+      }
+    }
+  },
+  "health": {
+    "defaultPattern": {
+      "frequency": "RANDOM_FEW",
+      "weekdayWeights": [1.0,1.0,1.0,1.0,1.0,0.5,0.5],
+      "hourWeights": [
+        0.05,0.05,0.05,0.05,0.05,0.10,0.20,0.40,
+        0.60,0.90,1.10,1.20,1.20,1.20,1.10,1.00,
+        0.80,0.60,0.40,0.25,0.15,0.08,0.05,0.03
+      ],
+      "activeThreshold": 0.45,
+      "eventCount": 2
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5],
+        "hourWeights": [
+          0.05,0.05,0.05,0.05,0.10,0.20,0.40,0.60,
+          0.85,1.10,1.25,1.30,1.30,1.25,1.15,1.05,
+          0.90,0.70,0.55,0.35,0.20,0.10,0.05,0.03
+        ],
+        "activeThreshold": 0.3,
+        "eventCount": 2
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.9, 0.9, 0.9, 0.9, 0.9, 0.2, 0.2],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.2, 0.4,
+          0.5, 0.7, 0.8, 0.9, 1.0, 0.9, 0.8, 0.7,
+          0.6, 0.4, 0.3, 0.2, 0.1, 0.05, 0.03, 0.03
+        ],
+        "activeThreshold": 0.33,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.1, 1.0, 1.1, 1.0, 1.0, 0.5, 0.5],
+        "hourWeights": [
+          0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.5, 0.8,
+          1.0, 1.2, 1.3, 1.4, 1.4, 1.3, 1.2, 1.1,
+          1.0, 1.0, 0.9, 0.7, 0.5, 0.4, 0.3, 0.2
+        ],
+        "activeThreshold": 0.3,
+        "eventCount": 3
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.8, 0.8, 0.9, 1.0, 1.0, 0.3, 0.2],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.2, 0.5,
+          0.7, 1.0, 1.2, 1.3, 1.2, 1.0, 0.8, 0.6,
+          0.4, 0.3, 0.2, 0.1, 0.05, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.32,
+        "eventCount": 1
+      },
+      "STABLE": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.1, 0.2, 0.3, 0.5,
+          0.7, 0.9, 1.0, 1.1, 1.2, 1.1, 1.0, 0.9,
+          0.8, 0.7, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05
+        ],
+        "activeThreshold": 0.45,
+        "eventCount": 2
+      }
+    }
+  },
+  "transportation": {
+    "defaultPattern": {
+      "frequency": "DAILY",
+      "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5],
+      "hourWeights": [
+        0.05, 0.05, 0.05, 0.1, 0.2, 0.5, 0.9, 1.2,
+        1.3, 1.0, 0.8, 0.6, 0.5, 0.5, 0.4, 0.5,
+        0.6, 1.0, 1.2, 1.0, 0.6, 0.4, 0.2, 0.1
+      ],
+      "activeThreshold": 0.55
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "DAILY",
+        "weekdayWeights": [1.1, 1.1, 1.1, 1.1, 1.0, 0.6, 0.6],
+        "hourWeights": [
+          0.05, 0.05, 0.09, 0.19, 0.38, 0.75, 1.13, 1.41,
+          1.5, 1.22, 1.03, 0.84, 0.75, 0.66, 0.56, 0.66,
+          0.84, 1.13, 1.22, 1.03, 0.66, 0.47, 0.28, 0.09
+        ],
+        "activeThreshold": 0.50
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "DAILY",
+        "weekdayWeights": [0.8, 0.9, 1.0, 1.0, 0.6, 0.4, 0.4],
+        "hourWeights": [
+          0.03, 0.03, 0.05, 0.1, 0.2, 0.4, 0.6, 0.9,
+          1.0, 0.9, 0.7, 0.5, 0.4, 0.3, 0.2, 0.3,
+          0.4, 0.6, 0.7, 0.5, 0.3, 0.2, 0.1, 0.05
+        ],
+        "activeThreshold": 0.45
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [1.0, 1.0, 0.9, 0.9, 0.8, 0.7, 0.7],
+        "hourWeights": [
+          0.1, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0, 1.3,
+          1.4, 1.2, 1.0, 0.9, 0.9, 1.0, 1.0, 1.1,
+          1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5
+        ],
+        "activeThreshold": 0.4,
+        "eventCount": 5
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "DAILY",
+        "weekdayWeights": [0.7, 0.7, 0.8, 0.8, 0.5, 0.3, 0.3],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.05, 0.1, 0.3, 0.6, 1.0,
+          1.1, 0.9, 0.7, 0.5, 0.4, 0.3, 0.3, 0.3,
+          0.4, 0.5, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05
+        ],
+        "activeThreshold": 0.50
+      },
+      "STABLE": {
+        "frequency": "DAILY",
+        "weekdayWeights": [1.0, 1.0, 1.0, 1.0, 1.0, 0.7, 0.7],
+        "hourWeights": [
+          0.05, 0.05, 0.1, 0.2, 0.4, 0.7, 1.1, 1.4,
+          1.5, 1.3, 1.0, 0.8, 0.7, 0.6, 0.5, 0.6,
+          0.7, 0.9, 1.0, 0.8, 0.6, 0.4, 0.2, 0.1
+        ],
+        "activeThreshold": 0.55
+      }
+    }
+  },
+  "communication": {
+    "defaultPattern": {
+      "frequency": "FIXED",
+      "weekdayWeights": [],
+      "hourWeights": [
+        0.04, 0.04, 0.09, 0.09, 0.09, 0.18, 0.26, 0.44,
+        0.88, 1.15, 1.32, 1.5, 1.32, 1.32, 1.32, 1.15,
+        1.06, 0.79, 0.88, 0.71, 0.53, 0.35, 0.18, 0.09
+      ],
+      "fixedDay": 5,
+      "activeThreshold": 0.4
+    },
+    "byPreference": {}
+  },
+  "recreationCulture": {
+    "defaultPattern": {
+      "frequency": "WEEKEND_ONLY",
+      "weekdayWeights": [0.2, 0.3, 0.3, 0.3, 0.4, 1.0, 1.2],
+      "hourWeights": [
+        0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.1,
+        0.2, 0.3, 0.5, 0.7, 1.0, 1.2, 1.3, 1.3,
+        1.3, 1.1, 0.9, 0.6, 0.4, 0.2, 0.1, 0.05
+      ],
+      "activeThreshold": 0.45
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.5, 0.6, 0.6, 0.6, 0.8, 1.3, 1.4],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.04, 0.08, 0.17,
+          0.33, 0.58, 0.83, 1.08, 1.25, 1.42, 1.5, 1.5,
+          1.33, 1.17, 1.0, 0.75, 0.5, 0.25, 0.08, 0.04
+        ],
+        "activeThreshold": 0.6
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.2, 0.2, 0.2, 0.2, 0.3, 0.5, 0.6],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.05,
+          0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.8, 0.7,
+          0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.03
+        ],
+        "activeThreshold": 0.25,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.4, 0.4, 0.5, 0.5, 0.6, 0.9, 1.0],
+        "hourWeights": [
+          0.04, 0.04, 0.04, 0.04, 0.08, 0.17, 0.25, 0.42,
+          0.58, 0.83, 1.08, 1.25, 1.42, 1.5, 1.42, 1.33,
+          1.17, 1.0, 0.83, 0.67, 0.5, 0.25, 0.17, 0.08
+        ],
+        "activeThreshold": 0.4,
+        "eventCount": 4
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.3],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03,
+          0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.3, 0.3,
+          0.2, 0.2, 0.1, 0.1, 0.05, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.3,
+        "eventCount": 1
+      },
+      "STABLE": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.2, 0.2, 0.2, 0.2, 0.3, 0.6, 0.7],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.2,
+          0.3, 0.5, 0.7, 0.9, 1.0, 1.1, 1.1, 1.0,
+          0.9, 0.8, 0.6, 0.4, 0.3, 0.2, 0.1, 0.05
+        ],
+        "activeThreshold": 0.5
+      }
+    }
+  },
+  "education": {
+    "defaultPattern": {
+      "frequency": "WEEKLY",
+      "weekdayWeights": [0.6, 0.6, 0.7, 0.9, 1.1, 1.25, 0.9],
+      "hourWeights": [
+        0.03,0.03,0.03,0.03,0.03,0.05,0.10,0.25,
+        0.45,0.70,0.90,1.00,1.15,1.25,1.25,1.25,
+        1.15,0.90,0.60,0.35,0.20,0.08,0.05,0.03
+      ],
+      "activeThreshold": 0.40
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.6,0.7,0.8,1.0,1.2,1.35,1.10],
+        "hourWeights": [
+          0.05,0.05,0.05,0.05,0.08,0.15,0.30,0.55,
+          0.80,1.10,1.30,1.40,1.40,1.40,1.30,1.25,
+          1.05,0.80,0.50,0.25,0.15,0.08,0.05,0.03
+        ],
+        "activeThreshold": 0.48
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.50, 0.50, 0.50, 0.50, 0.50, 0.80, 0.80],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.04, 0.06, 0.08, 0.15,
+          0.30, 0.45, 0.60, 0.70, 0.80, 0.85, 0.85, 0.80,
+          0.70, 0.50, 0.35, 0.20, 0.10, 0.05, 0.03, 0.03
+        ],
+        "activeThreshold": 0.32,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.08, 0.12, 0.25, 0.40,
+          0.60, 0.90, 1.05, 1.10, 1.20, 1.20, 1.20, 1.10,
+          1.00, 0.75, 0.50, 0.30, 0.18, 0.08, 0.05, 0.05
+        ],
+        "activeThreshold": 0.30,
+        "eventCount": 2
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.60, 0.70, 0.70, 1.00, 1.20, 1.00, 0.70],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.10, 0.15, 0.30,
+          0.50, 0.80, 1.00, 1.10, 1.20, 1.30, 1.30, 1.20,
+          1.00, 0.80, 0.60, 0.40, 0.20, 0.10, 0.05, 0.03
+        ],
+        "activeThreshold": 0.38
+      },
+      "STABLE": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.10, 0.25,
+          0.45, 0.70, 0.90, 1.00, 1.10, 1.20, 1.20, 1.15,
+          1.00, 0.80, 0.55, 0.30, 0.15, 0.07, 0.05, 0.03
+        ],
+        "activeThreshold": 0.40
+      }
+    }
+  },
+  "foodAccommodation": {
+    "defaultPattern": {
+      "frequency": "WEEKLY",
+      "weekdayWeights": [0.3, 0.4, 0.4, 0.6, 1.0, 1.1, 1.2],
+      "hourWeights": [
+        0.05, 0.05, 0.05, 0.05, 0.09, 0.19, 0.28, 0.47,
+        0.75, 0.94, 1.13, 1.31, 1.41, 1.5, 1.5, 1.31,
+        1.22, 1.13, 0.94, 0.75, 0.47, 0.28, 0.19, 0.09
+      ],
+      "activeThreshold": 0.5
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.4, 0.5, 0.6, 0.7, 1.3, 1.5, 1.4],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.07, 0.2, 0.41, 0.61,
+          0.82, 1.02, 1.23, 1.36, 1.5, 1.5, 1.36, 1.23,
+          1.02, 0.82, 0.68, 0.55, 0.41, 0.27, 0.14, 0.07
+        ],
+        "activeThreshold": 0.6
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.2, 0.3, 0.4, 0.3, 0.2, 0.1, 0.1],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.15, 0.2,
+          0.3, 0.4, 0.5, 0.6, 0.6, 0.5, 0.4, 0.3,
+          0.2, 0.1, 0.08, 0.05, 0.03, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.25,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.3, 0.4, 0.4, 0.6, 0.9, 1.2, 1.2],
+        "hourWeights": [
+          0.08, 0.08, 0.08, 0.15, 0.3, 0.45, 0.68, 0.9,
+          1.13, 1.28, 1.43, 1.5, 1.5, 1.43, 1.28, 1.13,
+          0.9, 0.75, 0.6, 0.45, 0.3, 0.15, 0.08, 0.04
+        ],
+        "activeThreshold": 0.4,
+        "eventCount": 4
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.3],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.15,
+          0.2, 0.3, 0.4, 0.5, 0.5, 0.4, 0.3, 0.2,
+          0.1, 0.05, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03
+        ],
+        "activeThreshold": 0.3,
+        "eventCount": 2
+      },
+      "STABLE": {
+        "frequency": "WEEKLY",
+        "weekdayWeights": [0.3, 0.3, 0.4, 0.5, 0.8, 1.0, 1.0],
+        "hourWeights": [
+          0.05, 0.05, 0.05, 0.05, 0.1, 0.2, 0.3, 0.6,
+          0.9, 1.2, 1.4, 1.5, 1.5, 1.4, 1.2, 1.0,
+          0.8, 0.6, 0.4, 0.3, 0.2, 0.1, 0.05, 0.03
+        ],
+        "activeThreshold": 0.5
+      }
+    }
+  },
+  "otherGoodsServices": {
+    "defaultPattern": {
+      "frequency": "RANDOM_FEW",
+      "weekdayWeights": [0.45, 0.5, 0.5, 0.6, 0.7, 0.9, 0.7],
+      "hourWeights": [
+        0.05,0.05,0.05,0.05,0.06,0.10,0.20,0.40,
+        0.65,0.85,1.00,1.05,1.15,1.25,1.25,1.15,
+        1.00,0.85,0.60,0.40,0.25,0.12,0.07,0.05
+      ],
+      "activeThreshold": 0.30,
+      "eventCount": 3
+    },
+    "byPreference": {
+      "CONSUMPTION_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.5, 0.6, 0.6, 0.7, 1.0, 1.2, 1.3],
+        "hourWeights": [
+          0.04, 0.04, 0.04, 0.04, 0.07, 0.21, 0.36, 0.5,
+          0.71, 0.93, 1.14, 1.29, 1.43, 1.5, 1.43, 1.29,
+          1.14, 1.0, 0.86, 0.57, 0.43, 0.29, 0.14, 0.07
+        ],
+        "activeThreshold": 0.45,
+        "eventCount": 5
+      },
+      "SAVING_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.6, 0.6, 0.6, 0.6, 0.5, 0.25, 0.25],
+        "hourWeights": [
+          0.05,0.05,0.05,0.05,0.05,0.06,0.10,0.15,
+          0.25,0.35,0.45,0.50,0.55,0.50,0.45,0.35,
+          0.25,0.15,0.08,0.05,0.03,0.03,0.03,0.03
+        ],
+        "activeThreshold": 0.18,
+        "eventCount": 1
+      },
+      "UNPLANNED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.4, 0.5, 0.6, 0.7, 1.0, 1.0, 1.0],
+        "hourWeights": [
+          0.1, 0.1, 0.1, 0.1, 0.2, 0.3, 0.5, 0.7,
+          1.0, 1.1, 1.2, 1.2, 1.2, 1.2, 1.2, 1.1,
+          1.0, 0.9, 0.8, 0.6, 0.4, 0.3, 0.2, 0.1
+        ],
+        "activeThreshold": 0.4,
+        "eventCount": 6
+      },
+      "INVESTMENT_ORIENTED": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.3,0.3,0.3,0.3,0.4,0.4,0.4],
+        "hourWeights": [
+          0.05,0.05,0.05,0.05,0.05,0.08,0.12,0.20,
+          0.35,0.50,0.65,0.80,0.90,0.90,0.85,0.75,
+          0.60,0.45,0.30,0.18,0.10,0.05,0.03,0.03
+        ],
+        "activeThreshold": 0.2,
+        "eventCount": 2
+      },
+      "STABLE": {
+        "frequency": "RANDOM_FEW",
+        "weekdayWeights": [0.65, 0.65, 0.65, 0.6, 0.5, 0.55, 0.55],
+        "hourWeights": [
+          0.03, 0.03, 0.03, 0.03, 0.05, 0.1, 0.2, 0.4,
+          0.6, 0.9, 1.0, 1.1, 1.1, 1.0, 0.9, 0.8,
+          0.6, 0.5, 0.3, 0.2, 0.1, 0.05, 0.03, 0.03
+        ],
+        "activeThreshold": 0.35,
+        "eventCount": 2
+      }
+    }
+  }
+}

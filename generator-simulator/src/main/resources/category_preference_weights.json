@@ -5,10 +5,10 @@
     "clothingFootwear": 0.07,
     "housingUtilitiesFuel": 0.15,
     "householdGoodsServices": 0.08,
-    "health": 0.1,
-    "transportation": 0.1,
+    "health": 0.08,
+    "transportation": 0.11,
     "communication": 0.05,
-    "recreationCulture": 0.08,
+    "recreationCulture": 0.09,
     "education": 0.05,
     "foodAccommodation": 0.08,
     "otherGoodsServices": 0.04
@@ -56,29 +56,29 @@
     "otherGoodsServices": 0.07
   },
   "INVESTMENT_ORIENTED": {
-    "groceriesNonAlcoholicBeverages": 0.12,
+    "groceriesNonAlcoholicBeverages": 0.13,
     "alcoholicBeveragesTobacco": 0.05,
     "clothingFootwear": 0.05,
-    "housingUtilitiesFuel": 0.1,
+    "housingUtilitiesFuel": 0.11,
     "householdGoodsServices": 0.1,
-    "health": 0.05,
+    "health": 0.07,
     "transportation": 0.08,
     "communication": 0.05,
     "recreationCulture": 0.05,
-    "education": 0.2,
+    "education": 0.13,
     "foodAccommodation": 0.05,
-    "otherGoodsServices": 0.1
+    "otherGoodsServices": 0.16
   },
-  "STABILITY_ORIENTED": {
-    "groceriesNonAlcoholicBeverages": 0.18,
+  "STABLE": {
+    "groceriesNonAlcoholicBeverages": 0.19,
     "alcoholicBeveragesTobacco": 0.03,
     "clothingFootwear": 0.06,
     "housingUtilitiesFuel": 0.15,
     "householdGoodsServices": 0.1,
-    "health": 0.12,
+    "health": 0.1,
     "transportation": 0.08,
     "communication": 0.06,
-    "recreationCulture": 0.05,
+    "recreationCulture": 0.06,
     "education": 0.07,
     "foodAccommodation": 0.05,
     "otherGoodsServices": 0.05
