@@ -1,8 +1,8 @@
-package com.simpaylog.generatorcore.cache;
+package com.simpaylog.generatorsimulator.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.cache.dto.TradeInfo; // 새로 만든 DTO 임포트
+import com.simpaylog.generatorsimulator.cache.dto.TradeInfo; // 새로 만든 DTO 임포트
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package com.simpaylog.generatorcore.cache.dto;
+package com.simpaylog.generatorsimulator.cache.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,4 +1,4 @@
-package com.simpaylog.generatorcore.service.dto;
+package com.simpaylog.generatorsimulator.dto;
 
 public record Trade(
         String tradeName,

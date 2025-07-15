@@ -1,8 +1,8 @@
-package com.simpaylog.generatorcore.service;
+package com.simpaylog.generatorsimulator.service;
 
-import com.simpaylog.generatorcore.cache.TradeInfoLocalCache;
-import com.simpaylog.generatorcore.cache.dto.TradeInfo;
-import com.simpaylog.generatorcore.service.dto.Trade;
+import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
+import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.dto.Trade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class TradeGenerator {
 
         // 3. 1~10에 대한 발생 확률을 가진 weights를 기반으로, 1~10분위 중 하나를 뽑음 (newDecile)
         int newDecile = selectNewDecile(weights);
-        log.info("Original Decile: {}, Category: {}, Selected New Decile: {}", decile, categoryName, newDecile);
+        //log.info("Original Decile: {}, Category: {}, Selected New Decile: {}", decile, categoryName, newDecile);
 
         // 4. 새롭게 뽑은 newDecile, 카테고리 정보를 기반으로 trades 가져옴
         List<TradeInfo.TradeItemDetail> trades = tradeInfoLocalCache.getTradeList(newDecile, categoryName);

@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.cache.CategoryPreferenceWeightLocalCache;
 import com.simpaylog.generatorsimulator.cache.CategorySpendingPatternLocalCache;
-import com.simpaylog.generatorsimulator.dto.CategorySpendingPattern;
+import com.simpaylog.generatorsimulator.cache.dto.CategorySpendingPattern;
 import com.simpaylog.generatorsimulator.dto.CategorySpendingWeight;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
 import com.simpaylog.generatorsimulator.dto.PreferenceType;
@@ -22,6 +22,8 @@ public class TransactionGenerator {
     private final CategoryPreferenceWeightLocalCache categoryPreferenceWeightLocalCache;
     private static final double MAX_PRODUCT = 1.3;
     private static final double EPS = 1e-9; // 부동 소수점 오차 제거용
+
+    //TODO: 당일 발생한 카테고리에 대해서는 가중치를 낮춰 적게 발생되도록 하기
     /*
     [1단계] 지금 시각에 실행 가능한 카테고리(리스트) 뽑기
     [2단계] 그 중에서 소비할 카테고리 1개 고르기

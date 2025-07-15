@@ -1,14 +1,15 @@
-package com.simpaylog.generatorcore.service;
+package com.simpaylog.generatorsimulator.service;
 
-import com.simpaylog.generatorcore.TestConfig;
-import com.simpaylog.generatorcore.cache.TradeInfoLocalCache;
-import com.simpaylog.generatorcore.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.TestConfig;
+import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Import({TradeGenerator.class, TradeInfoLocalCache.class})
 public class TradeGeneratorUnitTest extends TestConfig {
     @Autowired
     TradeInfoLocalCache tradeInfoLocalCache;

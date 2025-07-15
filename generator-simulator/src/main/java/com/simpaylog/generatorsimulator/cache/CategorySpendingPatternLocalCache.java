@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorsimulator.dto.CategorySpendingPattern;
+import com.simpaylog.generatorsimulator.cache.dto.CategorySpendingPattern;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;

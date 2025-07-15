@@ -1,4 +1,8 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorsimulator.cache.dto;
+
+import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorsimulator.dto.SpendingFrequency;
 
 import java.util.List;
 import java.util.Map;
