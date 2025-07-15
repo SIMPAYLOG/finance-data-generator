@@ -54,17 +54,17 @@ public class UserController {
         return Response.success(HttpStatus.OK.value(), userService.findUsersByPage(pageable));
     }
 
-    @GetMapping("/ageGroup")
+    @GetMapping("/age-group")
     public Response<AgeGroupResponse> getAgeGroup(){
         return Response.success(HttpStatus.OK.value(), userService.getAgeGroup());
     }
 
-    @GetMapping("occupationCategory")
+    @GetMapping("occupation-category")
     public Response<OccupationListResponse> getOccupationCategory(){
         return Response.success(HttpStatus.OK.value(), userService.getOccupationCategory());
     }
 
-    @GetMapping("preferenceList")
+    @GetMapping("preference-list")
     public Response<PreferenceListResponse> getPreference(){
         return Response.success(HttpStatus.OK.value(), userService.getPreferenceList());
     }
