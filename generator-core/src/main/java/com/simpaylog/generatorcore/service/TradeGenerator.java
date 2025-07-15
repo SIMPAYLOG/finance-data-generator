@@ -2,7 +2,7 @@ package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.TradeInfoLocalCache;
 import com.simpaylog.generatorcore.cache.dto.TradeInfo;
-import com.simpaylog.generatorcore.service.dto.Transaction;
+import com.simpaylog.generatorcore.service.dto.Trade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom; // 더 나은 랜덤 생성기
 @Slf4j
 @Service
 @AllArgsConstructor
-public class TransactionGenerator {
+public class TradeGenerator {
 
     private final TradeInfoLocalCache tradeInfoLocalCache;
     private final Random random = new Random(); // 확률 및 임의 선택을 위한 Random 인스턴스
@@ -27,7 +27,7 @@ public class TransactionGenerator {
      * @return 생성된 거래 이름과 비용을 포함하는 TradeResult 객체
      * @throws IllegalArgumentException 유효하지 않은 입력 또는 데이터 부족 시 발생
      */
-    public Transaction generateTrade(int decile, String categoryName) {
+    public Trade generateTrade(int decile, String categoryName) {
         // 1. 입력 유효성 검사 (분위는 1~10, 카테고리 이름은 비어있지 않아야 함)
         if (decile < 1 || decile > 10) {
             throw new IllegalArgumentException("Input decile must be between 1 and 10.");
@@ -61,7 +61,7 @@ public class TransactionGenerator {
         int cost = calculateRandomCost(selectedTrade.min(), selectedTrade.max());
 
         // 7. 임의의 거래 이름 및 cost 반환
-        return new Transaction(selectedTrade.name(), cost);
+        return new Trade(selectedTrade.name(), cost);
     }
 
     /**

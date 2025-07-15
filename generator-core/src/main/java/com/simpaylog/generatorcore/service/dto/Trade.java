@@ -1,6 +1,6 @@
 package com.simpaylog.generatorcore.service.dto;
 
-public record Transaction(
+public record Trade(
         String tradeName,
         int cost
 ) {}
