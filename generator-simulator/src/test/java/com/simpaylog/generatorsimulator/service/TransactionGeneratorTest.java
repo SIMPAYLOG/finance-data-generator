@@ -32,7 +32,7 @@ class TransactionGeneratorTest extends TestConfig {
     void after() {
         String[] days = {" ", "월", "화", "수", "목", "금", "토", "일"};
         for(Map.Entry<CategoryType, List<LocalDateTime>> entry : countMap.entrySet()) {
-            if(!entry.getKey().equals(CategoryType.OTHER_GOODS_SERVICES)) continue;
+            if(!entry.getKey().equals(CategoryType.TRANSPORTATION)) continue;
             System.out.printf("%s: %d개%n",entry.getKey().getLabel(), entry.getValue().size());
             Collections.sort(entry.getValue());
 //            for(LocalDateTime localDateTime : entry.getValue()) {
@@ -54,10 +54,10 @@ class TransactionGeneratorTest extends TestConfig {
             //System.out.println(from.getHour() +"시 가능한 카테고리");
             //System.out.print("선택된 카테고리: ");
             LocalDateTime finalFrom = from;
-            transactionGenerator.pickOneCategory(from, preferenceType).ifPresent(s -> {
+            transactionGenerator.pickOneCategory(from, preferenceType).ifPresentOrElse(s -> {
                 countMap.get(s).add(finalFrom);
                 //System.out.println(s);
-            });
+            }, () -> System.out.println("데이터 없음"));
         }
             System.out.print("["+preferenceType.getName() + "] ");
 
