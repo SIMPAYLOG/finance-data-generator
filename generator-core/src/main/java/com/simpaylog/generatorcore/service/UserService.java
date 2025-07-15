@@ -4,9 +4,8 @@ import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
-import com.simpaylog.generatorcore.dto.response.UserAnalyzeResultResponse;
+import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.dto.*;
-import com.simpaylog.generatorcore.dto.response.UserInfoResponse;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -32,7 +31,7 @@ public class UserService {
     @Transactional
     public void createUser(List<UserGenerationCondition> userGenerationConditions) {
         List<User> userList = new ArrayList<>();
-        for(UserGenerationCondition condition : userGenerationConditions) {
+        for (UserGenerationCondition condition : userGenerationConditions) {
             userList.addAll(generateUser(condition));
         }
         userRepository.saveAll(userList);
@@ -95,9 +94,44 @@ public class UserService {
     }
 
     public Page<UserInfoResponse> findUsersByPage(Pageable pageable) {
-        return userRepository.findAllByOrderByNameAsc(pageable).map(user -> UserInfoResponse.userToUserInfoResponse(
-                user,
-                preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name()
-        ));
+        return userRepository.findAllByOrderByNameAsc(pageable)
+                .map(user -> UserInfoResponse.userToUserInfoResponse(
+                        user,
+                        preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name()
+                ));
+    }
+
+    public AgeGroupResponse getAgeGroup() {
+        return new AgeGroupResponse(occupationLocalCache.get(1).ageGroupInfo().stream()
+                .map(ageInfo -> {
+                    return new AgeGroupDetailResponse(
+                            String.valueOf(ageInfo.range()[0]),
+                            String.format("%s (%d-%d세)",
+                                    ageInfo.label(),
+                                    ageInfo.range()[0],
+                                    ageInfo.range()[1])
+                    );
+                })
+                .collect(Collectors.toList()));
+    }
+
+    public OccupationListResponse getOccupationCategory() {
+        return new OccupationListResponse(occupationLocalCache.getCache().values().stream()
+                .map(occupation -> new OccupationCategoryResponse(
+                        String.valueOf(occupation.code()),
+                        occupation.occupationCategory().substring(2)
+                ))
+                .collect(Collectors.toList())
+        );
+    }
+
+    public PreferenceListResponse getPreferenceList() {
+        return new PreferenceListResponse(preferenceLocalCache.getCache().values().stream()
+                .map(preferenceInfo -> new PreferenceResponse(
+                        String.valueOf(preferenceInfo.id()),
+                        preferenceInfo.name()
+                ))
+                .collect(Collectors.toList())
+        );
     }
 }
