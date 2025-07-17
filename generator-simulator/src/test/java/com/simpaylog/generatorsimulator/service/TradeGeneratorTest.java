@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import({TradeGenerator.class, TradeInfoLocalCache.class})
+@Import(TradeGenerator.class)
 class TradeGeneratorTest extends TestConfig {
     @Autowired
     private TradeGenerator tradeGenerator;
