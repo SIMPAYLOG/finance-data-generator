@@ -9,6 +9,7 @@ import com.simpaylog.generatorsimulator.dto.PreferenceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,15 +24,14 @@ public class TransactionGenerator {
     private static final double MAX_PRODUCT = 1.3;
     private static final double EPS = 1e-9; // 부동 소수점 오차 제거용
 
-    //TODO: 당일 발생한 카테고리에 대해서는 가중치를 낮춰 적게 발생되도록 하기
     /*
     [1단계] 지금 시각에 실행 가능한 카테고리(리스트) 뽑기
     [2단계] 그 중에서 소비할 카테고리 1개 고르기
     [3단계] 정말 이 시간에 소비할 것인지 최종 확률 결정하기
      */
 
-    public Optional<CategoryType> pickOneCategory(LocalDateTime dateTime, PreferenceType preferenceType) {
-        List<CategoryType> available = getAvailableCategories(dateTime, preferenceType); // 현재 시간에 가능한 카테고리
+    public Optional<CategoryType> pickOneCategory(LocalDateTime dateTime, PreferenceType preferenceType, Map<CategoryType, LocalDateTime> repeated) {
+        List<CategoryType> available = getAvailableCategories(dateTime, preferenceType, repeated); // 현재 시간에 가능한 카테고리
         if (available.isEmpty()) return Optional.empty();
         CategoryType pickSpendingCategory = pickSpendingCategory(available, preferenceType);
         if (shouldSpend(dateTime, pickSpendingCategory, preferenceType)) return Optional.of(pickSpendingCategory);
@@ -47,17 +47,24 @@ public class TransactionGenerator {
      */
     private List<CategoryType> getAvailableCategories(
             LocalDateTime dateTime,
-            PreferenceType preferenceType
+            PreferenceType preferenceType,
+            Map<CategoryType, LocalDateTime> repeated
     ) {
         int hour = dateTime.getHour();
         int weekday = dateTime.getDayOfWeek().getValue() - 1; // 0: 월요일 ~ 6: 일요일
 
         List<CategoryType> available = new ArrayList<>();
         for (CategoryType categoryType : CategoryType.values()) {
-            if (categoryType.equals(CategoryType.COMMUNICATION) || categoryType.equals(CategoryType.HOUSING_UTILITIES_FUEL))
+            if (categoryType.equals(CategoryType.COMMUNICATION) || categoryType.equals(CategoryType.HOUSING_UTILITIES_FUEL)) {
+                // TODO: 이 둘은 언제 처리할 것인지?
                 continue;
+            }
             CategorySpendingPattern.Pattern userPattern = findPattern(categoryType, preferenceType);
-
+            if(repeated.containsKey(categoryType)) {
+                LocalDateTime lastUsed = repeated.getOrDefault(categoryType, LocalDateTime.MIN);
+                long minutesSinceLast = Duration.between(lastUsed, dateTime).toMinutes();
+                if(minutesSinceLast < categoryType.getMinIntervalMinutes()) continue;
+            }
             double product = userPattern.hourWeights().get(hour) * userPattern.weekdayWeights().get(weekday);
             double threshold = userPattern.activeThreshold();
             if (product + EPS >= threshold) {
