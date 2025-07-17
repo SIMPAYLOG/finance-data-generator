@@ -1,8 +1,9 @@
 package com.simpaylog.generatorsimulator.service;
 
-import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
+import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.dto.CategoryType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -27,62 +28,48 @@ public class TradeGeneratorUnitTest extends TestConfig {
 
     Random random = new Random();
 
-    private static final List<String> ALL_CATEGORY_NAMES = Arrays.asList(
-            "groceriesNonAlcoholicBeverages",
-            "alcoholicBeveragesTobacco",
-            "clothingFootwear",
-            "householdGoodsServices",
-            "housingUtilitiesFuel",
-            "health",
-            "transportation",
-            "communication",
-            "recreationCulture",
-            "education",
-            "foodAccommodation",
-            "otherGoodsServices"
-    );
-
     @ParameterizedTest
     @MethodSource("provideDecileAndCategoryComb") //소득분위 및 카테고리 조합을 만드는 함수
     @DisplayName("소득분위와 카테고리를 입력받아, 카테고리 거래 분위 선택 가중치를 캐시에서 가져온다")
-    void 소득분위와_카테고리를_입력받아_가중치를_캐시에서_가져온다(int decile, String categoryName){
+    void 소득분위와_카테고리를_입력받아_가중치를_캐시에서_가져온다(int decile, CategoryType categoryType) {
         //Given(파라미터)
         //When
-        List<Double> weights = tradeInfoLocalCache.getWeights(decile, categoryName);
+        List<Double> weights = tradeInfoLocalCache.getWeights(decile, categoryType);
         //Then
         // 1. 가져온 weights 리스트가 null이 아니어야함
         assertThat(weights)
-                .as("Decile %d, Category '%s'에 대한 weights는 null이 아니어야 합니다.", decile, categoryName)
+                .as("Decile %d, Category '%s'에 대한 weights는 null이 아니어야 합니다.", decile, categoryType)
                 .isNotNull();
 
         // 2. 가져온 weights 리스트가 비어있지 않아야함 (유효한 가중치가 존재해야 함)
         assertThat(weights)
-                .as("Decile %d, Category '%s'에 대한 weights는 비어있지 않아야 합니다.", decile, categoryName)
+                .as("Decile %d, Category '%s'에 대한 weights는 비어있지 않아야 합니다.", decile, categoryType)
                 .isNotEmpty();
 
         // 3. weights 리스트의 크기가 10 이어야함(10분위 각각을 선택할 확률 데이터임)
         assertThat(weights.size())
-                .as("Decile %d, Category '%s'에 대한 weights 리스트의 크기는 10이어야 합니다.", decile, categoryName)
+                .as("Decile %d, Category '%s'에 대한 weights 리스트의 크기는 10이어야 합니다.", decile, categoryType)
                 .isEqualTo(10);
 
         // 4. 모든 가중치 값이 0.0보다 크거나 같아야함.
         assertThat(weights)
-                .as("Decile %d, Category '%s'의 모든 가중치는 0.0 이상이어야 합니다.", decile, categoryName)
+                .as("Decile %d, Category '%s'의 모든 가중치는 0.0 이상이어야 합니다.", decile, categoryType)
                 .allMatch(weight -> weight >= 0.0 && weight <= 1.0);
     }
 
     //소득분위 및 카테고리 조합을 만드는 함수
-    private static Stream<Arguments> provideDecileAndCategoryComb(){
-        return IntStream.rangeClosed(1, 10)
+    private static Stream<Arguments> provideDecileAndCategoryComb() {
+        return IntStream.rangeClosed(1, 10) // 1~10 분위
                 .boxed()
-                .flatMap(decile -> ALL_CATEGORY_NAMES.stream()
-                        .map(categoryName -> Arguments.of(decile, categoryName)));
+                .flatMap(decile -> Arrays.stream(CategoryType.values())
+                        .map(category -> Arguments.of(decile, category))
+                );
     }
 
     @ParameterizedTest
     @MethodSource("provideWeights") //소득분위 및 카테고리 조합을 만드는 함수
     @DisplayName("소득분위와 카테고리를 입력받아, 카테고리 거래 분위 선택 가중치를 캐시에서 가져온다")
-    void 가중치를_기반으로_1에서_10분위_중_하나의_분위를_확률적으로_뽑는다(List<Double> weights){
+    void 가중치를_기반으로_1에서_10분위_중_하나의_분위를_확률적으로_뽑는다(List<Double> weights) {
         //Given(매개변수 로 주어진 weigths)
         //When
         //아래 로직대로라면, 가중치 합이 정확이 1이나 100 처럼 100%를 표시하는 수가 되지 않아도 됨
@@ -104,7 +91,7 @@ public class TradeGeneratorUnitTest extends TestConfig {
             }
         }
         // 부동 소수점 오차 등으로 인해 루프가 끝까지 도달하지 못할 경우, 마지막 decile 반환
-        if(newDecile == 0) newDecile = 1;
+        if (newDecile == 0) newDecile = 1;
 
         //Then
         // 1. newDecile이 1~10 사이 값이 나옴
@@ -134,9 +121,9 @@ public class TradeGeneratorUnitTest extends TestConfig {
     @ParameterizedTest
     @MethodSource("provideDecileAndCategoryComb") //소득분위 및 카테고리 조합을 만드는 함수
     @DisplayName("새로 뽑은 소득분위와 카테고리 이름을 사용하여 거래 목록들을 가져온다")
-    void 소득분위와_카테고리_이름을_사용하여_거래_목록을_가져온다(int decile,  String categoryName){
+    void 소득분위와_카테고리_이름을_사용하여_거래_목록을_가져온다(int decile, CategoryType categoryType) {
         //When
-        List<TradeInfo.TradeItemDetail> trades = tradeInfoLocalCache.getTradeList(decile, categoryName);
+        List<TradeInfo.TradeItemDetail> trades = tradeInfoLocalCache.getTradeList(decile, categoryType);
         //Then
         // 1. trades가 null이 아니어야 한다.
         assertThat(trades).isNotNull();
@@ -147,10 +134,10 @@ public class TradeGeneratorUnitTest extends TestConfig {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 5, 10, 50})
     @DisplayName("거래 목록에서 임의의 거래 하나를 정한다")
-    void 거래_목록에서_임의의_거래_하나를_선택한다(int cnt){
+    void 거래_목록에서_임의의_거래_하나를_선택한다(int cnt) {
         //Given
         List<TradeInfo.TradeItemDetail> trades = new ArrayList<>();
-        for(int i = 1; i <= cnt; i++){
+        for (int i = 1; i <= cnt; i++) {
             trades.add(new TradeInfo.TradeItemDetail("거래" + cnt, 10 + cnt, 100 + cnt));
         }
         //When

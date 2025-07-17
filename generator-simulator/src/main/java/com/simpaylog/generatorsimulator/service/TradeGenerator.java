@@ -2,14 +2,17 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
 import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.dto.CategoryType;
 import com.simpaylog.generatorsimulator.dto.Trade;
+import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom; // 더 나은 랜덤 생성기
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -23,24 +26,21 @@ public class TradeGenerator {
      * 입력된 분위와 카테고리를 기반으로 새로운 분위, 임의의 거래 및 해당 거래의 비용을 생성합니다.
      *
      * @param decile 사용자의 현재 분위 (1~10)
-     * @param categoryName 사용자가 선택한 카테고리 이름 (예: "groceriesNonAlcoholicBeverages")
+     * @param categoryType 사용자가 선택한 카테고리 이름 (예: "groceriesNonAlcoholicBeverages")
      * @return 생성된 거래 이름과 비용을 포함하는 TradeResult 객체
      * @throws IllegalArgumentException 유효하지 않은 입력 또는 데이터 부족 시 발생
      */
-    public Trade generateTrade(int decile, String categoryName) {
+    public Trade generateTrade(int decile, CategoryType categoryType) {
         // 1. 입력 유효성 검사 (분위는 1~10, 카테고리 이름은 비어있지 않아야 함)
         if (decile < 1 || decile > 10) {
-            throw new IllegalArgumentException("Input decile must be between 1 and 10.");
-        }
-        if (categoryName == null || categoryName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be null or empty.");
+            throw new SimulatorException(String.format("소득 분위는 1~10분위 사이어야 합니다. 입력된 분위값: %d", decile));
         }
 
         // 2. 입력받은 분위와 카테고리에 해당하는 weights를 참조
-        List<Double> weights = tradeInfoLocalCache.getWeights(decile, categoryName);
+        List<Double> weights = tradeInfoLocalCache.getWeights(decile, categoryType);
         if (weights == null || weights.isEmpty()) {
-            log.warn("decile: {} | category: {} 에 weights가 존재하지 않습니다.", decile, categoryName);
-            throw new IllegalArgumentException("Weights data not available for the given decile and category.");
+            log.warn("decile: {} | category: {} 에 weights가 존재하지 않습니다.", decile, categoryType);
+            throw new SimulatorException("Weights data not available for the given decile and category.");
         }
 
         // 3. 1~10에 대한 발생 확률을 가진 weights를 기반으로, 1~10분위 중 하나를 뽑음 (newDecile)
@@ -48,18 +48,16 @@ public class TradeGenerator {
         //log.info("Original Decile: {}, Category: {}, Selected New Decile: {}", decile, categoryName, newDecile);
 
         // 4. 새롭게 뽑은 newDecile, 카테고리 정보를 기반으로 trades 가져옴
-        List<TradeInfo.TradeItemDetail> trades = tradeInfoLocalCache.getTradeList(newDecile, categoryName);
+        List<TradeInfo.TradeItemDetail> trades = tradeInfoLocalCache.getTradeList(newDecile, categoryType);
         if (trades == null || trades.isEmpty()) {
-            log.warn("new decile: {} | category: {} 에 대한 trades가 존재하지 않습니다.", newDecile, categoryName);
-            throw new IllegalArgumentException("Trade list not available or empty for the selected new decile and category.");
+            log.warn("new decile: {} | category: {} 에 대한 trades가 존재하지 않습니다.", newDecile, categoryType.getKey());
+            throw new SimulatorException("Trade list not available or empty for the selected new decile and category.");
         }
 
         // 5. trades에서 임의의 거래 하나 선택
         TradeInfo.TradeItemDetail selectedTrade = selectRandomTrade(trades);
-
         // 6. 해당 거래의 min, max값 사이의 값 하나를 cost로 정하기
-        int cost = calculateRandomCost(selectedTrade.min(), selectedTrade.max());
-
+        BigDecimal cost = BigDecimal.valueOf(calculateRandomCost(selectedTrade.min(), selectedTrade.max()));
         // 7. 임의의 거래 이름 및 cost 반환
         return new Trade(selectedTrade.name(), cost);
     }
@@ -101,7 +99,7 @@ public class TradeGenerator {
      */
     private TradeInfo.TradeItemDetail selectRandomTrade(List<TradeInfo.TradeItemDetail> trades) {
         if (trades.isEmpty()) {
-            throw new IllegalArgumentException("Trade list cannot be empty for random selection.");
+            throw new SimulatorException("해당 카테고리의 상품이 비어있습니다.");
         }
         int randomIdx = random.nextInt(trades.size()); // 0 <= idx < size
         return trades.get(randomIdx);
