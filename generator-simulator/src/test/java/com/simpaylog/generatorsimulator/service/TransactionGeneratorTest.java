@@ -14,56 +14,58 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Stream;
 
 @Import({CategorySpendingPatternLocalCache.class, CategoryPreferenceWeightLocalCache.class, TransactionGenerator.class})
 class TransactionGeneratorTest extends TestConfig {
-    @Autowired TransactionGenerator transactionGenerator;
-    Map<CategoryType, List<LocalDateTime>> countMap;
+    @Autowired
+    TransactionGenerator transactionGenerator;
+
+    private Map<CategoryType, List<LocalDateTime>> countMap;
+    private final Set<CategoryType> TEST_TARGET_CATEGORIES = Set.of(CategoryType.values());
+
     @BeforeEach
     void setup() {
         countMap = new HashMap<>();
-        for(CategoryType categoryType : CategoryType.values()) {
+        for (CategoryType categoryType : CategoryType.values()) {
             countMap.put(categoryType, new ArrayList<>());
         }
     }
+
     @AfterEach
     void after() {
-        String[] days = {" ", "월", "화", "수", "목", "금", "토", "일"};
-        for(Map.Entry<CategoryType, List<LocalDateTime>> entry : countMap.entrySet()) {
-            if(!entry.getKey().equals(CategoryType.TRANSPORTATION)) continue;
-            System.out.printf("%s: %d개%n",entry.getKey().getLabel(), entry.getValue().size());
-            Collections.sort(entry.getValue());
-//            for(LocalDateTime localDateTime : entry.getValue()) {
-//                System.out.println(localDateTime + " " + days[localDateTime.getDayOfWeek().getValue()]);
-//            }
-//        System.out.println();
-        }
+        System.out.println("카테고리별 한달 집계");
+        printCategoryResult(countMap, TEST_TARGET_CATEGORIES);
     }
 
-    //@RepeatedTest(10)
-    @ParameterizedTest
     @MethodSource("preferenceTypes")
+    @ParameterizedTest(name = "[{index}] 성향: {0}")
     void test(PreferenceType preferenceType) {
         // Given
         LocalDateTime from = LocalDateTime.of(2025, 7, 1, 0, 0);
         LocalDateTime to = LocalDateTime.of(2025, 7, 31, 23, 59);
+        Map<CategoryType, LocalDateTime> repeated = new HashMap<>();
         // When & Then
-        for(; from.isBefore(to); from = from.plusHours(1)) {
-            //System.out.println(from.getHour() +"시 가능한 카테고리");
-            //System.out.print("선택된 카테고리: ");
-            LocalDateTime finalFrom = from;
-            transactionGenerator.pickOneCategory(from, preferenceType).ifPresentOrElse(s -> {
-                countMap.get(s).add(finalFrom);
-                //System.out.println(s);
-            }, () -> System.out.println("데이터 없음"));
+        long hours = ChronoUnit.HOURS.between(from, to);
+        for (int i = 0; i <= hours; i++) {
+            LocalDateTime current = from.plusHours(i);
+            transactionGenerator.pickOneCategory(current, preferenceType, repeated)
+                    .ifPresent(s -> countMap.get(s).add(current));
         }
-            System.out.print("["+preferenceType.getName() + "] ");
 
     }
 
     static Stream<Arguments> preferenceTypes() {
         return Arrays.stream(PreferenceType.values()).map(Arguments::of);
+    }
+
+    private void printCategoryResult(Map<CategoryType, List<LocalDateTime>> countMap, Set<CategoryType> targets) {
+        for (Map.Entry<CategoryType, List<LocalDateTime>> entry : countMap.entrySet()) {
+            if (!targets.contains(entry.getKey())) continue;
+            System.out.printf("%s: %d개%n", entry.getKey().getLabel(), entry.getValue().size());
+            Collections.sort(entry.getValue());
+        }
     }
 }
