@@ -1,5 +1,6 @@
 package com.simpaylog.generatorsimulator.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,6 +24,7 @@ public enum CategoryType {
     private final String label;
     private final long minIntervalMinutes;
 
+    @JsonCreator
     public static CategoryType fromKey(String key) {
         return switch (key) {
             case "groceriesNonAlcoholicBeverages" -> GROCERIES_NON_ALCOHOLIC_BEVERAGES;

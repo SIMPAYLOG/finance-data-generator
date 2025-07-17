@@ -2,7 +2,8 @@ package com.simpaylog.generatorsimulator.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorsimulator.cache.dto.TradeInfo; // 새로 만든 DTO 임포트
+import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorsimulator.dto.CategoryType;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,23 +22,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class TradeInfoLocalCache {
 
-    private final Map<Integer, Map<String, TradeInfo.CategoryDetail>> cache = new ConcurrentHashMap<>();
+    private final Map<Integer, Map<CategoryType, TradeInfo.CategoryDetail>> cache = new ConcurrentHashMap<>();
 
-    public List<Double> getWeights(int decile, String categoryName) {
-        Map<String, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
+    public List<Double> getWeights(int decile, CategoryType categoryType) {
+        Map<CategoryType, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
         if (categoryMap != null) {
-            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryName);
+            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
             if (categoryDetail != null) {
                 return categoryDetail.weights();
             }
         }
-        return new ArrayList<>(); //입력값이 에러인 경우 생각하기
+        //TODO:입력값이 에러인 경우 생각하기
+        return new ArrayList<>();
     }
 
-    public List<TradeInfo.TradeItemDetail> getTradeList(int decile, String categoryName) {
-        Map<String, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
+    public List<TradeInfo.TradeItemDetail> getTradeList(int decile, CategoryType categoryType) {
+        Map<CategoryType, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
         if (categoryMap != null) {
-            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryName);
+            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
             if (categoryDetail != null) {
                 return categoryDetail.trades();
             }
@@ -52,10 +54,10 @@ public class TradeInfoLocalCache {
             InputStream input = new ClassPathResource("trade_info.json").getInputStream();
             List<TradeInfo> dataList = mapper.readValue(input, new TypeReference<>() {
             });
-            Map<Integer, Map<String, TradeInfo.CategoryDetail>> tempCache = new HashMap<>();
+            Map<Integer, Map<CategoryType, TradeInfo.CategoryDetail>> tempCache = new HashMap<>();
 
             for (TradeInfo decileInfo : dataList) {
-                Map<String, TradeInfo.CategoryDetail> categoryMap = new HashMap<>();
+                Map<CategoryType, TradeInfo.CategoryDetail> categoryMap = new HashMap<>();
                 for (TradeInfo.CategoryDetail categoryDetail : decileInfo.category()) {
                     categoryMap.put(categoryDetail.name(), categoryDetail);
                 }

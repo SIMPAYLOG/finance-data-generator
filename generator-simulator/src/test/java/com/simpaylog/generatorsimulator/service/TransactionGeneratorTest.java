@@ -18,7 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Stream;
 
-@Import({CategorySpendingPatternLocalCache.class, CategoryPreferenceWeightLocalCache.class, TransactionGenerator.class})
+@Import(TransactionGenerator.class)
 class TransactionGeneratorTest extends TestConfig {
     @Autowired
     TransactionGenerator transactionGenerator;
