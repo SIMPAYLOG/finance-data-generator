@@ -17,9 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-@Import({TransactionGenerator.class, TradeGenerator.class, CategoryPreferenceWeightLocalCache.class, CategorySpendingPatternLocalCache.class, TradeInfoLocalCache.class})
+@Import({TransactionGenerator.class, TradeGenerator.class})
 class TransactionServiceTest extends TestConfig {
 
     @Autowired
