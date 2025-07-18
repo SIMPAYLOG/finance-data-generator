@@ -8,33 +8,23 @@ public record TransactionLog(
         String uuid,
         Long userId,
         LocalDateTime timestamp,
-        String transactionType,
+        TransactionType transactionType,
         String description,
         BigDecimal amount,
         BigDecimal balanceBefore,
         BigDecimal balanceAfter
 ) {
-    // 임금
-    public static TransactionLog withdraw(Long userId, LocalDateTime timestamp, String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
-        return new TransactionLog(
-                UUID.randomUUID().toString(),
-                userId,
-                timestamp,
-                "WITHDRAW",
-                description,
-                amount,
-                balanceBefore,
-                balanceAfter
-        );
+    public enum TransactionType {
+        WITHDRAW,
+        DEPOSIT
     }
 
-    // 출금
-    public static TransactionLog deposit(Long userId, LocalDateTime timestamp, String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+    public static TransactionLog of(Long userId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
         return new TransactionLog(
                 UUID.randomUUID().toString(),
                 userId,
                 timestamp,
-                "DEPOSIT",
+                transactionType,
                 description,
                 amount,
                 balanceBefore,
