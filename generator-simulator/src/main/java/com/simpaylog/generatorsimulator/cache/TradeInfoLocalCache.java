@@ -11,7 +11,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,25 +25,14 @@ public class TradeInfoLocalCache {
 
     public List<Double> getWeights(int decile, CategoryType categoryType) {
         Map<CategoryType, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
-        if (categoryMap != null) {
-            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
-            if (categoryDetail != null) {
-                return categoryDetail.weights();
-            }
-        }
-        //TODO:입력값이 에러인 경우 생각하기
-        return new ArrayList<>();
+        TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
+        return categoryDetail.weights();
     }
 
     public List<TradeInfo.TradeItemDetail> getTradeList(int decile, CategoryType categoryType) {
         Map<CategoryType, TradeInfo.CategoryDetail> categoryMap = cache.get(decile);
-        if (categoryMap != null) {
-            TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
-            if (categoryDetail != null) {
-                return categoryDetail.trades();
-            }
-        }
-        return new ArrayList<>();
+        TradeInfo.CategoryDetail categoryDetail = categoryMap.get(categoryType);
+        return categoryDetail.trades();
     }
 
     @PostConstruct
