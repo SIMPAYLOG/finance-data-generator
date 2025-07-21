@@ -12,11 +12,15 @@ CREATE TABLE user_behavior_profiles
 CREATE TABLE users
 (
     id                BIGSERIAL PRIMARY KEY,
+    name              varchar(50),
     profile_id        BIGINT UNIQUE NOT NULL REFERENCES user_behavior_profiles (id) ON DELETE CASCADE,
     age               SMALLINT,
     gender            char(1),
     balance           BIGINT,
     occupation_code   SMALLINT,
-    occupation_name varchar(50),
-    job_number        SMALLINT
+    occupation_name   varchar(50),
+    job_number        SMALLINT,
+    condition_id     Integer
 );
+
+CREATE INDEX idx_users_name ON users (name);
