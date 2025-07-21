@@ -2,13 +2,19 @@ package com.simpaylog.generatorcore.enums;
 
 import com.simpaylog.generatorcore.strategy.*;
 import com.simpaylog.generatorcore.strategy.impl.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public enum WageType {
-    DAILY,
-    WEEKLY,
-    BI_WEEKLY,
-    REGULAR,
-    RANDOM;
+    DAILY(0.15),
+    WEEKLY(0.05),
+    BI_WEEKLY(0.1),
+    REGULAR(0.1),
+    RANDOM(0.2);
+
+    private final double volatility;
 
     public WageDateStrategy getStrategy() {
         return switch (this) {

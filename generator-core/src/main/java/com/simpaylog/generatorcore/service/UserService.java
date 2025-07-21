@@ -7,6 +7,7 @@ import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +48,15 @@ public class UserService {
     private List<User> generateUser(UserGenerationCondition userGenerationCondition) {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
+
+    // TODO 유저 및 유저 프로필 반환 메서드 필요
+
+    @Transactional
+    public void updateUserBalance(Long userId, BigDecimal balance) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new CoreException(String.format("NOT FOUND USER: %d", userId)));
+        user.setBalance(balance);
+    }
+
 
     public UserAnalyzeResultResponse analyzeUsers() {
         List<UserInfoResponse> users = perferenceIdToType(userRepository.findAllSimpleInfo());
