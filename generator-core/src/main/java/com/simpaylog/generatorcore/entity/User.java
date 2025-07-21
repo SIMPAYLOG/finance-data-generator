@@ -3,6 +3,7 @@ package com.simpaylog.generatorcore.entity;
 import com.simpaylog.generatorcore.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -22,6 +23,7 @@ public class User {
     private Integer age;
     @Enumerated(EnumType.STRING)
     private Gender gender;
+    @Setter
     private BigDecimal balance;
     private int jobNumber;
     private int occupationCode;

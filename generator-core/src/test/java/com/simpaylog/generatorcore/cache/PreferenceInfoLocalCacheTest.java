@@ -1,7 +1,6 @@
-package com.simpaylog.generatorsimulator.configuration;
+package com.simpaylog.generatorcore.cache;
 
-import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
-import com.simpaylog.generatorsimulator.TestConfig;
+import com.simpaylog.generatorcore.TestConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;

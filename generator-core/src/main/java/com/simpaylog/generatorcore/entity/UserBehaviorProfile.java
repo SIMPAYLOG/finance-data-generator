@@ -33,7 +33,7 @@ public class UserBehaviorProfile {
         this.incomeValue = incomeValue;
         this.autoTransferDayOfMonth = autoTransferDayOfMonth;
         this.activeHours = "{\"min\": 7, \"max\": 23}";
-        this.assetValue = BigDecimal.ZERO;
+        this.assetValue = BigDecimal.ZERO; //TODO: 자산 value 추가
     }
 
     public static UserBehaviorProfile of(BigDecimal incomeValue, int preferenceId, WageType wageType, int autoTransferDayOfMonth) {
