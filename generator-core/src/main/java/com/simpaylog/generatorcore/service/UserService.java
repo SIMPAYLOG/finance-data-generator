@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -87,7 +88,7 @@ public class UserService {
     List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
         return occupationCodeStats.stream()
                 .map(stat -> new OccupationNameStat(
-                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory(),
+                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory().substring(2),
                         stat.count()
                 ))
                 .collect(Collectors.toList());
@@ -102,35 +103,40 @@ public class UserService {
     }
 
     public AgeGroupResponse getAgeGroup() {
-        return new AgeGroupResponse(occupationLocalCache.get(1).ageGroupInfo().stream()
-                .map(ageInfo -> {
-                    return new AgeGroupDetailResponse(
-                            String.valueOf(ageInfo.range()[0]),
-                            String.format("%s (%d-%d세)",
-                                    ageInfo.label(),
-                                    ageInfo.range()[0],
-                                    ageInfo.range()[1])
-                    );
-                })
+        return new AgeGroupResponse(Stream.concat(occupationLocalCache.get(1).ageGroupInfo().stream()
+                                .map(ageInfo -> {
+                                    return new AgeGroupDetailResponse(
+                                            String.valueOf(ageInfo.range()[0]),
+                                            String.format("%s (%d-%d세)",
+                                                    ageInfo.label(),
+                                                    ageInfo.range()[0],
+                                                    ageInfo.range()[1])
+                                    );
+                                }),
+                        Stream.of(new AgeGroupDetailResponse("MIX", "혼합")))
                 .collect(Collectors.toList()));
     }
 
     public OccupationListResponse getOccupationCategory() {
-        return new OccupationListResponse(occupationLocalCache.getCache().values().stream()
-                .map(occupation -> new OccupationCategoryResponse(
-                        String.valueOf(occupation.code()),
-                        occupation.occupationCategory().substring(2)
-                ))
+        return new OccupationListResponse(Stream.concat(
+                        occupationLocalCache.getCache().values().stream()
+                                .map(occupation -> new OccupationCategoryResponse(
+                                        String.valueOf(occupation.code()),
+                                        occupation.occupationCategory().substring(2)
+                                )),
+                        Stream.of(new OccupationCategoryResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }
 
     public PreferenceListResponse getPreferenceList() {
-        return new PreferenceListResponse(preferenceLocalCache.getCache().values().stream()
-                .map(preferenceInfo -> new PreferenceResponse(
-                        String.valueOf(preferenceInfo.id()),
-                        preferenceInfo.name()
-                ))
+        return new PreferenceListResponse(Stream.concat(
+                        preferenceLocalCache.getCache().values().stream()
+                                .map(preferenceInfo -> new PreferenceResponse(
+                                        String.valueOf(preferenceInfo.id()),
+                                        preferenceInfo.name()
+                                )),
+                        Stream.of(new PreferenceResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }
