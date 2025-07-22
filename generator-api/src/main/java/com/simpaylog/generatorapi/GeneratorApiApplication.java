@@ -5,7 +5,6 @@ import com.simpaylog.generatorsimulator.GeneratorSimulatorConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
 
 @Import({GeneratorCoreConfiguration.class, GeneratorSimulatorConfiguration.class})
 @SpringBootApplication

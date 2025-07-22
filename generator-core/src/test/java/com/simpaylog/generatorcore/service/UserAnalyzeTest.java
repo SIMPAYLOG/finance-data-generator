@@ -50,7 +50,7 @@ public class UserAnalyzeTest extends TestConfig {
     @DisplayName("생성된 데이터에서 광업 분야에서 일하는 사람의 수와 20대 사람의 수, 남자의 수를 분석한다.")
     void analyzeUsersIntegrationTest() {
         //given
-        String targetOccupation = "B.광업";
+        String targetOccupation = "광업";
         int targetAgeGroup = 20;
         int expectedTotalUser = 10;
         int expectedTargetOccupationCnt = 5;
@@ -64,7 +64,8 @@ public class UserAnalyzeTest extends TestConfig {
                 .map(AgeStat::count).findFirst().get();
         Long realOccupationCnt = response.occupationDistribution().stream()
                 .filter(stats -> targetOccupation.equals(stats.occupationCategory()))
-                .map(OccupationNameStat::count).findFirst().get();
+                .map(OccupationNameStat::count)
+                .findFirst().get();
 
         // then
         assertThat(userRepository.count()).isEqualTo(expectedTotalUser);
