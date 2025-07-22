@@ -1,8 +1,8 @@
 package com.simpaylog.generatorapi.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorapi.dto.TransactionResultEvent;
-import com.simpaylog.generatorapi.dto.SimulationCompleteEvent;
+import com.simpaylog.generatorapi.dto.enums.EventType;
+import com.simpaylog.generatorapi.dto.response.TransactionResultResponse;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorsimulator.dto.DailyTransactionResult;
 import com.simpaylog.generatorsimulator.service.TransactionService;
@@ -28,7 +28,7 @@ public class TransactionSimulationExecutor {
 
 
     public void simulateTransaction(List<TransactionUserDto> users, LocalDate from, LocalDate to) {
-        try (ExecutorService executor = Executors.newFixedThreadPool(10)) {
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
             for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
                 List<DailyTransactionResult> dailyTransactionResults = processDailyTransactions(users, date, executor);
@@ -38,7 +38,7 @@ public class TransactionSimulationExecutor {
             Thread.currentThread().interrupt();
             throw new RuntimeException("트랜잭션 시뮬레이션 중단", e);
         }  finally {
-            eventPublisher.publishEvent(new SimulationCompleteEvent("모든 시뮬레이션이 완료되었습니다."));
+            eventPublisher.publishEvent(new TransactionResultResponse("모든 시뮬레이션이 완료되었습니다.", EventType.COMPLETE));
         }
     }
 
@@ -65,11 +65,11 @@ public class TransactionSimulationExecutor {
     private void processDailyResults(LocalDate date, List<DailyTransactionResult> results) {
         try {
             String summaryMessage = String.format("==== %s 결과 요약 (총 %d건) ====", date, results.size());
-            eventPublisher.publishEvent(new TransactionResultEvent(summaryMessage));
+            eventPublisher.publishEvent(new TransactionResultResponse(summaryMessage, EventType.PROGRESS));
 
             for (DailyTransactionResult result : results) {
                 String jsonResult = objectMapper.writeValueAsString(result);
-                eventPublisher.publishEvent(new TransactionResultEvent(jsonResult));
+                eventPublisher.publishEvent(new TransactionResultResponse(jsonResult, EventType.PROGRESS));
             }
         } catch (Exception e) {
             log.error("Failed to publish result event", e);

@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
-import com.simpaylog.generatorapi.dto.TransactionResultEvent;
-import com.simpaylog.generatorapi.dto.SimulationCompleteEvent;
+import com.simpaylog.generatorapi.dto.enums.EventType;
+import com.simpaylog.generatorapi.dto.response.TransactionResultResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -17,25 +17,23 @@ public class TransactionResultEventListener {
 
     @Async
     @EventListener
-    public void handleTransactionResult(TransactionResultEvent event) {
-        log.info("Event received: {}", event.message());
-        webSocketProgressService.sendProgressUpdate(event.message());
-    }
+    public void handleTransactionResult(TransactionResultResponse response) {
+        log.info("Event received [{}]: {}", response.eventType(), response.message());
 
-    @Async
-    @EventListener
-    public void handleSimulationComplete(SimulationCompleteEvent event) {
-        log.info("Simulation complete event received: {}", event.finalMessage());
-        try {
-            // 마지막 완료 메시지를 클라이언트로 전송
-            webSocketProgressService.sendProgressUpdate(event.finalMessage());
-            // 메시지가 확실히 전송되도록 잠시 대기
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            // 모든 웹소켓 연결을 종료
-            webSocketProgressService.closeAllSessions();
+        // 이벤트 타입에 따라 분기 처리
+        if (response.eventType() == EventType.PROGRESS) {
+            webSocketProgressService.sendProgressUpdate(response.message());
+
+        } else if (response.eventType() == EventType.COMPLETE) {
+            try {
+                webSocketProgressService.sendProgressUpdate(response.message());
+                Thread.sleep(100); // 메시지 전송 보장을 위한 대기
+            } catch (InterruptedException e) {
+                log.error("Thread interrupted.", e);
+                Thread.currentThread().interrupt();
+            } finally {
+                webSocketProgressService.closeAllSessions();
+            }
         }
     }
 }

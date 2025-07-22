@@ -27,19 +27,7 @@ public class ProgressWebSocketHandler extends TextWebSocketHandler {
         log.info("WebSocket session established: {}", session.getId());
         progressService.addSession(session);
 
-        Map<String, Object> attributes = session.getAttributes();
-        String fromStr = (String) attributes.get("from");
-        String toStr = (String) attributes.get("to");
-
-        if (fromStr != null && toStr != null) {
-            LocalDate from = LocalDate.parse(fromStr);
-            LocalDate to = LocalDate.parse(toStr);
-            simulationService.startSimulation(from, to);
-        } else {
-            log.warn("From/To date parameters are missing in WebSocket session.");
-            session.close();
-        }
-
+        simulationService.startSimulation((LocalDate)session.getAttributes().get("from"), (LocalDate)session.getAttributes().get("to"));
     }
 
     // 클라이언트 연결이 끊겼을 때 실행
