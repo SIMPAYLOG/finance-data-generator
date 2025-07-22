@@ -1,7 +1,8 @@
-package com.simpaylog.generatorcore.service;
+package com.simpaylog.generatorapi.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -33,5 +34,19 @@ public class WebSocketProgressService {
                 log.error("Failed to send message to session {}", session.getId(), e);
             }
         });
+    }
+
+    public void closeAllSessions() {
+        log.info("Closing all WebSocket sessions.");
+        sessions.forEach(session -> {
+            try {
+                if (session.isOpen()) {
+                    session.close(CloseStatus.NORMAL);
+                }
+            } catch (IOException e) {
+                log.error("Error closing session {}", session.getId(), e);
+            }
+        });
+        sessions.clear(); // 세션 목록 비우기
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Map;
@@ -16,21 +17,10 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        if (request instanceof ServletServerHttpRequest) {
-            ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
-            URI uri = servletRequest.getURI();
-            String query = uri.getQuery();
-
-            if (query != null) {
-                String[] params = query.split("&");
-                for (String param : params) {
-                    String[] pair = param.split("=", 2);
-                    if (pair.length == 2) {
-                        attributes.put(pair[0], pair[1]);
-                        log.info("WebSocket Handshake Parameter: {} = {}", pair[0], pair[1]);
-                    }
-                }
-            }
+        String path = request.getURI().getQuery();
+        if (path != null && !path.isEmpty()) {
+            Map<String, String> queryParams = UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams().toSingleValueMap();
+            attributes.putAll(queryParams);
         }
         return true;
     }

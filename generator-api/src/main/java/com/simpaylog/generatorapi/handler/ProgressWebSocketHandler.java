@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.handler;
 
-import com.simpaylog.generatorcore.service.SimulationService;
-import com.simpaylog.generatorcore.service.WebSocketProgressService;
+import com.simpaylog.generatorapi.service.SimulationService;
+import com.simpaylog.generatorapi.service.WebSocketProgressService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,6 +10,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @Component
@@ -25,15 +26,20 @@ public class ProgressWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         log.info("WebSocket session established: {}", session.getId());
         progressService.addSession(session);
-        Map<String, Object> attributes = session.getAttributes();
-        String period = (String) attributes.get("period");
-        simulationService.startSimulation(session, period);
-    }
 
-    // 클라이언트로부터 메시지를 받았을 때 실행
-    @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        log.info("Received message: {} from session: {}", message.getPayload(), session.getId());
+        Map<String, Object> attributes = session.getAttributes();
+        String fromStr = (String) attributes.get("from");
+        String toStr = (String) attributes.get("to");
+
+        if (fromStr != null && toStr != null) {
+            LocalDate from = LocalDate.parse(fromStr);
+            LocalDate to = LocalDate.parse(toStr);
+            simulationService.startSimulation(from, to);
+        } else {
+            log.warn("From/To date parameters are missing in WebSocket session.");
+            session.close();
+        }
+
     }
 
     // 클라이언트 연결이 끊겼을 때 실행

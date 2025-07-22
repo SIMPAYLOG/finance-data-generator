@@ -7,6 +7,7 @@ import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -50,6 +51,10 @@ public class UserService {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
+    public List<TransactionUserDto> findAllTransactionUser(){
+        return userRepository.findAllTransactionUserDtos();
+    }
+
     // TODO 유저 및 유저 프로필 반환 메서드 필요
 
     @Transactional
@@ -60,8 +65,6 @@ public class UserService {
 
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        List<UserInfoResponse> users = perferenceIdToType(userRepository.findAllSimpleInfo());
-
         UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
                 userRepository.count(),
                 userRepository.analyzeAgeGroup(),
