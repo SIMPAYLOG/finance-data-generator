@@ -4,29 +4,28 @@ import com.simpaylog.generatorcore.cache.DetailOccupationLocalCache;
 import com.simpaylog.generatorcore.cache.IncomeLevelLocalCache;
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
-import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.*;
-import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.*;
-import com.simpaylog.generatorcore.cache.dto.OccupationInfos.*;
+import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.Job;
+import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.SubOccupation;
+import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.AssetRange;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos.AgeGroupInfo;
+import com.simpaylog.generatorcore.cache.dto.OccupationInfos.Occupation;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.UserBehaviorProfile;
 import com.simpaylog.generatorcore.enums.Gender;
-import com.simpaylog.generatorcore.utils.NameUtil;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.utils.NameUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 import static com.simpaylog.generatorcore.utils.MultinomialAllocator.normalize;
 import static com.simpaylog.generatorcore.utils.MultinomialAllocator.sampleMultinomial;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserGenerator {
@@ -42,7 +41,6 @@ public class UserGenerator {
         double[] ratios = setRatioByCondition(condition.occupationCode());
         double[] normalizeRatio = normalize(ratios);
         int[] numByOccupation = sampleMultinomial(normalizeRatio, condition.userCount());
-        log.info("직업당 요청된 풀 수 : {}", Arrays.toString(numByOccupation));
 
         for (int code = 0; code < numByOccupation.length; code++) {
             if (numByOccupation[code] == 0) continue;
