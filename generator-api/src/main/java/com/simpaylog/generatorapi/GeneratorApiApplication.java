@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 @SpringBootApplication
 public class GeneratorApiApplication {
     public static void main(String[] args) {
-        System.setProperty("spring.config.name", "application-core,application-api");
+        System.setProperty("spring.config.name", "application-core,application-api,application-simulator");
         SpringApplication.run(GeneratorApiApplication.class, args);
     }
 }

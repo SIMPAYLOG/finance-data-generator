@@ -5,6 +5,7 @@ import com.simpaylog.generatorcore.dto.analyze.AgeStat;
 import com.simpaylog.generatorcore.dto.analyze.GenderStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,6 +39,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT NEW com.simpaylog.generatorcore.dto.UserInfoDto(u.name, u.gender, u.age, u.userBehaviorProfile.preferenceId, u.occupationName) " +
             "FROM User u")
     List<UserInfoDto> findAllSimpleInfo();
+
+    @Query("SELECT NEW com.simpaylog.generatorcore.entity.dto.TransactionUserDto(" +
+            "u.id, " +
+            "u.decile, " +
+            "u.balance, " +
+            "p.preferenceId, " +
+            "p.wageType, " +
+            "p.autoTransferDayOfMonth, " +
+            "p.activeHours, " +
+            "p.incomeValue) " +
+            "FROM User u JOIN u.userBehaviorProfile p")
+    List<TransactionUserDto> findAllTransactionUserDtos();
 
     Page<User> findAllByOrderByNameAsc(Pageable pageable);
 }

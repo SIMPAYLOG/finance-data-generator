@@ -7,6 +7,7 @@ import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +51,10 @@ public class UserService {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
+    public List<TransactionUserDto> findAllTransactionUser(){
+        return userRepository.findAllTransactionUserDtos();
+    }
+
     // TODO 유저 및 유저 프로필 반환 메서드 필요
 
     @Transactional
@@ -59,8 +65,6 @@ public class UserService {
 
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        List<UserInfoResponse> users = perferenceIdToType(userRepository.findAllSimpleInfo());
-
         UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
                 userRepository.count(),
                 userRepository.analyzeAgeGroup(),
@@ -98,7 +102,7 @@ public class UserService {
     List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
         return occupationCodeStats.stream()
                 .map(stat -> new OccupationNameStat(
-                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory(),
+                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory().substring(2),
                         stat.count()
                 ))
                 .collect(Collectors.toList());
@@ -113,35 +117,40 @@ public class UserService {
     }
 
     public AgeGroupResponse getAgeGroup() {
-        return new AgeGroupResponse(occupationLocalCache.get(1).ageGroupInfo().stream()
-                .map(ageInfo -> {
-                    return new AgeGroupDetailResponse(
-                            String.valueOf(ageInfo.range()[0]),
-                            String.format("%s (%d-%d세)",
-                                    ageInfo.label(),
-                                    ageInfo.range()[0],
-                                    ageInfo.range()[1])
-                    );
-                })
+        return new AgeGroupResponse(Stream.concat(occupationLocalCache.get(1).ageGroupInfo().stream()
+                                .map(ageInfo -> {
+                                    return new AgeGroupDetailResponse(
+                                            String.valueOf(ageInfo.range()[0]),
+                                            String.format("%s (%d-%d세)",
+                                                    ageInfo.label(),
+                                                    ageInfo.range()[0],
+                                                    ageInfo.range()[1])
+                                    );
+                                }),
+                        Stream.of(new AgeGroupDetailResponse("MIX", "혼합")))
                 .collect(Collectors.toList()));
     }
 
     public OccupationListResponse getOccupationCategory() {
-        return new OccupationListResponse(occupationLocalCache.getCache().values().stream()
-                .map(occupation -> new OccupationCategoryResponse(
-                        String.valueOf(occupation.code()),
-                        occupation.occupationCategory().substring(2)
-                ))
+        return new OccupationListResponse(Stream.concat(
+                        occupationLocalCache.getCache().values().stream()
+                                .map(occupation -> new OccupationCategoryResponse(
+                                        String.valueOf(occupation.code()),
+                                        occupation.occupationCategory().substring(2)
+                                )),
+                        Stream.of(new OccupationCategoryResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }
 
     public PreferenceListResponse getPreferenceList() {
-        return new PreferenceListResponse(preferenceLocalCache.getCache().values().stream()
-                .map(preferenceInfo -> new PreferenceResponse(
-                        String.valueOf(preferenceInfo.id()),
-                        preferenceInfo.name()
-                ))
+        return new PreferenceListResponse(Stream.concat(
+                        preferenceLocalCache.getCache().values().stream()
+                                .map(preferenceInfo -> new PreferenceResponse(
+                                        String.valueOf(preferenceInfo.id()),
+                                        preferenceInfo.name()
+                                )),
+                        Stream.of(new PreferenceResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }
