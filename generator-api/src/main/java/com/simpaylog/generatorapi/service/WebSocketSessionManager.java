@@ -1,7 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -9,9 +9,9 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-@Service
 @Slf4j
-public class WebSocketProgressService {
+@Component
+public class WebSocketSessionManager {
 
     private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 

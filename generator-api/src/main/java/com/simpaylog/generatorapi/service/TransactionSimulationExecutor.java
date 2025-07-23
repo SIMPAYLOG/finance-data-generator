@@ -1,5 +1,6 @@
 package com.simpaylog.generatorapi.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.enums.EventType;
 import com.simpaylog.generatorapi.dto.response.TransactionResultResponse;
@@ -34,11 +35,11 @@ public class TransactionSimulationExecutor {
                 List<DailyTransactionResult> dailyTransactionResults = processDailyTransactions(users, date, executor);
                 processDailyResults(date, dailyTransactionResults);
             }
+            eventPublisher.publishEvent(new TransactionResultResponse("시뮬레이션이 정상적으로 종료되었습니다.", EventType.COMPLETE));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RuntimeException("트랜잭션 시뮬레이션 중단", e);
-        }  finally {
-            eventPublisher.publishEvent(new TransactionResultResponse("모든 시뮬레이션이 완료되었습니다.", EventType.COMPLETE));
+            eventPublisher.publishEvent(new TransactionResultResponse("예기치 못한 에러로 작업이 중단되었습니다.", EventType.FAIL));
+            log.error("트랜잭션 시뮬레이션 중단 : {}", e.getCause().getMessage());
         }
     }
 
@@ -62,17 +63,20 @@ public class TransactionSimulationExecutor {
     }
 
     // TODO 클라이언트에서 작업 종료 기능 추가시 SessionId 추가 필요
-    private void processDailyResults(LocalDate date, List<DailyTransactionResult> results) {
-        try {
-            String summaryMessage = String.format("==== %s 결과 요약 (총 %d건) ====", date, results.size());
-            eventPublisher.publishEvent(new TransactionResultResponse(summaryMessage, EventType.PROGRESS));
+    private void processDailyResults(LocalDate date, List<DailyTransactionResult> results){
+        if(results.isEmpty()){
+            return;
+        }
+        String summaryMessage = String.format("==== %s 결과 요약 (총 %d건) ====", date, results.size());
+        eventPublisher.publishEvent(new TransactionResultResponse(summaryMessage, EventType.PROGRESS));
 
+        try{
             for (DailyTransactionResult result : results) {
                 String jsonResult = objectMapper.writeValueAsString(result);
                 eventPublisher.publishEvent(new TransactionResultResponse(jsonResult, EventType.PROGRESS));
             }
-        } catch (Exception e) {
-            log.error("Failed to publish result event", e);
+        } catch (JsonProcessingException e) {
+            log.error("error occurred while parsing json result: {}", e.getMessage());
         }
     }
 }
