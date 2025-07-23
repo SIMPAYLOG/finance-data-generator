@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.validator;
+package com.simpaylog.generatorapi.dto.request.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
