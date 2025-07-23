@@ -2,13 +2,15 @@ package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
-import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
+import com.simpaylog.generatorcore.repository.PaydayCache;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
+    private final PaydayCache paydayCache;
 
     @Transactional
     public void createUser(List<UserGenerationCondition> userGenerationConditions) {
@@ -51,8 +56,18 @@ public class UserService {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
-    public List<TransactionUserDto> findAllTransactionUser(){
+    public List<TransactionUserDto> findAllTransactionUser() {
         return userRepository.findAllTransactionUserDtos();
+    }
+
+    public void initPaydayCache(LocalDate from, LocalDate to) {
+        List<TransactionUserDto> users = findAllTransactionUser();
+        paydayCache.init(users, from, to);
+        for (TransactionUserDto user : users) {
+            for (LocalDate cur = LocalDate.of(from.getYear(), from.getMonth(), 1); !cur.isAfter(to); cur = cur.plusMonths(1)) {
+                paydayCache.register(user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
+            }
+        }
     }
 
     // TODO 유저 및 유저 프로필 반환 메서드 필요
@@ -65,14 +80,13 @@ public class UserService {
 
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
+
+        return new UserAnalyzeResultResponse(
                 userRepository.count(),
                 userRepository.analyzeAgeGroup(),
                 occupationCodeToName(userRepository.analyzeOccupation()),
                 userRepository.analyzeGender()
         );
-
-        return result;
     }
 
     /**
@@ -81,7 +95,7 @@ public class UserService {
      * @param users : DB에 저장된 user 정보입니다.
      * @return preferenceLocalCache에서 ID에 해당하는 소비성향을 찾아 새 객체를 만들어 반환합니다.
      */
-    List<UserInfoResponse> perferenceIdToType(List<UserInfoDto> users) {
+    List<UserInfoResponse> preferenceIdToType(List<UserInfoDto> users) {
         return users.stream()
                 .map(user -> new UserInfoResponse(
                         user.name(),
