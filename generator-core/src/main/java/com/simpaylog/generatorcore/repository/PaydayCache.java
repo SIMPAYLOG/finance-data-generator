@@ -1,6 +1,6 @@
 package com.simpaylog.generatorcore.repository;
 
-import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -16,16 +16,16 @@ public class PaydayCache {
     private Map<Long, Map<YearMonth, Set<LocalDate>>> userPaydayMap;
 
 
-    public void init(List<User> users, LocalDate from, LocalDate to) {
+    public void init(List<TransactionUserDto> users, LocalDate from, LocalDate to) {
         userPaydayMap = users.stream().collect(Collectors.toMap(
-                User::getId,
+                TransactionUserDto::userId,
                 user -> {
                     Map<YearMonth, Set<LocalDate>> monthMap = new LinkedHashMap<>();
                     YearMonth start = YearMonth.from(from);
                     YearMonth end = YearMonth.from(to);
 
                     YearMonth cur = start;
-                    while(!cur.isAfter(end)) {
+                    while (!cur.isAfter(end)) {
                         monthMap.put(cur, new HashSet<>());
                         cur = cur.plusMonths(1);
                     }
@@ -35,17 +35,17 @@ public class PaydayCache {
     }
 
     public void register(Long userId, YearMonth yearMonth, List<LocalDate> paydays) {
-        if(userPaydayMap.containsKey(userId)) {
+        if (!userPaydayMap.containsKey(userId)) {
             throw new CoreException("존재하지 않는 유저ID입니다.");
         }
-        if(!userPaydayMap.get(userId).get(yearMonth).isEmpty()) {
+        if (!userPaydayMap.get(userId).get(yearMonth).isEmpty()) {
             log.error("이미 데이터가 할당되어 있습니다.");
         }
         userPaydayMap.get(userId).get(yearMonth).addAll(paydays);
     }
 
     public boolean isPayday(Long userId, YearMonth yearMonth, LocalDate date) {
-        if(userPaydayMap.containsKey(userId)) {
+        if (!userPaydayMap.containsKey(userId)) {
             throw new CoreException("존재하지 않는 유저ID입니다.");
         }
 

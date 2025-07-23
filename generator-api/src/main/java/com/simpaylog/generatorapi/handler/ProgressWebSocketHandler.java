@@ -25,7 +25,7 @@ public class ProgressWebSocketHandler extends TextWebSocketHandler {
         log.info("WebSocket session established: {}", session.getId());
         webSocketSessionManager.addSession(session);
 
-        simulationService.startSimulation((LocalDate)session.getAttributes().get("from"), (LocalDate)session.getAttributes().get("to"));
+        simulationService.startSimulation((LocalDate) session.getAttributes().get("durationStart"), (LocalDate) session.getAttributes().get("durationEnd"));
     }
 
     // 클라이언트 연결이 끊겼을 때 실행

@@ -21,11 +21,11 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes){
         // 쿼리 파라미터를 추출
-        String fromStr = UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams().getFirst("from");
-        String toStr = UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams().getFirst("to");
+        String fromStr = UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams().getFirst("durationStart");
+        String toStr = UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams().getFirst("durationEnd");
 
         if (fromStr == null || toStr == null) {//from 또는 to를 파라미터로 받지 못했을 경우
-            log.error("Handshake rejected: 'from' or 'to' date parameter is missing.");
+            log.error("Handshake rejected: 'durationStart' or 'durationEnd' date parameter is missing.");
             throw new ApiException(INVALID_DATE_SETTING);
         }
 
@@ -34,14 +34,14 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             LocalDate from = LocalDate.parse(fromStr);
             LocalDate to = LocalDate.parse(toStr);
 
-            attributes.put("from", from);
-            attributes.put("to", to);
+            attributes.put("durationStart", from);
+            attributes.put("durationEnd", to);
 
-            log.info("Handshake successful with dates: from={}, to={}", from, to);
+            log.info("Handshake successful with dates: duration start={}, duration end={}", from, to);
             return true; // 핸드셰이크를 계속 진행합니다.
 
         } catch (DateTimeParseException e) {//date 형식이 잘못된 경우
-            log.error("Handshake rejected: Invalid date format. from='{}', to='{}'.", fromStr, toStr, e);
+            log.error("Handshake rejected: Invalid date format. duration start='{}', duration end='{}'.", fromStr, toStr, e);
             throw new ApiException(INVALID_DATE_FORMAT);
         }
     }

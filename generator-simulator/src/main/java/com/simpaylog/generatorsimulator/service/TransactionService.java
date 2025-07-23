@@ -65,7 +65,7 @@ public class TransactionService {
                     if (picked == null) { // 해당 시간에 데이터가 발생하지 않음
                         continue;
                     }
-
+                    // TODO: 부채가 있다는 가정하에 가중치를 줄여 소비를 덜하게 하기
                     lastUsedMap.put(picked, curTime);
                     Trade userTrade = tradeGenerator.generateTrade(userDecile, picked);
                     updateMap(spendingByCategory, picked, userTrade.cost()); // 리턴용: 현재 상황 업데이트
