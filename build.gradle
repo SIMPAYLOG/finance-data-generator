@@ -41,7 +41,8 @@ subprojects {
 		implementation 'com.fasterxml.jackson.core:jackson-databind'
 		implementation 'org.springframework.kafka:spring-kafka'                    // Kafka 기본 (블로킹) 프로듀서/컨슈머 - 필요시 사용
 		implementation 'io.projectreactor.kafka:reactor-kafka'                      // WebFlux용 논블로킹 Kafka 클라이언트 (반드시 추가)
-		implementation 'co.elastic.clients:elasticsearch-java:8.13.4'              // Elasticsearch 8.x 공식 Java 클라이언트
+		implementation 'co.elastic.clients:elasticsearch-java:8.13.4'              // Elasticsearch 8.x 공식 Java
+		implementation 'org.apache.commons:commons-csv:1.11.0'
 	}
 }
 
