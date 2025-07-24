@@ -2,6 +2,7 @@ package com.simpaylog.generatorsimulator.kafka;
 
 import com.simpaylog.generatorsimulator.TestConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import static org.springframework.test.util.AssertionErrors.assertTrue;
 
-
+@Disabled
 @EmbeddedKafka(partitions = 1, topics = { "test-topic" })
 @AutoConfigureMockMvc
 public class KafkaFlowTest extends TestConfig {

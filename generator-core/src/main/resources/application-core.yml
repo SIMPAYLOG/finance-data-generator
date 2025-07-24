@@ -6,6 +6,7 @@ spring:
   config:
     activate:
       on-profile: local
+
   datasource:
     hikari:
       maximum-pool-size: 10
@@ -15,6 +16,7 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     database: postgresql
     hibernate:
@@ -25,7 +27,8 @@ spring:
           batch_size: 100
         order_inserts: true
         format_sql: true
-    show-sql: true
+    show-sql: false
+    open-in-view: false
 
 logging:
   level:
@@ -35,15 +38,27 @@ spring:
   config:
     activate:
       on-profile: test
+
   datasource:
     url: jdbc:h2:mem:testdb;MODE=PostgreSQL;
     driver-class-name: org.h2.Driver
     username: sa
     password:
-    jpa:
-      hibernate:
-        ddl-auto: create-drop
-      show-sql: true
-    sql:
-      init:
-        mode: always
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      transaction: topic-transaction

@@ -2,12 +2,15 @@ package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
+import com.simpaylog.generatorcore.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
-import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
+import com.simpaylog.generatorcore.repository.PaydayCache;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
+    private final PaydayCache paydayCache;
 
     @Transactional
     public void createUser(List<UserGenerationCondition> userGenerationConditions) {
@@ -49,6 +56,20 @@ public class UserService {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
+    public List<TransactionUserDto> findAllTransactionUser() {
+        return userRepository.findAllTransactionUserDtos();
+    }
+
+    public void initPaydayCache(LocalDate from, LocalDate to) {
+        List<TransactionUserDto> users = findAllTransactionUser();
+        paydayCache.init(users, from, to);
+        for (TransactionUserDto user : users) {
+            for (LocalDate cur = LocalDate.of(from.getYear(), from.getMonth(), 1); !cur.isAfter(to); cur = cur.plusMonths(1)) {
+                paydayCache.register(user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
+            }
+        }
+    }
+
     // TODO 유저 및 유저 프로필 반환 메서드 필요
 
     @Transactional
@@ -59,16 +80,13 @@ public class UserService {
 
 
     public UserAnalyzeResultResponse analyzeUsers() {
-        List<UserInfoResponse> users = perferenceIdToType(userRepository.findAllSimpleInfo());
 
-        UserAnalyzeResultResponse result = new UserAnalyzeResultResponse(
+        return new UserAnalyzeResultResponse(
                 userRepository.count(),
                 userRepository.analyzeAgeGroup(),
                 occupationCodeToName(userRepository.analyzeOccupation()),
                 userRepository.analyzeGender()
         );
-
-        return result;
     }
 
     /**
@@ -77,7 +95,7 @@ public class UserService {
      * @param users : DB에 저장된 user 정보입니다.
      * @return preferenceLocalCache에서 ID에 해당하는 소비성향을 찾아 새 객체를 만들어 반환합니다.
      */
-    List<UserInfoResponse> perferenceIdToType(List<UserInfoDto> users) {
+    List<UserInfoResponse> preferenceIdToType(List<UserInfoDto> users) {
         return users.stream()
                 .map(user -> new UserInfoResponse(
                         user.name(),
@@ -98,7 +116,7 @@ public class UserService {
     List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
         return occupationCodeStats.stream()
                 .map(stat -> new OccupationNameStat(
-                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory(),
+                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory().substring(2),
                         stat.count()
                 ))
                 .collect(Collectors.toList());
@@ -113,35 +131,40 @@ public class UserService {
     }
 
     public AgeGroupResponse getAgeGroup() {
-        return new AgeGroupResponse(occupationLocalCache.get(1).ageGroupInfo().stream()
-                .map(ageInfo -> {
-                    return new AgeGroupDetailResponse(
-                            String.valueOf(ageInfo.range()[0]),
-                            String.format("%s (%d-%d세)",
-                                    ageInfo.label(),
-                                    ageInfo.range()[0],
-                                    ageInfo.range()[1])
-                    );
-                })
+        return new AgeGroupResponse(Stream.concat(occupationLocalCache.get(1).ageGroupInfo().stream()
+                                .map(ageInfo -> {
+                                    return new AgeGroupDetailResponse(
+                                            String.valueOf(ageInfo.range()[0]),
+                                            String.format("%s (%d-%d세)",
+                                                    ageInfo.label(),
+                                                    ageInfo.range()[0],
+                                                    ageInfo.range()[1])
+                                    );
+                                }),
+                        Stream.of(new AgeGroupDetailResponse("MIX", "혼합")))
                 .collect(Collectors.toList()));
     }
 
     public OccupationListResponse getOccupationCategory() {
-        return new OccupationListResponse(occupationLocalCache.getCache().values().stream()
-                .map(occupation -> new OccupationCategoryResponse(
-                        String.valueOf(occupation.code()),
-                        occupation.occupationCategory().substring(2)
-                ))
+        return new OccupationListResponse(Stream.concat(
+                        occupationLocalCache.getCache().values().stream()
+                                .map(occupation -> new OccupationCategoryResponse(
+                                        String.valueOf(occupation.code()),
+                                        occupation.occupationCategory().substring(2)
+                                )),
+                        Stream.of(new OccupationCategoryResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }
 
     public PreferenceListResponse getPreferenceList() {
-        return new PreferenceListResponse(preferenceLocalCache.getCache().values().stream()
-                .map(preferenceInfo -> new PreferenceResponse(
-                        String.valueOf(preferenceInfo.id()),
-                        preferenceInfo.name()
-                ))
+        return new PreferenceListResponse(Stream.concat(
+                        preferenceLocalCache.getCache().values().stream()
+                                .map(preferenceInfo -> new PreferenceResponse(
+                                        String.valueOf(preferenceInfo.id()),
+                                        preferenceInfo.name()
+                                )),
+                        Stream.of(new PreferenceResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
     }

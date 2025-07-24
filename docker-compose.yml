@@ -7,7 +7,7 @@ services:
     image: simpaylog/fdg-database
     volumes:
       - ./database/conf:/etc/postgresql/postgresql.conf
-      - ./database/data:/var/lib/postgresql/data
+#      - ./database/data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}

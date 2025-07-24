@@ -1,6 +1,6 @@
 package com.simpaylog.generatorapi.dto.request;
 
-import com.simpaylog.generatorapi.validator.NumericOrMix;
+import com.simpaylog.generatorapi.dto.request.validator.NumericOrMix;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
