@@ -1,0 +1,57 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xmx512m -Xms512m # Elasticsearch 메모리 설정 (필요시 조정)
+    ports:
+      - "9200:9200"
+      - "9300:9300" # 노드 간 통신 포트 (선택 사항이지만 일반적으로 열어둡니다)
+#    volumes:
+#      - elastic_data:/usr/share/elasticsearch/data # Elasticsearch 데이터 영속성을 위한 볼륨
+    networks:
+      - elk_network # 모든 Elastic Stack 서비스가 동일한 네트워크에 있어야 합니다.
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4 # Elasticsearch와 동일한 8.13.4 버전으로 설정
+    container_name: logstash
+    ports:
+      - "9600:9600" # Logstash HTTP API (선택 사항, 모니터링/관리용)
+    volumes:
+      # pipeline 디렉토리 마운트 (conf 파일들이 있는 곳)
+      - type: bind
+        source: ./logstash/pipeline # docker-compose.yml 기준 상대 경로
+        target: /usr/share/logstash/pipeline
+        read_only: true
+    environment:
+      - "LS_JAVA_OPTS=-Xmx512m -Xms512m" # Logstash JVM 힙 메모리 설정 (필요시 조정)
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Elasticsearch 컨테이너와 통신 (서비스 이름 사용)
+    depends_on:
+      - elasticsearch # Logstash는 Elasticsearch가 시작된 후에 시작되어야 합니다.
+    networks:
+      - elk_network
+      - kafka-net #Docker 환경이기에 kafka와 네트워크를 공유하여 보다 쉽게 데이터 가져오기
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4 # Elasticsearch와 동일한 8.13.4 버전으로 설정
+    container_name: kibana
+    ports:
+      - "5601:5601" # Kibana 웹 UI 접근 포트
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # Elasticsearch 컨테이너와 통신 (서비스 이름 사용)
+    depends_on:
+      - elasticsearch # Kibana는 Elasticsearch가 시작된 후에 시작되어야 합니다.
+    networks:
+      - elk_network
+
+#volumes:
+#  elastic_data: # Elasticsearch 데이터를 저장하기 위한 Docker 볼륨 정의
+
+networks:
+  elk_network: # 서비스 간 통신을 위한 사용자 정의 네트워크
+    driver: bridge
+  kafka-net:
+    external:
+      name: finance-data-generator_kafka-net
