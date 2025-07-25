@@ -1,4 +1,4 @@
-package com.simpaylog.generatorapi.service;
+package com.simpaylog.generatorapi.configuration.websocket;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @Component
-public class WebSocketSessionManager {
+public class WebsocketSessionManager {
 
     private final CopyOnWriteArrayList<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 

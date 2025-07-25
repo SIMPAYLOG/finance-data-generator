@@ -43,6 +43,8 @@ subprojects {
 		implementation 'io.projectreactor.kafka:reactor-kafka'                      // WebFlux용 논블로킹 Kafka 클라이언트 (반드시 추가)
 		implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch' //ES 구문을 JPA와 비슷하게 사용 가능하도록 해줌
 		implementation 'org.apache.commons:commons-csv:1.11.0'
+		implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	}
 }
 

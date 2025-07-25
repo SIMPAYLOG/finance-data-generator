@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 public class GeneratorSimulatorApplication {
 
 	public static void main(String[] args) {
+		System.setProperty("spring.config.name", "application-core,application-simulator");
 		SpringApplication.run(GeneratorSimulatorApplication.class, args);
 	}
 

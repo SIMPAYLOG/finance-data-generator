@@ -15,7 +15,7 @@ import java.util.Map;
 import static com.simpaylog.generatorapi.exception.ErrorCode.*;
 
 @Slf4j
-public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
+public class WebsocketHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
