@@ -18,6 +18,6 @@ public class WebsocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(progressWebSocketHandler, "/start-simulation")
                 .setAllowedOrigins("http://localhost:3000")
-                .addInterceptors(new WebSocketHandshakeInterceptor());
+                .addInterceptors(new WebsocketHandshakeInterceptor());
     }
 }
