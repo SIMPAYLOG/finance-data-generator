@@ -1,17 +1,35 @@
 package com.simpaylog.generatorsimulator.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+import org.springframework.data.annotation.Id;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
+@Document(indexName = "transaction-logs")
 public record TransactionLog(
+        @Id
         String uuid,
+        @Field(type = FieldType.Long) // 명시적으로 필드 타입 지정
         Long userId,
+        @Field(type = FieldType.Date, format = DateFormat.date_optional_time)
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime timestamp,
+        @Field(type = FieldType.Keyword) // Enum이나 정확한 매칭을 위해 Keyword 타입으로
         TransactionType transactionType,
+        @Field(type = FieldType.Text) // 전문 검색용 text 타입
         String description,
+        @Field(type = FieldType.Double) // 금액은 실수 타입으로
         BigDecimal amount,
+        @Field(type = FieldType.Double)
         BigDecimal balanceBefore,
+        @Field(type = FieldType.Double)
         BigDecimal balanceAfter
 ) {
     public enum TransactionType {
