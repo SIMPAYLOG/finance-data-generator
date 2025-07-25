@@ -1,6 +1,20 @@
 spring:
   application:
     name: generator-api
+  kafka:
+    bootstrap-servers: localhost:9092, localhost:9093, localhost:9094
+    consumer:
+      properties:
+        spring.json.trusted.packages: "com.simpaylog.*"
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: simulator
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      tx.request: topic-transaction-request
+      tx.response: topic-transaction-response
 
 server:
   port: 8080

@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 @ActiveProfiles("test")
-@TestPropertySource(properties = "spring.config.name=application-core")
+@TestPropertySource(properties = "spring.config.name=application-core,application-simulator")
 @SpringBootTest
 class GeneratorSimulatorApplicationTests {
 
