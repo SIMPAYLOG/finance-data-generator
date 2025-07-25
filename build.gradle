@@ -43,6 +43,7 @@ subprojects {
 		implementation 'io.projectreactor.kafka:reactor-kafka'                      // WebFlux용 논블로킹 Kafka 클라이언트 (반드시 추가)
 		implementation 'co.elastic.clients:elasticsearch-java:8.13.4'              // Elasticsearch 8.x 공식 Java 클라이언트
 		implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	}
 }
 
