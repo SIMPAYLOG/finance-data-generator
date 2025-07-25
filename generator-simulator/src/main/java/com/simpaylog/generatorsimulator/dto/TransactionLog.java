@@ -9,7 +9,7 @@ import java.util.UUID;
 public record TransactionLog(
         String uuid,
         Long userId,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd-hh-mm")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
         LocalDateTime timestamp,
         TransactionType transactionType,
         String description,
