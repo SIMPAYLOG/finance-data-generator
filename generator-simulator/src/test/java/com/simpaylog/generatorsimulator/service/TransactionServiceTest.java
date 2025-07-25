@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.PaydayCache;
+import com.simpaylog.generatorcore.repository.redis.RedisRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
@@ -40,7 +40,7 @@ class TransactionServiceTest extends TestConfig {
     @MockitoBean
     UserService userService;
     @MockitoBean
-    PaydayCache paydayCache;
+    RedisRepository redisRepository;
 
     @Test
     void 트랜잭션이_정상적으로_생성되면_총합과_카운트가_일치한다() {
@@ -79,8 +79,8 @@ class TransactionServiceTest extends TestConfig {
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
         LocalDate date = LocalDate.of(2025, 7, 25);
         LocalDate paymentDay = LocalDate.of(2025, 7, 25);
-        when(paydayCache.isPayday(mockUser.userId(), YearMonth.of(2025, 7), paymentDay)).thenReturn(true);
-        when(paydayCache.numberOfPaydays(mockUser.userId(), YearMonth.of(2025, 7))).thenReturn(1);
+        when(redisRepository.isPayDay(any(), mockUser.userId(), YearMonth.of(2025, 7), paymentDay)).thenReturn(true);
+        when(redisRepository.numberOfPayDays(any(), mockUser.userId(), YearMonth.of(2025, 7))).thenReturn(1);
         // When
         transactionService.generateTransaction(mockUser, date);
         // Then

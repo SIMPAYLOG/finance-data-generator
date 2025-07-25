@@ -10,9 +10,9 @@ import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.repository.PaydayCache;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
+import com.simpaylog.generatorcore.repository.redis.RedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
-    private final PaydayCache paydayCache;
+    private final RedisRepository redisRepository;
 
     @Transactional
     public void createUser(List<UserGenerationCondition> userGenerationConditions) {
@@ -62,10 +62,10 @@ public class UserService {
 
     public void initPaydayCache(LocalDate from, LocalDate to) {
         List<TransactionUserDto> users = findAllTransactionUser();
-        paydayCache.init(users, from, to);
+        redisRepository.init("", users, from, to);
         for (TransactionUserDto user : users) {
             for (LocalDate cur = LocalDate.of(from.getYear(), from.getMonth(), 1); !cur.isAfter(to); cur = cur.plusMonths(1)) {
-                paydayCache.register(user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
+                redisRepository.register("", user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
             }
         }
     }

@@ -3,7 +3,7 @@ package com.simpaylog.generatorsimulator.service;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.PaydayCache;
+import com.simpaylog.generatorcore.repository.redis.RedisRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.dto.*;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
@@ -32,7 +32,7 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final TransactionLogProducer transactionLogProducer;
     private final DailyTransactionResultProducer dailyTransactionResultProducer;
-    private final PaydayCache paydayCache;
+    private final RedisRepository redisRepository;
 
     public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         boolean salaryFlag = false;
@@ -72,14 +72,14 @@ public class TransactionService {
             userService.updateUserBalance(dto.userId(), userBalance);
             dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), true, date)); // 웹소켓 결과용
         } catch (Exception e) {
-            log.info("[{}] userId={} 트랜잭션 생성 중 에러 발생", date, dto.userId());
+            log.info("[{}] userId={} 트랜잭션 생성 중 에러 발생: {}", date, dto.userId(), e.getCause().getMessage());
             dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), false, date));
         }
     }
 
     private BigDecimal handleSalary(TransactionUserDto user, LocalDateTime current) {
-        int numberOfPaydays = paydayCache.numberOfPaydays(user.userId(), YearMonth.from(current));
-        if (numberOfPaydays == 0 || !paydayCache.isPayday(user.userId(), YearMonth.from(current), LocalDate.from(current)))
+        int numberOfPaydays = redisRepository.numberOfPayDays("", user.userId(), YearMonth.from(current));
+        if (numberOfPaydays == 0 || !redisRepository.isPayDay("", user.userId(), YearMonth.from(current), LocalDate.from(current)))
             return user.balance();
 
         double averageSalary = user.incomeValue().doubleValue();
