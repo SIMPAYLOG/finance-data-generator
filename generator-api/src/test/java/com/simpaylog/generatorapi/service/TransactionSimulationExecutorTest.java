@@ -2,6 +2,7 @@ package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.kafka.producer.TransactionGenerationRequestProducer;
+import com.simpaylog.generatorcore.dto.TransactionRequestEvent;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,6 @@ class TransactionSimulationExecutorTest extends TestConfig {
 
         // Then
         // 2명 × 3일 = 6번 전송
-        verify(producer, times(6)).send(any(TransactionGenerationRequest.class));
+        verify(producer, times(6)).send(any(TransactionRequestEvent.class));
     }
 }

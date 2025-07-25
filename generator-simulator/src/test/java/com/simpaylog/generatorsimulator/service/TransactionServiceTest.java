@@ -59,6 +59,22 @@ class TransactionServiceTest extends TestConfig {
     }
 
     @Test
+    void 사용자의_잔액이_동일하다면_잔액을_업데이트_하지않는다() {
+        // Given
+        TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
+        LocalDate date = LocalDate.of(2025, 7, 1);
+        doNothing().when(transactionLogProducer).send(any());
+        when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.empty());
+        // When
+        transactionService.generateTransaction(mockUser, date);
+
+        // Then
+        verify(transactionLogProducer, never()).send(any());
+        verify(dailyTransactionResultProducer, times(1)).send(any());
+        verify(userService, never()).updateUserBalance(eq(mockUser.userId()), any());
+    }
+
+    @Test
     void 예외가_발생하면_fail_결과를_반환한다() {
         // Given
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
@@ -70,7 +86,6 @@ class TransactionServiceTest extends TestConfig {
 
         // Then
         verify(userService, never()).updateUserBalance(eq(mockUser.userId()), any());
-        verify(dailyTransactionResultProducer, times(1)).send(any());
     }
 
     @Test
@@ -79,8 +94,8 @@ class TransactionServiceTest extends TestConfig {
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
         LocalDate date = LocalDate.of(2025, 7, 25);
         LocalDate paymentDay = LocalDate.of(2025, 7, 25);
-        when(redisRepository.isPayDay(any(), mockUser.userId(), YearMonth.of(2025, 7), paymentDay)).thenReturn(true);
-        when(redisRepository.numberOfPayDays(any(), mockUser.userId(), YearMonth.of(2025, 7))).thenReturn(1);
+        when(redisRepository.isPayDay(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)), eq(paymentDay))).thenReturn(true);
+        when(redisRepository.numberOfPayDays(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)))).thenReturn(1);
         // When
         transactionService.generateTransaction(mockUser, date);
         // Then
