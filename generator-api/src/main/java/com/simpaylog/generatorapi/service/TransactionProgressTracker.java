@@ -22,7 +22,7 @@ public class TransactionProgressTracker {
         String key = generateKey(sessionId);
         progressMap.put(key, new AtomicInteger(0));
         expectedCounts.put(key, expected);
-        eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %f%%", 0.0), EventType.PROGRESS));
+        eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %d%%", 0), EventType.PROGRESS));
     }
 
     public void increment(String sessionId) {
