@@ -30,9 +30,11 @@ public class TransactionProgressTracker {
         AtomicInteger counter = progressMap.get(key);
         int current = counter.incrementAndGet();
         int total = expectedCounts.get(key);
-        double percent = (double) current / total * 100;
 
-        eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %f%%", percent), EventType.PROGRESS));
+        double percent = (double) current / total * 100;
+        long roundedPercentage = Math.round(percent);
+
+        eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %d%%", roundedPercentage), EventType.PROGRESS));
         if(Double.compare(percent, 100.0) == 0) {
             eventPublisher.publishEvent(new TransactionResultResponse("시뮬레이션이 정상적으로 종료되었습니다.", EventType.COMPLETE));
         }
