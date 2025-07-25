@@ -5,12 +5,12 @@ import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.PaydayCache;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.TestConfig;
+import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
+import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.DailyTransactionResult;
 import com.simpaylog.generatorsimulator.dto.PreferenceType;
 import com.simpaylog.generatorsimulator.dto.TransactionLog;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
-import com.simpaylog.generatorsimulator.producer.TransactionLogProducer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -34,6 +33,8 @@ class TransactionServiceTest extends TestConfig {
     TransactionService transactionService;
     @MockitoBean
     TransactionLogProducer transactionLogProducer;
+    @MockitoBean
+    DailyTransactionResultProducer dailyTransactionResultProducer;
     @MockitoBean
     TransactionGenerator transactionGenerator;
     @MockitoBean
@@ -49,20 +50,11 @@ class TransactionServiceTest extends TestConfig {
         doNothing().when(transactionLogProducer).send(any());
         when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.of(CategoryType.ALCOHOLIC_BEVERAGES_TOBACCO));
         // When
-        DailyTransactionResult result = transactionService.generateTransaction(mockUser, date);
+        transactionService.generateTransaction(mockUser, date);
 
         // Then
-        assertTrue(result.success());
-        assertEquals(mockUser.userId(), result.userId());
-        assertEquals(date, result.date());
-        assertTrue(result.totalSpending() > 0);
-        assertTrue(result.spendingTransactionCount() + result.incomeTransactionCount() > 0);
-        assertFalse(result.spendingByCategory().isEmpty());
-
-        long categorySum = result.spendingByCategory().values().stream().mapToLong(Long::longValue).sum();
-        assertEquals(result.totalSpending(), categorySum);
-
         verify(transactionLogProducer, atLeastOnce()).send(any());
+        verify(dailyTransactionResultProducer, times(1)).send(any());
         verify(userService, times(1)).updateUserBalance(eq(mockUser.userId()), any());
     }
 
@@ -74,17 +66,11 @@ class TransactionServiceTest extends TestConfig {
         when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.of(CategoryType.ALCOHOLIC_BEVERAGES_TOBACCO));
         doThrow(new SimulatorException("카프카 데이터 전송 실패")).when(transactionLogProducer).send(any());
         // When
-        DailyTransactionResult result = transactionService.generateTransaction(mockUser, date);
-        System.out.println(result);
-        // Then
-        assertFalse(result.success());
-        assertEquals(mockUser.userId(), result.userId());
-        assertEquals(date, result.date());
-        assertNotNull(result.errorMessage());
-        assertTrue(result.spendingTransactionCount() + result.incomeTransactionCount() > 0); // 중간까지 성공한 경우에도 결과 반환하는지 확인
-        assertFalse(result.spendingByCategory().isEmpty());
+        transactionService.generateTransaction(mockUser, date);
 
+        // Then
         verify(userService, never()).updateUserBalance(eq(mockUser.userId()), any());
+        verify(dailyTransactionResultProducer, times(1)).send(any());
     }
 
     @Test
@@ -96,17 +82,12 @@ class TransactionServiceTest extends TestConfig {
         when(paydayCache.isPayday(mockUser.userId(), YearMonth.of(2025, 7), paymentDay)).thenReturn(true);
         when(paydayCache.numberOfPaydays(mockUser.userId(), YearMonth.of(2025, 7))).thenReturn(1);
         // When
-        DailyTransactionResult result = transactionService.generateTransaction(mockUser, date);
+        transactionService.generateTransaction(mockUser, date);
         // Then
         verify(transactionLogProducer, times(1)).send(argThat(log ->
                 log.transactionType() == TransactionLog.TransactionType.DEPOSIT &&
                         log.description().equals("급여 입금")
         ));
-        assertTrue(result.success());
-        assertEquals(mockUser.userId(), result.userId());
-        assertEquals(date, result.date());
-        assertTrue(result.totalIncome() > 0);
-        assertTrue(result.spendingTransactionCount() + result.incomeTransactionCount() > 0);
     }
 
     public static TransactionUserDto mockUser(int decile, WageType wageType) {

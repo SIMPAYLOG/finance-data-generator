@@ -1,12 +1,14 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.PaydayCache;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.dto.*;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
-import com.simpaylog.generatorsimulator.producer.TransactionLogProducer;
+import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
+import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,15 +31,12 @@ public class TransactionService {
     private final TradeGenerator tradeGenerator;
     private final TransactionGenerator transactionGenerator;
     private final TransactionLogProducer transactionLogProducer;
+    private final DailyTransactionResultProducer dailyTransactionResultProducer;
     private final PaydayCache paydayCache;
 
-    public DailyTransactionResult generateTransaction(TransactionUserDto dto, LocalDate date) {
-        Map<CategoryType, Long> spendingByCategory = new HashMap<>();
-        long totalSpending = 0L;
-        int totalSpendingCnt = 0;
-        long totalIncome = 0L;
-        int totalIncomeCnt = 0;
+    public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         boolean salaryFlag = false;
+
         try {
             LocalDateTime from = date.atStartOfDay();
             LocalDateTime to = date.atTime(23, 59);
@@ -55,8 +54,6 @@ public class TransactionService {
 
                     if (!salaryFlag && curTime.getHour() >= 8) { // 급여 지급 결정, 8시 이후로 지급
                         BigDecimal newBalance = handleSalary(dto, curTime);
-                        totalIncome += newBalance.longValue();
-                        totalIncomeCnt++;
                         salaryFlag = !newBalance.equals(userBalance);
                         userBalance = newBalance;
                     }
@@ -68,21 +65,17 @@ public class TransactionService {
                     // TODO: 부채가 있다는 가정하에 가중치를 줄여 소비를 덜하게 하기
                     lastUsedMap.put(picked, curTime);
                     Trade userTrade = tradeGenerator.generateTrade(userDecile, picked);
-                    updateMap(spendingByCategory, picked, userTrade.cost()); // 리턴용: 현재 상황 업데이트
-
                     userBalance = userBalance.subtract(userTrade.cost());
-                    totalSpending += userTrade.cost().longValue();
-                    totalSpendingCnt++;
                     generateMessage(dto.userId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost(), userBalance, userBalance.subtract(userTrade.cost()));
                 }
             }
             userService.updateUserBalance(dto.userId(), userBalance);
-            return DailyTransactionResult.success(dto.userId(), date, totalSpendingCnt, totalSpending, spendingByCategory, totalIncomeCnt, totalIncome);
+            dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), true, date)); // 웹소켓 결과용
         } catch (Exception e) {
-            return DailyTransactionResult.fail(dto.userId(), date, totalSpendingCnt, totalSpending, spendingByCategory, totalIncomeCnt, totalIncome, e.getMessage());
+            log.info("[{}] userId={} 트랜잭션 생성 중 에러 발생", date, dto.userId());
+            dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), false, date));
         }
     }
-
 
     private BigDecimal handleSalary(TransactionUserDto user, LocalDateTime current) {
         int numberOfPaydays = paydayCache.numberOfPaydays(user.userId(), YearMonth.from(current));
@@ -133,11 +126,6 @@ public class TransactionService {
         for (int i = 0; i < cnt; i++) minutes[i] = ThreadLocalRandom.current().nextInt(60);
         Arrays.sort(minutes);
         return minutes;
-    }
-
-    private void updateMap(Map<CategoryType, Long> spendingByCategory, CategoryType categoryType, BigDecimal spending) {
-        long cost = spending.longValue();
-        spendingByCategory.merge(categoryType, cost, Long::sum);
     }
 
 }
