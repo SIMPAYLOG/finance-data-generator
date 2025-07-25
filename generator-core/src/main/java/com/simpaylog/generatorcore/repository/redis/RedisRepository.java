@@ -37,12 +37,17 @@ public class RedisRepository {
         if (redisTemplate.hasKey(key)) {
             log.warn("이미 데이터가 할당되어 있습니다: {}", key);
         }
-        redisTemplate.opsForSet().add(key, paydays.toArray(new LocalDate[0]));
-        redisTemplate.expire(key, Duration.ofMinutes(5));
+        if (!paydays.isEmpty()) { // 빈 값은 Redis에 들어가지 않음
+            redisTemplate.opsForSet().add(key, paydays.toArray(new LocalDate[0]));
+            redisTemplate.expire(key, Duration.ofMinutes(5));
+        }
     }
 
     public boolean isPayDay(String sessionId, Long userId, YearMonth yearMonth, LocalDate date) {
         String key = getKey(sessionId, userId, yearMonth);
+        if (!redisTemplate.hasKey(key)) {
+            return false;
+        }
         return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(key, date));
     }
 

@@ -24,7 +24,7 @@ public class RedisConfig {
         RedisTemplate<String, LocalDate> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(factory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        
+
         Jackson2JsonRedisSerializer<LocalDate> valueSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, LocalDate.class);
         redisTemplate.setValueSerializer(valueSerializer);
         redisTemplate.setHashValueSerializer(valueSerializer);

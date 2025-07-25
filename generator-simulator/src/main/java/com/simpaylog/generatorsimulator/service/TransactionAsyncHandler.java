@@ -11,11 +11,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TransactionAsyncHandler {
     private final TransactionService transactionService;
+    private final ConcurrencyLimiter concurrencyLimiter;
 
     @Async("virtualThreadExecutor")
     public void handler(TransactionRequestEvent event) {
         try {
-            transactionService.generateTransaction(event.transactionUserDto(), event.date());
+            concurrencyLimiter.run(() ->
+                    transactionService.generateTransaction(event.transactionUserDto(), event.date())
+            );
         } catch (Exception e) {
             e.printStackTrace();
             log.error("트랜잭션 처리 중 예외 발생 - userId={}, date={}", event.transactionUserDto().userId(), event.date());
