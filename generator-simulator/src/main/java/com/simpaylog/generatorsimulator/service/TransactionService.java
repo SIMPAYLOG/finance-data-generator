@@ -37,44 +37,52 @@ public class TransactionService {
     public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         boolean salaryFlag = false;
 
-        try {
-            LocalDateTime from = date.atStartOfDay();
-            LocalDateTime to = date.atTime(23, 59);
-            Map<CategoryType, LocalDateTime> lastUsedMap = new HashMap<>();
-            PreferenceType userPreference = PreferenceType.fromKey(dto.preferenceId());
-            int userDecile = dto.decile();
-            BigDecimal userBalance = dto.balance();
 
-            long hours = ChronoUnit.HOURS.between(from, to);
-            for (int hour = 0; hour <= hours; hour++) {
-                // TODO: 공과금, 통신비
-                int[] minutes = getRandomMinutes();
-                for (int mIdx = 0; mIdx < minutes.length; mIdx++) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = date.atTime(23, 59);
+        Map<CategoryType, LocalDateTime> lastUsedMap = new HashMap<>();
+        PreferenceType userPreference = PreferenceType.fromKey(dto.preferenceId());
+        int userDecile = dto.decile();
+        BigDecimal userBalance = dto.balance();
+
+        long hours = ChronoUnit.HOURS.between(from, to);
+        for (int hour = 0; hour <= hours; hour++) {
+            // TODO: 공과금, 통신비
+            int[] minutes = getRandomMinutes();
+            for (int mIdx = 0; mIdx < minutes.length; mIdx++) {
+                try {
                     LocalDateTime curTime = from.plusHours(hour).plusMinutes(minutes[mIdx]);
 
-                    if (!salaryFlag && curTime.getHour() >= 8) { // 급여 지급 결정, 8시 이후로 지급
+                    // 급여 지급 결정, 8시 이후로 지급
+                    if (!salaryFlag && curTime.getHour() >= 8) {
                         BigDecimal newBalance = handleSalary(dto, curTime);
                         salaryFlag = !newBalance.equals(userBalance);
                         userBalance = newBalance;
                     }
 
                     CategoryType picked = transactionGenerator.pickOneCategory(curTime, userPreference, lastUsedMap).orElse(null);
-                    if (picked == null) { // 해당 시간에 데이터가 발생하지 않음
+                    if (picked == null) { // 해당 시간에 선택된 카테고리가 없음
                         continue;
                     }
                     // TODO: 부채가 있다는 가정하에 가중치를 줄여 소비를 덜하게 하기
-                    lastUsedMap.put(picked, curTime);
+
+                    // 유저가 해당 카테고리에서 소비한 상품 및 서비스 추출
                     Trade userTrade = tradeGenerator.generateTrade(userDecile, picked);
-                    userBalance = userBalance.subtract(userTrade.cost());
                     generateMessage(dto.userId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost(), userBalance, userBalance.subtract(userTrade.cost()));
+
+                    lastUsedMap.put(picked, curTime);
+                    userBalance = userBalance.subtract(userTrade.cost());
+                } catch (Exception e) {
+                    log.error("[{}] userId={} 트랜잭션 생성 중 에러 발생", date, dto.userId());
+                    dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), false, date));
                 }
+
             }
-            userService.updateUserBalance(dto.userId(), userBalance);
-            dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), true, date)); // 웹소켓 결과용
-        } catch (Exception e) {
-            log.info("[{}] userId={} 트랜잭션 생성 중 에러 발생: {}", date, dto.userId(), e.getCause().getMessage());
-            dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), false, date));
         }
+        if (!dto.balance().equals(userBalance)) {
+            userService.updateUserBalance(dto.userId(), userBalance);
+        }
+        dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), true, date)); // 웹소켓 결과용
     }
 
     private BigDecimal handleSalary(TransactionUserDto user, LocalDateTime current) {
@@ -105,7 +113,7 @@ public class TransactionService {
             transactionLogProducer.send(transactionLog);
         } catch (Exception e) {
             // TODO: 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
-            log.error("[Kafka Send Fail] userId={}, type={}, msg={}", userId, type, e.getMessage());
+            log.error("[Kafka Send Fail] userId={}, type={}", userId, type);
             throw new SimulatorException("카프카 데이터 전송 실패");
         }
     }

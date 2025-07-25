@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class TransactionEventListener {
     private final TransactionAsyncHandler transactionAsyncHandler;
 
-    @KafkaListener(topics = "${spring.kafka.topic.tx.reqeust}")
+    @KafkaListener(topics = "${spring.kafka.topic.tx.request}")
     public void consumeTransactionRequest(TransactionRequestEvent event) {
         transactionAsyncHandler.handler(event);
     }
