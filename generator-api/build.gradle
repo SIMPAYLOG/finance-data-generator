@@ -1,6 +1,5 @@
 dependencies {
     implementation project(':generator-core') // generator-core 모듈 의존성
-    implementation project(':generator-simulator')
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

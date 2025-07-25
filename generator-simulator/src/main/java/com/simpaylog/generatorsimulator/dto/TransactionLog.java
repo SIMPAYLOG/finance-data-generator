@@ -1,5 +1,7 @@
 package com.simpaylog.generatorsimulator.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -7,6 +9,7 @@ import java.util.UUID;
 public record TransactionLog(
         String uuid,
         Long userId,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
         LocalDateTime timestamp,
         TransactionType transactionType,
         String description,

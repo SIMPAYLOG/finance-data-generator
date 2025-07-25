@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.producer;
+package com.simpaylog.generatorsimulator.kafka.producer;
 
 import com.simpaylog.generatorsimulator.dto.TransactionLog;
 import lombok.RequiredArgsConstructor;

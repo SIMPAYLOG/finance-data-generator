@@ -1,6 +1,48 @@
 spring:
   profiles:
     active: local
+    group:
+      local:
+        - common
+      test:
+        - common
+---
+spring:
+  config:
+    activate:
+      on-profile: common
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+  kafka:
+    bootstrap-servers: localhost:9092, localhost:9093, localhost:9094
+    consumer:
+      properties:
+        spring.json.trusted.packages: "com.simpaylog.*"
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: simulator
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      transaction: topic-transaction
+      tx:
+        request: topic-transaction-request
+        response: topic-transaction-response
+
+
 ---
 spring:
   config:
@@ -9,9 +51,11 @@ spring:
 
   datasource:
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 30
       max-lifetime: 30000
-      connection-timeout: 3000
+      connection-timeout: 3000 # 커넥션을 얻기 위한 최대 대기 시간
+      validation-timeout: 3000 # 커넥션 유효성 검사를 위한 제한 시간
+      minimum-idle: 5 # 최소 유휴 커넥션 수
     url: jdbc:postgresql://localhost:5432/finance-data
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
@@ -45,20 +89,6 @@ spring:
     username: sa
     password:
 
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    open-in-view: false
-
   sql:
     init:
       mode: always
-
-  kafka:
-    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    topic:
-      transaction: topic-transaction
