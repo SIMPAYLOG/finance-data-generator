@@ -53,7 +53,7 @@ public class TransactionExportService {
                 page++;
             }
         } catch (Exception e){
-            System.out.println("Exception in TransactionExportService : " + e.getMessage());
+            System.out.println("TransactionExportService 에러 발생 : " + e.getMessage());
             allTransactions = null;
         }
 

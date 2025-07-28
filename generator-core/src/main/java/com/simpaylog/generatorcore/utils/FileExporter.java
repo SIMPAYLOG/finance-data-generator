@@ -2,6 +2,7 @@ package com.simpaylog.generatorcore.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.enums.TransactionLogHeader;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -20,10 +21,15 @@ public class FileExporter {
     private final ObjectMapper objectMapper;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
+    public byte[] toJSON(List<TransactionLog> transactions) throws IOException {
+        return objectMapper.writeValueAsBytes(transactions);
+    }
+
     public byte[] toCSV(List<TransactionLog> transactions) throws IOException {
         try (StringWriter writer = new StringWriter();
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT
-                     .withHeader("uuid", "userId", "timestamp", "transactionType", "description", "amount", "balanceBefore", "balanceAfter"))) {
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+
+            csvPrinter.printRecord( (Object[]) getHeaderValues() );
 
             for (TransactionLog t : transactions) {
                 csvPrinter.printRecord(
@@ -33,16 +39,19 @@ public class FileExporter {
                         t.transactionType().name(),
                         t.description(),
                         t.amount(),
-                        t.balanceBefore(),
-                        t.balanceAfter()
+                        t.balanceBefore().toPlainString(),
+                        t.balanceAfter().toPlainString()
                 );
             }
+
             csvPrinter.flush();
             return writer.toString().getBytes(StandardCharsets.UTF_8);
         }
     }
 
-    public byte[] toJSON(List<TransactionLog> transactions) throws IOException {
-        return objectMapper.writeValueAsBytes(transactions);
+    private String[] getHeaderValues() {
+        return java.util.Arrays.stream(TransactionLogHeader.values())
+                .map(TransactionLogHeader::getDisplayName)
+                .toArray(String[]::new);
     }
 }

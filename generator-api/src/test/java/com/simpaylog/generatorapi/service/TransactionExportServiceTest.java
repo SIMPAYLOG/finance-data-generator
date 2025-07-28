@@ -1,6 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.TestConfig;
+import com.simpaylog.generatorcore.enums.TransactionLogHeader;
 import com.simpaylog.generatorcore.repository.redis.RedisRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorcore.dto.TransactionLog;
@@ -66,9 +67,17 @@ public class TransactionExportServiceTest extends TestConfig {
         assertThat(json)
                 .withFailMessage("JSON 직렬화 결과가 null이거나 비어 있습니다.")
                 .isNotBlank()
-                .contains("[", "{", "userId", "timestamp"); // 주요 키워드가 포함되어 있는지 확인
+                .contains("[", "{")  // 기본 JSON 구조 체크
+                .satisfies(s -> {
+                    for (var rc : TransactionLog.class.getRecordComponents()) {
+                        String fieldName = rc.getName();
+                        if (!s.contains("\"" + fieldName + "\"")) {
+                            throw new AssertionError("JSON에 필드 '" + fieldName + "' 가 포함되어 있지 않습니다.");
+                        }
+                    }
+                });
 
-//        System.out.println("JSON 결과: " + json.substring(0, Math.min(500, json.length())) + "...");
+//    System.out.println("JSON 결과: " + json.substring(0, Math.min(500, json.length())) + "...");
     }
 
     @Test
@@ -79,8 +88,13 @@ public class TransactionExportServiceTest extends TestConfig {
         assertThat(csv)
                 .withFailMessage("CSV 직렬화 결과가 null이거나 비어 있습니다.")
                 .isNotBlank()
-                .contains("uuid", "userId", "timestamp") // 헤더가 있는지 확인
-
+                .satisfies(s -> { // 주요 키워드가 포함되어 있는지 확인
+                    for (TransactionLogHeader header : TransactionLogHeader.values()) {
+                        if (!s.contains(header.getDisplayName())) {
+                            throw new AssertionError("CSV에 필드 '" + header.getDisplayName() + "' 가 포함되어 있지 않습니다.");
+                        }
+                    }
+                })
                 // CSV는 콤마로 구분된 형태인지 확인
                 .contains(",");
 
