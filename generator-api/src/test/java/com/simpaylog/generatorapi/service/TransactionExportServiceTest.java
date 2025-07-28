@@ -1,35 +1,30 @@
-package com.simpaylog.generatorsimulator.service;
+package com.simpaylog.generatorapi.service;
 
+import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorcore.repository.redis.RedisRepository;
 import com.simpaylog.generatorcore.service.UserService;
-import com.simpaylog.generatorsimulator.dto.TransactionLog;
-import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
-import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
+import com.simpaylog.generatorcore.dto.TransactionLog;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
+@TestPropertySource(properties = {
         "spring.kafka.topic.transaction=topic-transaction",
         "spring.kafka.topic.tx.request=dummy-topic",
+        "spring.kafka.topic.tx.response=dummy-topic",
         "spring.kafka.consumer.group-id=test-group"
 })
 @Import(TransactionExportService.class)
-public class TransactionExportServiceTest {
+public class TransactionExportServiceTest extends TestConfig {
     @Autowired
     TransactionExportService transactionExportService;
-    @MockitoBean
-    TransactionLogProducer transactionLogProducer;
-    @MockitoBean
-    DailyTransactionResultProducer dailyTransactionResultProducer;
-    @MockitoBean
-    TransactionGenerator transactionGenerator;
     @MockitoBean
     UserService userService;
     @MockitoBean
@@ -63,4 +58,32 @@ public class TransactionExportServiceTest {
         System.out.println("첫 번째 데이터 timestamp: " + first.timestamp());
     }
 
+    @Test
+    public void JSON_형태로_정상_반환되는지_검증한다() {
+        byte[] jsonBytes = transactionExportService.exportAllTransaction("json");
+        String json = new String(jsonBytes, StandardCharsets.UTF_8);
+
+        assertThat(json)
+                .withFailMessage("JSON 직렬화 결과가 null이거나 비어 있습니다.")
+                .isNotBlank()
+                .contains("[", "{", "userId", "timestamp"); // 주요 키워드가 포함되어 있는지 확인
+
+//        System.out.println("JSON 결과: " + json.substring(0, Math.min(500, json.length())) + "...");
+    }
+
+    @Test
+    public void CSV_형태로_정상_반환되는지_검증한다() {
+        byte[] csvBytes = transactionExportService.exportAllTransaction("csv");
+        String csv = new String(csvBytes, StandardCharsets.UTF_8);
+
+        assertThat(csv)
+                .withFailMessage("CSV 직렬화 결과가 null이거나 비어 있습니다.")
+                .isNotBlank()
+                .contains("uuid", "userId", "timestamp") // 헤더가 있는지 확인
+
+                // CSV는 콤마로 구분된 형태인지 확인
+                .contains(",");
+
+//        System.out.println("CSV 결과:\n" + csv.lines().limit(5).reduce("", (a, b) -> a + "\n" + b));
+    }
 }

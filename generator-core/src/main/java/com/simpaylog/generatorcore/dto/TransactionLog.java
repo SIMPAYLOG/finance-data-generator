@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorcore.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.Id;

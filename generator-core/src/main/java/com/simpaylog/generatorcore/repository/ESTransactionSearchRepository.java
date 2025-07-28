@@ -1,6 +1,6 @@
-package com.simpaylog.generatorsimulator.repository;
+package com.simpaylog.generatorcore.repository;
 
-import com.simpaylog.generatorsimulator.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.TransactionLog;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
