@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class RedisRepository {
+public class RedisPaydayRepository {
 
     private final RedisTemplate<String, LocalDate> redisTemplate;
 

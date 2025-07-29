@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.redis.RedisRepository;
+import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
@@ -40,7 +40,7 @@ class TransactionServiceTest extends TestConfig {
     @MockitoBean
     UserService userService;
     @MockitoBean
-    RedisRepository redisRepository;
+    RedisPaydayRepository redisPaydayRepository;
 
     @Test
     void 트랜잭션이_정상적으로_생성되면_총합과_카운트가_일치한다() {
@@ -55,7 +55,7 @@ class TransactionServiceTest extends TestConfig {
         // Then
         verify(transactionLogProducer, atLeastOnce()).send(any());
         verify(dailyTransactionResultProducer, times(1)).send(any());
-        verify(userService, times(1)).updateUserBalance(eq(mockUser.userId()), any());
+        verify(userService, times(1)).updateUserBalance(anyString(), eq(mockUser.userId()), any());
     }
 
     @Test
@@ -71,7 +71,7 @@ class TransactionServiceTest extends TestConfig {
         // Then
         verify(transactionLogProducer, never()).send(any());
         verify(dailyTransactionResultProducer, times(1)).send(any());
-        verify(userService, never()).updateUserBalance(eq(mockUser.userId()), any());
+        verify(userService, never()).updateUserBalance(anyString(), eq(mockUser.userId()), any());
     }
 
     @Test
@@ -85,7 +85,7 @@ class TransactionServiceTest extends TestConfig {
         transactionService.generateTransaction(mockUser, date);
 
         // Then
-        verify(userService, never()).updateUserBalance(eq(mockUser.userId()), any());
+        verify(userService, never()).updateUserBalance(anyString(), eq(mockUser.userId()), any());
     }
 
     @Test
@@ -94,8 +94,8 @@ class TransactionServiceTest extends TestConfig {
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
         LocalDate date = LocalDate.of(2025, 7, 25);
         LocalDate paymentDay = LocalDate.of(2025, 7, 25);
-        when(redisRepository.isPayDay(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)), eq(paymentDay))).thenReturn(true);
-        when(redisRepository.numberOfPayDays(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)))).thenReturn(1);
+        when(redisPaydayRepository.isPayDay(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)), eq(paymentDay))).thenReturn(true);
+        when(redisPaydayRepository.numberOfPayDays(anyString(), eq(mockUser.userId()), eq(YearMonth.of(2025, 7)))).thenReturn(1);
         // When
         transactionService.generateTransaction(mockUser, date);
         // Then
@@ -108,6 +108,7 @@ class TransactionServiceTest extends TestConfig {
     public static TransactionUserDto mockUser(int decile, WageType wageType) {
         return new TransactionUserDto(
                 1L,
+                "sessionId",
                 decile,
                 BigDecimal.valueOf(10000000),
                 1,

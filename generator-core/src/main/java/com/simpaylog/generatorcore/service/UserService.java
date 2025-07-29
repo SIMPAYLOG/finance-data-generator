@@ -12,7 +12,9 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
-import com.simpaylog.generatorcore.repository.redis.RedisRepository;
+import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
+import com.simpaylog.generatorcore.repository.redis.RedisSessionRepository;
+import com.simpaylog.generatorcore.session.SimulationSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,15 +39,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
-    private final RedisRepository redisRepository;
+    private final RedisPaydayRepository redisPaydayRepository;
+    private final RedisSessionRepository redisSessionRepository;
 
     @Transactional
-    public void createUser(List<UserGenerationCondition> userGenerationConditions) {
+    public String createUser(List<UserGenerationCondition> userGenerationConditions) {
+        String sessionId = UUID.randomUUID().toString();
         List<User> userList = new ArrayList<>();
         for (UserGenerationCondition condition : userGenerationConditions) {
-            userList.addAll(generateUser(condition));
+            List<User> generated = generateUser(condition);
+            for (User user : generated) {
+                user.setSessionId(sessionId);
+            }
+            userList.addAll(generated);
         }
+        redisSessionRepository.save(new SimulationSession(sessionId, LocalDateTime.now()));
         userRepository.saveAll(userList);
+        return sessionId;
     }
 
     @Transactional
@@ -52,20 +64,28 @@ public class UserService {
         userRepository.deleteAllUsers();
     }
 
+    @Transactional
+    public void deleteUsersBySessionId(String sessionId) {
+        getSimulationSessionOrException(sessionId);
+        redisSessionRepository.delete(sessionId);
+        userRepository.deleteUsersBySessionId(sessionId);
+    }
+
     private List<User> generateUser(UserGenerationCondition userGenerationCondition) {
         return userGenerator.generateUserPool(userGenerationCondition);
     }
 
-    public List<TransactionUserDto> findAllTransactionUser() {
-        return userRepository.findAllTransactionUserDtos();
+    public List<TransactionUserDto> findAllTransactionUserBySessionId(String sessionId) {
+        getSimulationSessionOrException(sessionId);
+        return userRepository.findAllTransactionUserDtosBySessionId(sessionId);
     }
 
-    public void initPaydayCache(LocalDate from, LocalDate to) {
-        List<TransactionUserDto> users = findAllTransactionUser();
-        redisRepository.init("", users, from, to);
+    public void initPaydayCache(String sessionId, LocalDate from, LocalDate to) {
+        List<TransactionUserDto> users = findAllTransactionUserBySessionId(sessionId);
+        redisPaydayRepository.init(sessionId, users, from, to);
         for (TransactionUserDto user : users) {
             for (LocalDate cur = LocalDate.of(from.getYear(), from.getMonth(), 1); !cur.isAfter(to); cur = cur.plusMonths(1)) {
-                redisRepository.register("", user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
+                redisPaydayRepository.register(sessionId, user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
             }
         }
     }
@@ -73,19 +93,18 @@ public class UserService {
     // TODO 유저 및 유저 프로필 반환 메서드 필요
 
     @Transactional
-    public void updateUserBalance(Long userId, BigDecimal balance) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CoreException(String.format("NOT FOUND USER: %d", userId)));
+    public void updateUserBalance(String sessionId, Long userId, BigDecimal balance) {
+        User user = userRepository.findUserBySessionIdAndId(sessionId, userId).orElseThrow(() -> new CoreException(String.format("NOT FOUND USER: %d", userId)));
         user.setBalance(balance);
     }
 
-
-    public UserAnalyzeResultResponse analyzeUsers() {
-
+    public UserAnalyzeResultResponse analyzeUsers(String sessionId) {
+        getSimulationSessionOrException(sessionId);
         return new UserAnalyzeResultResponse(
-                userRepository.count(),
-                userRepository.analyzeAgeGroup(),
-                occupationCodeToName(userRepository.analyzeOccupation()),
-                userRepository.analyzeGender()
+                userRepository.countUsersBySessionId(sessionId),
+                userRepository.analyzeAgeGroup(sessionId),
+                occupationCodeToName(userRepository.analyzeOccupation(sessionId)),
+                userRepository.analyzeGender(sessionId)
         );
     }
 
@@ -122,8 +141,9 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public Page<UserInfoResponse> findUsersByPage(Pageable pageable) {
-        return userRepository.findAllByOrderByNameAsc(pageable)
+    public Page<UserInfoResponse> findUsersByPage(Pageable pageable, String sessionId) {
+        getSimulationSessionOrException(sessionId);
+        return userRepository.findAllBySessionIdOrderByName(pageable, sessionId)
                 .map(user -> UserInfoResponse.userToUserInfoResponse(
                         user,
                         preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name()
@@ -132,15 +152,13 @@ public class UserService {
 
     public AgeGroupResponse getAgeGroup() {
         return new AgeGroupResponse(Stream.concat(occupationLocalCache.get(1).ageGroupInfo().stream()
-                                .map(ageInfo -> {
-                                    return new AgeGroupDetailResponse(
-                                            String.valueOf(ageInfo.range()[0]),
-                                            String.format("%s (%d-%d세)",
-                                                    ageInfo.label(),
-                                                    ageInfo.range()[0],
-                                                    ageInfo.range()[1])
-                                    );
-                                }),
+                                .map(ageInfo -> new AgeGroupDetailResponse(
+                                        String.valueOf(ageInfo.range()[0]),
+                                        String.format("%s (%d-%d세)",
+                                                ageInfo.label(),
+                                                ageInfo.range()[0],
+                                                ageInfo.range()[1])
+                                )),
                         Stream.of(new AgeGroupDetailResponse("MIX", "혼합")))
                 .collect(Collectors.toList()));
     }
@@ -167,5 +185,9 @@ public class UserService {
                         Stream.of(new PreferenceResponse("MIX", "혼합")))
                 .collect(Collectors.toList())
         );
+    }
+
+    public SimulationSession getSimulationSessionOrException(String sessionId) {
+        return redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 }

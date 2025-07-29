@@ -15,7 +15,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
-    @OneToOne(cascade = CascadeType.ALL)
+    @Setter
+    private String sessionId;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     private UserBehaviorProfile userBehaviorProfile;
     private String name;
@@ -33,7 +35,8 @@ public class User {
     protected User() {
     }
 
-    private User(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
+    private User(String sessionId, String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
+        this.sessionId = sessionId;
         this.name = name;
         this.userBehaviorProfile = profile;
         this.decile = decile;
@@ -47,6 +50,10 @@ public class User {
     }
 
     public static User of(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
-        return new User(name, profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName, conditionId);
+        return new User(null, name, profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName, conditionId);
+    }
+
+    public static User of(String sessionId, String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
+        return new User(sessionId, name, profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName, conditionId);
     }
 }

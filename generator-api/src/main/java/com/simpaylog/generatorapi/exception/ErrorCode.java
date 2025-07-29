@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Request is invalid"),
+    SESSION_ID_NOT_FOUND(HttpStatus.NOT_FOUND, "sessionId not found"),
+    NO_USERS_FOUND(HttpStatus.NO_CONTENT, "해당 session에 유저가 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server error"),
     INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "잘못된 날짜 형식니다."),
     INVALID_DATE_SETTING(HttpStatus.BAD_REQUEST, "시작 날짜 또는 종료 날짜가 설정되지 않았습니다.");

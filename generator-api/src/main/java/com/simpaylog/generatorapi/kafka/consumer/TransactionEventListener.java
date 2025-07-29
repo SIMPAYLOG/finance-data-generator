@@ -14,7 +14,7 @@ public class TransactionEventListener {
 
     @KafkaListener(topics = "${spring.kafka.topic.tx.response}")
     public void consumeTransactionResponse(DailyTransactionResult result) {
-        transactionProgressTracker.increment("");
+        transactionProgressTracker.increment(result.sessionId());
     }
 
 }

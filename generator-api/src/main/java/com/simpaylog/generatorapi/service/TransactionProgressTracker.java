@@ -16,6 +16,7 @@ public class TransactionProgressTracker {
     private final Map<String, AtomicInteger> progressMap = new ConcurrentHashMap<>();
     private final Map<String, Integer> expectedCounts = new ConcurrentHashMap<>();
     private final ApplicationEventPublisher eventPublisher;
+    private static long beforePercent = 0;
 
     public void initProgress(String sessionId, int expected) {
         eventPublisher.publishEvent(new TransactionResultResponse("트랜잭션 데이터 로그 생성을 시작합니다.", EventType.START));
@@ -33,15 +34,17 @@ public class TransactionProgressTracker {
 
         double percent = (double) current / total * 100;
         long roundedPercentage = Math.round(percent);
-
-        eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %d%%", roundedPercentage), EventType.PROGRESS));
-        if(Double.compare(percent, 100.0) == 0) {
+        if (beforePercent != roundedPercentage) {
+            beforePercent = roundedPercentage;
+            eventPublisher.publishEvent(new TransactionResultResponse(String.format("진행 중 %d%%", roundedPercentage), EventType.PROGRESS));
+        }
+        if (Double.compare(percent, 100.0) == 0) {
             eventPublisher.publishEvent(new TransactionResultResponse("시뮬레이션이 정상적으로 종료되었습니다.", EventType.COMPLETE));
         }
     }
 
     private String generateKey(String sessionId) {
-        if(sessionId == null || sessionId.isBlank()) {
+        if (sessionId == null || sessionId.isBlank()) {
             return "DEFAULT_KEY";
         }
         return sessionId;
