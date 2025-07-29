@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -17,13 +20,15 @@ public class TransactionController {
     private final TransactionExportService transactionExportService;
 
     @GetMapping
-    public ResponseEntity<byte[]> exportTransactions(@RequestParam String format) {
-        byte[] data = transactionExportService.exportAllTransaction(format);
+    public ResponseEntity<StreamingResponseBody> exportTransactions(@RequestParam String format) {
+        StreamingResponseBody stream = outputStream -> {
+            transactionExportService.exportAllTransactions(format, outputStream);
+        };
 
         String contentType = switch (format.toLowerCase()) {
             case "csv" -> "text/csv";
             case "json" -> "application/json";
-            default -> throw new IllegalArgumentException("파일 변환을 지원하지 않는 형식입니다.: " + format);
+            default -> throw new IllegalArgumentException("지원하지 않는 형식: " + format);
         };
 
         String fileName = "transactions." + format;
@@ -31,6 +36,7 @@ public class TransactionController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                .body(data);
+                .body(stream);
     }
+
 }

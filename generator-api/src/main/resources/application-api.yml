@@ -4,3 +4,6 @@ server:
 spring:
   application:
     name: generator-api
+  mvc:
+    async:
+      request-timeout: 500000

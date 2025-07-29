@@ -1,55 +1,109 @@
 package com.simpaylog.generatorcore.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
 import com.simpaylog.generatorcore.enums.TransactionLogHeader;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.function.Consumer;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class FileExporter {
 
     private final ObjectMapper objectMapper;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+    private static final DateTimeFormatter CSV_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public byte[] toJSON(List<TransactionLog> transactions) throws IOException {
-        return objectMapper.writeValueAsBytes(transactions);
-    }
+    public void writeCsv(OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
+        int[] counter = {0};
+        try (OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+             CSVPrinter printer = new CSVPrinter(osw, CSVFormat.DEFAULT)) {
 
-    public byte[] toCSV(List<TransactionLog> transactions) throws IOException {
-        try (StringWriter writer = new StringWriter();
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+            printer.printRecord((Object[]) getHeaderValues());
 
-            csvPrinter.printRecord( (Object[]) getHeaderValues() );
+            Consumer<TransactionLogDocument> recordConsumer = createCsvConsumer(printer, counter);
+            fetcher.accept(recordConsumer);
 
-            for (TransactionLog t : transactions) {
-                csvPrinter.printRecord(
-                        t.uuid(),
-                        t.userId(),
-                        DATE_FORMATTER.format(t.timestamp()),
-                        t.transactionType().name(),
-                        t.description(),
-                        t.amount(),
-                        t.balanceBefore().toPlainString(),
-                        t.balanceAfter().toPlainString()
-                );
-            }
-
-            csvPrinter.flush();
-            return writer.toString().getBytes(StandardCharsets.UTF_8);
+            printer.flush();
+            log.info("CSV로 저장된 총 데이터 건수: {}", counter[0]);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private String[] getHeaderValues() {
+    public void writeJson(OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
+        int[] counter = {0};
+        try (OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
+            osw.write("[");
+            final boolean[] first = {true};
+
+            Consumer<TransactionLogDocument> recordConsumer = createJsonConsumer(osw, objectMapper, counter, first);
+            fetcher.accept(recordConsumer);
+
+            osw.write("]");
+            osw.flush();
+
+            log.info("JSON으로 저장된 총 데이터 건수: {}", counter[0]);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Consumer<TransactionLogDocument> createCsvConsumer(CSVPrinter printer, int[] counter) {
+        return t -> {
+            try {
+                printer.printRecord(
+                        t.uuid(),
+                        t.userId(),
+                        t.timestamp().format(CSV_DATE_FORMATTER),
+                        t.transactionType().name(),
+                        t.description(),
+                        t.amount().toPlainString(),
+                        t.balanceBefore().toPlainString(),
+                        t.balanceAfter().toPlainString()
+                );
+                counter[0]++;
+                if (counter[0] % 1000 == 0) {
+                    printer.flush();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    private Consumer<TransactionLogDocument> createJsonConsumer(OutputStreamWriter osw, ObjectMapper mapper, int[] counter, boolean[] first) {
+        return t -> {
+            try {
+                if (!first[0]) {
+                    osw.write(",");
+                } else {
+                    first[0] = false;
+                }
+                String json = mapper.writeValueAsString(t);
+                osw.write(json);
+                counter[0]++;
+                if (counter[0] % 1000 == 0) {
+                    osw.flush();
+                }
+            } catch (IOException e) {
+                log.error("Json 처리 중 오류", e);
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    public String[] getHeaderValues() {
         return java.util.Arrays.stream(TransactionLogHeader.values())
                 .map(TransactionLogHeader::getDisplayName)
                 .toArray(String[]::new);
