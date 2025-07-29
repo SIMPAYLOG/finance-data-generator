@@ -2,6 +2,7 @@ package com.simpaylog.generatorcore.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.simpaylog.generatorcore.session.SimulationSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,23 @@ import java.time.LocalDate;
 public class RedisConfig {
 
     private final ObjectMapper objectMapper;
+
+    @Bean(name = "simulationSessionRedisTemplate")
+    public RedisTemplate<String, SimulationSession> simulationSessionRedisTemplate(
+            RedisConnectionFactory connectionFactory
+    ) {
+        RedisTemplate<String, SimulationSession> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+
+        Jackson2JsonRedisSerializer<SimulationSession> valueSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, SimulationSession.class);
+
+        template.setValueSerializer(valueSerializer);
+        template.setHashValueSerializer(valueSerializer);
+        template.setDefaultSerializer(valueSerializer);
+
+        return template;
+    }
 
     @Bean
     public RedisTemplate<String, LocalDate> redisTemplate(RedisConnectionFactory factory) {
