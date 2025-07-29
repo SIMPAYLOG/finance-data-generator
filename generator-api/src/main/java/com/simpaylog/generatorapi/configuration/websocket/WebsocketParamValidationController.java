@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/validate")
-public class WebSocketParamValidationController {
+public class WebsocketParamValidationController {
     private final RedisSessionRepository redisSessionRepository;
 
     @GetMapping("/websocket-params")
