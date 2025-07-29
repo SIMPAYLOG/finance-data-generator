@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 public record TransactionUserDto(
     Long userId,
+    String sessionId,
     Integer decile,
     BigDecimal balance,
     Integer preferenceId,
@@ -19,6 +20,7 @@ public record TransactionUserDto(
     public static TransactionUserDto fromEntity(User entity) {
         return new TransactionUserDto(
                 entity.getId(),
+                entity.getSessionId(),
                 entity.getDecile(),
                 entity.getBalance(),
                 entity.getUserBehaviorProfile().getPreferenceId(),
