@@ -31,28 +31,35 @@ public class UserController {
         return Response.success(HttpStatus.OK.value());
     }
 
+    @DeleteMapping("/by-session")
+    public Response<Void> dropUsersBySessionId(@RequestParam String sessionId) {
+        userService.deleteUsersBySessionId(sessionId);
+        return Response.success(HttpStatus.OK.value());
+    }
+
     @PostMapping
-    public Response<Void> createUser(@RequestBody @Valid SimulationStartRequestDto req) {
+    public Response<String> createUser(@RequestBody @Valid SimulationStartRequestDto req) {
         List<UserGenerationCondition> list = new ArrayList<>();
         for (int i = 0; i < req.conditions().size(); i++) {
             list.add(toUserGenerationCondition(req.conditions().get(i), i));
         }
-        userService.createUser(list);
-        userService.initPaydayCache(req.durationStart(), req.durationEnd());
+        String sessionId = userService.createUser(list);
+        userService.initPaydayCache(sessionId, req.durationStart(), req.durationEnd());
 
-        return Response.success(HttpStatus.OK.value());
+        return Response.success(HttpStatus.OK.value(), sessionId);
     }
 
     @GetMapping("/analyze")
-    public Response<UserAnalyzeResultResponse> analyzeUsers() {
-        return Response.success(HttpStatus.OK.value(), userService.analyzeUsers());
+    public Response<UserAnalyzeResultResponse> analyzeUsers(@RequestParam String sessionId) {
+        return Response.success(HttpStatus.OK.value(), userService.analyzeUsers(sessionId));
     }
 
     @GetMapping("/list")
     public Response<Page<UserInfoResponse>> getUsers(
-            @PageableDefault(size = 10, sort = "name") Pageable pageable
+            @PageableDefault(size = 10, sort = "name") Pageable pageable,
+            @RequestParam String sessionId
     ) {
-        return Response.success(HttpStatus.OK.value(), userService.findUsersByPage(pageable));
+        return Response.success(HttpStatus.OK.value(), userService.findUsersByPage(pageable, sessionId));
     }
 
     @GetMapping("/age-group")

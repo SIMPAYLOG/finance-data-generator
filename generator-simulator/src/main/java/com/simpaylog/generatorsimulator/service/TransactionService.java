@@ -3,7 +3,7 @@ package com.simpaylog.generatorsimulator.service;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.redis.RedisRepository;
+import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.dto.*;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
@@ -32,7 +32,7 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final TransactionLogProducer transactionLogProducer;
     private final DailyTransactionResultProducer dailyTransactionResultProducer;
-    private final RedisRepository redisRepository;
+    private final RedisPaydayRepository redisPaydayRepository;
 
     public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         boolean salaryFlag = false;
@@ -68,26 +68,26 @@ public class TransactionService {
 
                     // 유저가 해당 카테고리에서 소비한 상품 및 서비스 추출
                     Trade userTrade = tradeGenerator.generateTrade(userDecile, picked);
-                    generateMessage(dto.userId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost(), userBalance, userBalance.subtract(userTrade.cost()));
+                    generateMessage(dto.userId(), dto.sessionId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost(), userBalance, userBalance.subtract(userTrade.cost()));
 
                     lastUsedMap.put(picked, curTime);
                     userBalance = userBalance.subtract(userTrade.cost());
                 } catch (Exception e) {
                     log.error("[{}] userId={} 트랜잭션 생성 중 에러 발생", date, dto.userId());
-                    dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), false, date));
+                    dailyTransactionResultProducer.send(new DailyTransactionResult(dto.sessionId(), dto.userId(), false, date));
                 }
 
             }
         }
         if (!dto.balance().equals(userBalance)) {
-            userService.updateUserBalance(dto.userId(), userBalance);
+            userService.updateUserBalance(dto.sessionId(), dto.userId(), userBalance);
         }
-        dailyTransactionResultProducer.send(new DailyTransactionResult("", dto.userId(), true, date)); // 웹소켓 결과용
+        dailyTransactionResultProducer.send(new DailyTransactionResult(dto.sessionId(), dto.userId(), true, date)); // 웹소켓 결과용
     }
 
     private BigDecimal handleSalary(TransactionUserDto user, LocalDateTime current) {
-        int numberOfPaydays = redisRepository.numberOfPayDays("", user.userId(), YearMonth.from(current));
-        if (numberOfPaydays == 0 || !redisRepository.isPayDay("", user.userId(), YearMonth.from(current), LocalDate.from(current)))
+        int numberOfPaydays = redisPaydayRepository.numberOfPayDays(user.sessionId(), user.userId(), YearMonth.from(current));
+        if (numberOfPaydays == 0 || !redisPaydayRepository.isPayDay(user.sessionId(), user.userId(), YearMonth.from(current), LocalDate.from(current)))
             return user.balance();
 
         double averageSalary = user.incomeValue().doubleValue();
@@ -95,13 +95,14 @@ public class TransactionService {
 
         BigDecimal wage = BigDecimal.valueOf(gaussianRandom(averageSalary / numberOfPaydays, averageSalary * userWageType.getVolatility() / numberOfPaydays));
         BigDecimal updatedBalance = user.balance().add(wage);
-        generateMessage(user.userId(), current, TransactionLog.TransactionType.DEPOSIT, "급여 입금", wage, user.balance(), updatedBalance);
+        generateMessage(user.userId(), user.sessionId(), current, TransactionLog.TransactionType.DEPOSIT, "급여 입금", wage, user.balance(), updatedBalance);
         return updatedBalance;
     }
 
-    private void generateMessage(Long userId, LocalDateTime timestamp, TransactionLog.TransactionType type, String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+    private void generateMessage(Long userId, String sessionId, LocalDateTime timestamp, TransactionLog.TransactionType type, String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
         TransactionLog transactionLog = TransactionLog.of(
                 userId,
+                sessionId,
                 timestamp,
                 type,
                 description,
@@ -123,8 +124,8 @@ public class TransactionService {
      * @param stdDev 조정 수치(작을수록: 대부분의 값이 평균에 가까움 (안정적, 예측 가능) | 클수록: 값들이 평균에서 멀리 퍼짐 (변동성 높음, 불규칙))
      * @return 급여 금액
      */
-    private double gaussianRandom(double mean, double stdDev) {
-        return mean + ThreadLocalRandom.current().nextGaussian() * stdDev;
+    private long gaussianRandom(double mean, double stdDev) {
+        return Math.round(mean + ThreadLocalRandom.current().nextGaussian() * stdDev);
     }
 
     // 최대 3개의 분 뽑기
