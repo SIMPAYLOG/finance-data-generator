@@ -22,12 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource(properties = {
-        "spring.kafka.topic.transaction=topic-transaction",
-        "spring.kafka.topic.tx.request=dummy-topic",
-        "spring.kafka.topic.tx.response=dummy-topic",
-        "spring.kafka.consumer.group-id=test-group"
-})
+@TestPropertySource(properties = "spring.kafka.consumer.group-id=test-group")
 @Import(TransactionExportService.class)
 public class TransactionExportServiceTest extends TestConfig {
     @Autowired
