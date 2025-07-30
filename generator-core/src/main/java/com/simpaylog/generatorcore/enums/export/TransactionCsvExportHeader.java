@@ -1,11 +1,11 @@
-package com.simpaylog.generatorcore.enums;
+package com.simpaylog.generatorcore.enums.export;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum TransactionLogHeader {
+public enum TransactionCsvExportHeader {
     UUID("UUID"),
     USER_ID("사용자ID"),
     TIMESTAMP("타임스탬프"),

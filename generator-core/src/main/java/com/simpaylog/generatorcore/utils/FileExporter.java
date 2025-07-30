@@ -2,7 +2,8 @@ package com.simpaylog.generatorcore.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
-import com.simpaylog.generatorcore.enums.TransactionLogHeader;
+import com.simpaylog.generatorcore.enums.export.TransactionCsvExportHeader;
+import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -37,7 +38,7 @@ public class FileExporter {
             printer.flush();
             log.info("CSV로 저장된 총 데이터 건수: {}", counter[0]);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CoreException("CSV 파일 쓰기 중 오류 발생");
         }
     }
 
@@ -55,7 +56,7 @@ public class FileExporter {
 
             log.info("JSON으로 저장된 총 데이터 건수: {}", counter[0]);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CoreException("JSON 파일 쓰기 중 오류 발생");
         }
     }
 
@@ -77,7 +78,7 @@ public class FileExporter {
                     printer.flush();
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new CoreException("CSV 레코드 쓰기 중 오류 발생");
             }
         };
     }
@@ -97,15 +98,14 @@ public class FileExporter {
                     osw.flush();
                 }
             } catch (IOException e) {
-                log.error("Json 처리 중 오류", e);
-                throw new RuntimeException(e);
+                throw new CoreException("JSON 레코드 쓰기 중 오류 발생");
             }
         };
     }
 
     public String[] getHeaderValues() {
-        return java.util.Arrays.stream(TransactionLogHeader.values())
-                .map(TransactionLogHeader::getDisplayName)
+        return java.util.Arrays.stream(TransactionCsvExportHeader.values())
+                .map(TransactionCsvExportHeader::getDisplayName)
                 .toArray(String[]::new);
     }
 }

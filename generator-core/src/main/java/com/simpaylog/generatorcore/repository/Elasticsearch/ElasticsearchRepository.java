@@ -1,4 +1,4 @@
-package com.simpaylog.generatorcore.repository;
+package com.simpaylog.generatorcore.repository.Elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
+import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -51,9 +52,9 @@ public class ElasticsearchRepository {
                 searchAfter = hits.getLast().sort();
             }
         } catch (IOException e) {
-            throw new RuntimeException("Elasticsearch 데이터 조회 중 IOException 발생", e);
+            throw new CoreException("Elasticsearch 통신 중 IOException 발생");
         } catch (Exception e) {
-            throw new RuntimeException("Elasticsearch 데이터 조회 중 알 수 없는 오류 발생", e);
+            throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
 }
