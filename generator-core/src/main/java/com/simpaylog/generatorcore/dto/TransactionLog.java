@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public record TransactionLog(
         String uuid,
+        String sessionId,
         Long userId,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime timestamp,
@@ -22,9 +23,10 @@ public record TransactionLog(
         DEPOSIT
     }
 
-    public static TransactionLog of(Long userId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+    public static TransactionLog of(Long userId, String sessionId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
         return new TransactionLog(
                 UUID.randomUUID().toString(),
+                sessionId,
                 userId,
                 timestamp,
                 transactionType,

@@ -29,8 +29,9 @@ class TransactionSimulationExecutorTest extends TestConfig {
     @Test
     void 정해진_날짜와_유저에대해_정확히_생성된다() {
         // Given
-        TransactionUserDto user1 = new TransactionUserDto(1L, 5, BigDecimal.TEN, 1, WageType.REGULAR, 25, "TEST-active-hour", BigDecimal.valueOf(3000000));
-        TransactionUserDto user2 = new TransactionUserDto(2L, 7, BigDecimal.valueOf(5000), 2, WageType.REGULAR, 15, "TEST-active-hour", BigDecimal.valueOf(3500000));
+        String sessionId = "sessionId";
+        TransactionUserDto user1 = new TransactionUserDto(1L, sessionId, 5, BigDecimal.TEN, 1, WageType.REGULAR, 25, "TEST-active-hour", BigDecimal.valueOf(3000000));
+        TransactionUserDto user2 = new TransactionUserDto(2L, sessionId, 7, BigDecimal.valueOf(5000), 2, WageType.REGULAR, 15, "TEST-active-hour", BigDecimal.valueOf(3500000));
         List<TransactionUserDto> users = List.of(user1, user2);
 
         LocalDate from = LocalDate.of(2025, 7, 1);

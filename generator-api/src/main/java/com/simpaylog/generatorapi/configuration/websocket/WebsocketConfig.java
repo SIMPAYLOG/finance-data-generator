@@ -17,7 +17,7 @@ public class WebsocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(progressWebSocketHandler, "/start-simulation")
-                .setAllowedOrigins("http://localhost:3000")
+                .setAllowedOrigins("http://localhost:3000") //TODO: 환경변수로 관리
                 .addInterceptors(new WebsocketHandshakeInterceptor());
     }
 }
