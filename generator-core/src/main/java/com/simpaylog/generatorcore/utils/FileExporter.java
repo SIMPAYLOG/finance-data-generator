@@ -63,6 +63,8 @@ public class FileExporter {
     private Consumer<TransactionLogDocument> createCsvConsumer(CSVPrinter printer, int[] counter) {
         return t -> {
             try {
+                validateTransactionLog(t);
+
                 printer.printRecord(
                         t.uuid(),
                         t.userId(),
@@ -86,6 +88,8 @@ public class FileExporter {
     private Consumer<TransactionLogDocument> createJsonConsumer(OutputStreamWriter osw, ObjectMapper mapper, int[] counter, boolean[] first) {
         return t -> {
             try {
+                validateTransactionLog(t);
+
                 if (!first[0]) {
                     osw.write(",");
                 } else {
@@ -107,5 +111,18 @@ public class FileExporter {
         return java.util.Arrays.stream(TransactionCsvExportHeader.values())
                 .map(TransactionCsvExportHeader::getDisplayName)
                 .toArray(String[]::new);
+    }
+
+    private void validateTransactionLog(TransactionLogDocument t) {
+        if (t.uuid() == null ||
+                t.userId() == null ||
+                t.timestamp() == null ||
+                t.transactionType() == null ||
+                t.description() == null ||
+                t.amount() == null ||
+                t.balanceBefore() == null ||
+                t.balanceAfter() == null) {
+            throw new CoreException("TransactionLogDocument 필드 중 null 값이 존재합니다");
+        }
     }
 }

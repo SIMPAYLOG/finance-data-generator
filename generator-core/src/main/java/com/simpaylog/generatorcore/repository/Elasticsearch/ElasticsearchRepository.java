@@ -21,16 +21,17 @@ public class ElasticsearchRepository {
 
     private final ElasticsearchClient client;
 
-    public void findAllTransactionsForExport(Consumer<TransactionLogDocument> consumer) {
+    public void findAllTransactionsForExport(String sessionId, Consumer<TransactionLogDocument> consumer) {
         List<FieldValue> searchAfter = null;
-
         try {
             while (true) {
                 SearchRequest.Builder searchBuilder = new SearchRequest.Builder()
                         .index("transaction-logs")
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)));
+                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
+                        .sort(s -> s.field(f -> f.field("uuid.keyword").order(SortOrder.Asc)))  // _id 추가
+                        .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)));
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
@@ -45,11 +46,14 @@ public class ElasticsearchRepository {
                 if (hits.isEmpty()) break;
 
                 for (Hit<TransactionLogDocument> hit : hits) {
-                    consumer.accept(hit.source());  // 호출 측에 바로 데이터 전달
+                    consumer.accept(hit.source());
                 }
 
-                // 마지막 문서의 정렬 기준 값을 다음 검색의 기준으로 사용
-                searchAfter = hits.getLast().sort();
+                List<FieldValue> lastSort = hits.get(hits.size() - 1).sort();
+                if (lastSort.equals(searchAfter)) {  // 이전과 같으면 무한루프 방지
+                    break;
+                }
+                searchAfter = lastSort;
             }
         } catch (IOException e) {
             throw new CoreException("Elasticsearch 통신 중 IOException 발생");
@@ -57,4 +61,5 @@ public class ElasticsearchRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
+
 }

@@ -20,14 +20,14 @@ public class TransactionExportService {
     private final ElasticsearchRepository repository;
     private final FileExporter fileExporter;
 
-    public void exportAllTransactions(ExportFormat format, OutputStream outputStream) {
+    public void exportAllTransactions(ExportFormat format, String sessionId, OutputStream outputStream) {
         try {
             switch (format) {
                 case CSV:
-                    fileExporter.writeCsv(outputStream, repository::findAllTransactionsForExport);
+                    fileExporter.writeCsv(outputStream, consumer -> repository.findAllTransactionsForExport(sessionId, consumer));
                     break;
                 case JSON:
-                    fileExporter.writeJson(outputStream, repository::findAllTransactionsForExport);
+                    fileExporter.writeJson(outputStream, consumer -> repository.findAllTransactionsForExport(sessionId, consumer));
                     break;
             }
         } catch (CoreException e) {

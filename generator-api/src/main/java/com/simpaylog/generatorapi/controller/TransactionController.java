@@ -2,6 +2,7 @@ package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.service.TransactionExportService;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,10 @@ public class TransactionController {
     private final TransactionExportService transactionExportService;
 
     @GetMapping
-    public ResponseEntity<StreamingResponseBody> exportTransactions(@RequestParam String format) {
+    public ResponseEntity<StreamingResponseBody> exportTransactions(
+            @RequestParam String format,
+            @RequestParam String sessionId
+    ) {
         // 문자열 format을 ExportFormat Enum으로 변환
         ExportFormat exportFormat = ExportFormat.fromString(format)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -32,7 +36,7 @@ public class TransactionController {
 
         StreamingResponseBody stream = outputStream -> {
             // Enum 상수를 서비스 계층으로 전달
-            transactionExportService.exportAllTransactions(exportFormat, outputStream);
+            transactionExportService.exportAllTransactions(exportFormat, sessionId, outputStream);
         };
 
         String fileName = "transactions." + exportFormat.getValue(); // Enum의 value 사용
