@@ -1,20 +1,26 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.TestConfig;
-import com.simpaylog.generatorcore.enums.TransactionLogHeader;
-import com.simpaylog.generatorcore.repository.redis.RedisRepository;
+import com.simpaylog.generatorapi.exception.ApiException;
+import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
+import com.simpaylog.generatorcore.enums.export.ExportFormat;
+import com.simpaylog.generatorcore.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.service.UserService;
-import com.simpaylog.generatorcore.dto.TransactionLog;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @TestPropertySource(properties = {
         "spring.kafka.topic.transaction=topic-transaction",
@@ -27,77 +33,116 @@ public class TransactionExportServiceTest extends TestConfig {
     @Autowired
     TransactionExportService transactionExportService;
     @MockitoBean
-    UserService userService;
+    ElasticsearchRepository repository;
     @MockitoBean
-    RedisRepository redisRepository;
+    UserService userService;
 
     @Test
-    public void ES에서_모든_데이터를_가져온다() {
-        List<TransactionLog> results = transactionExportService.getAllTransaction();
+    public void exportAllTransactions_csv_정상_동작한다() {
+        // given
+        String sessionId = "sessionId1";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        assertThat(results)
-                .withFailMessage("Elasticsearch에서 조회된 결과가 null입니다.")
-                .isNotNull();
+        TransactionLogDocument doc = new TransactionLogDocument(
+                "uuid1", 1001L, LocalDateTime.now(),
+                TransactionLogDocument.TransactionType.DEPOSIT, "급여",
+                new BigDecimal("10000"), new BigDecimal("0"), new BigDecimal("10000")
+        );
 
-        assertThat(results)
-                .withFailMessage("Elasticsearch에서 결과를 가져왔지만 비어 있습니다.")
-                .isNotEmpty();
+        doAnswer(invocation -> {
+            Consumer<TransactionLogDocument> consumer = invocation.getArgument(1);
+            consumer.accept(doc);
+            return null;
+        }).when(repository).findAllTransactionsForExport(eq(sessionId), any());
 
-        TransactionLog first = results.getFirst();
-        System.out.println(first);
+        // when
+        transactionExportService.exportAllTransactions(ExportFormat.CSV, sessionId, out);
 
-        assertThat(first.userId())
-                .withFailMessage("첫 번째 데이터의 userId가 null입니다.")
-                .isNotNull();
-
-        assertThat(first.timestamp())
-                .withFailMessage("첫 번째 데이터의 timestamp가 null입니다.")
-                .isNotNull();
-
-        System.out.println("가져온 데이터 수: " + results.size());
-        System.out.println("첫 번째 데이터 userId: " + first.userId());
-        System.out.println("첫 번째 데이터 timestamp: " + first.timestamp());
+        // then
+        String result = out.toString(StandardCharsets.UTF_8);
+        assertThat(result).contains("uuid1", "급여", "10000");
     }
 
     @Test
-    public void JSON_형태로_정상_반환되는지_검증한다() {
-        byte[] jsonBytes = transactionExportService.exportAllTransaction("json");
-        String json = new String(jsonBytes, StandardCharsets.UTF_8);
+    public void exportAllTransactions_json_정상_동작한다() {
+        // given
+        String sessionId = "sessionId2";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        assertThat(json)
-                .withFailMessage("JSON 직렬화 결과가 null이거나 비어 있습니다.")
-                .isNotBlank()
-                .contains("[", "{")  // 기본 JSON 구조 체크
-                .satisfies(s -> {
-                    for (var rc : TransactionLog.class.getRecordComponents()) {
-                        String fieldName = rc.getName();
-                        if (!s.contains("\"" + fieldName + "\"")) {
-                            throw new AssertionError("JSON에 필드 '" + fieldName + "' 가 포함되어 있지 않습니다.");
-                        }
-                    }
-                });
+        TransactionLogDocument doc = new TransactionLogDocument(
+                "uuid2", 2002L, LocalDateTime.of(2025, 7, 2, 9, 0),
+                TransactionLogDocument.TransactionType.WITHDRAW, "현금 인출",
+                new BigDecimal("5000"), new BigDecimal("10000"), new BigDecimal("5000")
+        );
 
-//    System.out.println("JSON 결과: " + json.substring(0, Math.min(500, json.length())) + "...");
+        doAnswer(invocation -> {
+            Consumer<TransactionLogDocument> consumer = invocation.getArgument(1);
+            consumer.accept(doc);
+            return null;
+        }).when(repository).findAllTransactionsForExport(eq(sessionId), any());
+
+        // when
+        transactionExportService.exportAllTransactions(ExportFormat.JSON, sessionId, out);
+
+        // then
+        String result = out.toString(StandardCharsets.UTF_8);
+        assertThat(result).contains("\"uuid\":\"uuid2\"", "\"description\":\"현금 인출\"");
     }
 
     @Test
-    public void CSV_형태로_정상_반환되는지_검증한다() {
-        byte[] csvBytes = transactionExportService.exportAllTransaction("csv");
-        String csv = new String(csvBytes, StandardCharsets.UTF_8);
+    public void exportAllTransactions_데이터가_없으면_CSV_헤더만_반환된다() {
+        // given
+        String sessionId = "sessionId";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        assertThat(csv)
-                .withFailMessage("CSV 직렬화 결과가 null이거나 비어 있습니다.")
-                .isNotBlank()
-                .satisfies(s -> { // 주요 키워드가 포함되어 있는지 확인
-                    for (TransactionLogHeader header : TransactionLogHeader.values()) {
-                        if (!s.contains(header.getDisplayName())) {
-                            throw new AssertionError("CSV에 필드 '" + header.getDisplayName() + "' 가 포함되어 있지 않습니다.");
-                        }
-                    }
-                })
-                // CSV는 콤마로 구분된 형태인지 확인
-                .contains(",");
+        doAnswer(invocation -> null).when(repository).findAllTransactionsForExport(eq(sessionId), any());
 
-//        System.out.println("CSV 결과:\n" + csv.lines().limit(5).reduce("", (a, b) -> a + "\n" + b));
+        // when
+        transactionExportService.exportAllTransactions(ExportFormat.CSV, sessionId, out);
+
+        // then
+        String result = out.toString(StandardCharsets.UTF_8);
+        long lineCount = result.lines().count();
+        assertThat(lineCount).isEqualTo(1); // CSV 헤더만 존재
+    }
+
+    @Test
+    public void exportAllTransactions_데이터가_없으면_JSON_빈배열_반환한다() {
+        // given
+        String sessionId = "sessionId";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        doAnswer(invocation -> null).when(repository).findAllTransactionsForExport(eq(sessionId), any());
+
+        // when
+        transactionExportService.exportAllTransactions(ExportFormat.JSON, sessionId, out);
+
+        // then
+        String result = out.toString(StandardCharsets.UTF_8);
+        assertThat(result.trim()).isEqualTo("[]");
+    }
+
+    @Test
+    public void exportAllTransactions_description이_null이면_예외발생한다() {
+        // given
+        String sessionId = "sessionId";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        TransactionLogDocument invalidDoc = new TransactionLogDocument(
+                "uuid3", 3003L, LocalDateTime.now(),
+                TransactionLogDocument.TransactionType.DEPOSIT, null,
+                new BigDecimal("5000"), new BigDecimal("1000"), new BigDecimal("6000")
+        );
+
+        doAnswer(invocation -> {
+            Consumer<TransactionLogDocument> consumer = invocation.getArgument(1);
+            consumer.accept(invalidDoc);
+            return null;
+        }).when(repository).findAllTransactionsForExport(eq(sessionId), any());
+
+        // when + then
+        assertThatThrownBy(() ->
+                transactionExportService.exportAllTransactions(ExportFormat.CSV, sessionId, out)
+        ).isInstanceOf(ApiException.class)
+                .hasMessageContaining("파일 처리 중 오류가 발생했습니다");
     }
 }

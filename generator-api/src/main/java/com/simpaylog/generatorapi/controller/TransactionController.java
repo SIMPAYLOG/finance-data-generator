@@ -2,7 +2,6 @@ package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.service.TransactionExportService;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
