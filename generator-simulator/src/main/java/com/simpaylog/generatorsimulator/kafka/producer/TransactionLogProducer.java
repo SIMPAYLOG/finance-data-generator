@@ -1,6 +1,6 @@
 package com.simpaylog.generatorsimulator.kafka.producer;
 
-import com.simpaylog.generatorsimulator.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.TransactionLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
