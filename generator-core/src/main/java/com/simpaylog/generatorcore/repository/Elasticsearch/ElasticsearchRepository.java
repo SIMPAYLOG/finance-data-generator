@@ -32,8 +32,8 @@ public class ElasticsearchRepository {
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
                         .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("uuid.keyword").order(SortOrder.Asc)))  // _id 추가
-                        .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)));
+                        .sort(s -> s.field(f -> f.field("uuid").order(SortOrder.Asc)))  // _id 추가
+                        .query(q -> q.term(t -> t.field("sessionId").value(sessionId)));
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
