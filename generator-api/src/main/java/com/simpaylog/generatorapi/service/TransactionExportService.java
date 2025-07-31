@@ -9,8 +9,11 @@ import com.simpaylog.generatorcore.utils.FileExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.OutputStream;
+
+import static com.simpaylog.generatorapi.exception.ErrorCode.INVALID_EXPORT_FORMAT;
 
 @Slf4j
 @Service
@@ -19,6 +22,13 @@ public class TransactionExportService {
 
     private final ElasticsearchRepository repository;
     private final FileExporter fileExporter;
+
+    public StreamingResponseBody getExportStreamingBody(String format, String sessionId) {
+        ExportFormat exportFormat = ExportFormat.fromString(format)
+                .orElseThrow(() -> new ApiException(INVALID_EXPORT_FORMAT));
+
+        return outputStream -> exportAllTransactions(exportFormat, sessionId, outputStream);
+    }
 
     public void exportAllTransactions(ExportFormat format, String sessionId, OutputStream outputStream) {
         try {
