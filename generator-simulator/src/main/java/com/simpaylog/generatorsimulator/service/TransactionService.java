@@ -1,6 +1,7 @@
 package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
+import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;

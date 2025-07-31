@@ -9,8 +9,8 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300" # 노드 간 통신 포트 (선택 사항이지만 일반적으로 열어둡니다)
-#    volumes:
-#      - elastic_data:/usr/share/elasticsearch/data # Elasticsearch 데이터 영속성을 위한 볼륨
+    #    volumes:
+    #      - elastic_data:/usr/share/elasticsearch/data # Elasticsearch 데이터 영속성을 위한 볼륨
     networks:
       - elk_network # 모든 Elastic Stack 서비스가 동일한 네트워크에 있어야 합니다.
 

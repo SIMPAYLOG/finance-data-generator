@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorcore.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -10,7 +10,7 @@ public record TransactionLog(
         String uuid,
         String sessionId,
         Long userId,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp,
         TransactionType transactionType,
         String description,
