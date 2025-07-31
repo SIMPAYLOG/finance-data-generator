@@ -9,12 +9,14 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class ElasticsearchRepository {
@@ -30,18 +32,20 @@ public class ElasticsearchRepository {
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
                         .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("uuid.keyword").order(SortOrder.Asc)))  // _id 추가
+                        .sort(s -> s.field(f -> f.field("uuid").order(SortOrder.Asc)))  // _id 추가
                         .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)));
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
                 }
 
+                //갑자기 에러
                 SearchResponse<TransactionLogDocument> response = client.search(
                         searchBuilder.build(),
                         TransactionLogDocument.class
                 );
 
+                System.out.println("OK 통과");
                 List<Hit<TransactionLogDocument>> hits = response.hits().hits();
                 if (hits.isEmpty()) break;
 
@@ -56,8 +60,10 @@ public class ElasticsearchRepository {
                 searchAfter = lastSort;
             }
         } catch (IOException e) {
+            log.error("IOException : {}", e.getMessage());
             throw new CoreException("Elasticsearch 통신 중 IOException 발생");
         } catch (Exception e) {
+            log.error("Exception : {}", e.getMessage());
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }

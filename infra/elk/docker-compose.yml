@@ -9,8 +9,8 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300" # 노드 간 통신 포트 (선택 사항이지만 일반적으로 열어둡니다)
-#    volumes:
-#      - elastic_data:/usr/share/elasticsearch/data # Elasticsearch 데이터 영속성을 위한 볼륨
+    #    volumes:
+    #      - elastic_data:/usr/share/elasticsearch/data # Elasticsearch 데이터 영속성을 위한 볼륨
     networks:
       - elk_network # 모든 Elastic Stack 서비스가 동일한 네트워크에 있어야 합니다.
 
@@ -20,11 +20,14 @@ services:
     ports:
       - "9600:9600" # Logstash HTTP API (선택 사항, 모니터링/관리용)
     volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config:/usr/share/logstash/config
+      - ./logstash/scripts:/usr/share/logstash/scripts
       # pipeline 디렉토리 마운트 (conf 파일들이 있는 곳)
-      - type: bind
-        source: ./logstash/pipeline # docker-compose.yml 기준 상대 경로
-        target: /usr/share/logstash/pipeline
-        read_only: true
+    #      - type: bind
+    #        source: ./logstash/pipeline # docker-compose.yml 기준 상대 경로
+    #        target: /usr/share/logstash/pipeline
+    #        read_only: true
     environment:
       - "LS_JAVA_OPTS=-Xmx512m -Xms512m" # Logstash JVM 힙 메모리 설정 (필요시 조정)
       - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Elasticsearch 컨테이너와 통신 (서비스 이름 사용)
