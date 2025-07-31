@@ -32,20 +32,18 @@ public class ElasticsearchRepository {
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
                         .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("uuid").order(SortOrder.Asc)))  // _id 추가
+                        .sort(s -> s.field(f -> f.field("uuid.keyword").order(SortOrder.Asc)))  // _id 추가
                         .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)));
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
                 }
 
-                //갑자기 에러
                 SearchResponse<TransactionLogDocument> response = client.search(
                         searchBuilder.build(),
                         TransactionLogDocument.class
                 );
 
-                System.out.println("OK 통과");
                 List<Hit<TransactionLogDocument>> hits = response.hits().hits();
                 if (hits.isEmpty()) break;
 
