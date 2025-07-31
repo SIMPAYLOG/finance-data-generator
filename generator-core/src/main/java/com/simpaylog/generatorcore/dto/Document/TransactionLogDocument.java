@@ -18,7 +18,7 @@ public record TransactionLogDocument(
         String uuid,
         @Field(type = FieldType.Long) // 명시적으로 필드 타입 지정
         Long userId,
-        @Field(type = FieldType.Date, format = DateFormat.date_hour_minute, pattern = "yyyy-MM-dd HH:mm")
+        @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp,
         @Field(type = FieldType.Keyword) // Enum이나 정확한 매칭을 위해 Keyword 타입으로
         TransactionType transactionType,
