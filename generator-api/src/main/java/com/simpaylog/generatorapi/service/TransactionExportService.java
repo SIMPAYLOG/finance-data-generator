@@ -5,7 +5,7 @@ import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
-import com.simpaylog.generatorcore.utils.FileExporter;
+import com.simpaylog.generatorapi.utils.FileExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
