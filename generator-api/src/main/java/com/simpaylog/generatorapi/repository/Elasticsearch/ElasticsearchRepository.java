@@ -1,4 +1,4 @@
-package com.simpaylog.generatorcore.repository.Elasticsearch;
+package com.simpaylog.generatorapi.repository.Elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;

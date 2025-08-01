@@ -4,7 +4,7 @@ import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.repository.Elasticsearch.ElasticsearchRepository;
+import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.utils.FileExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
