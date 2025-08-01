@@ -1,7 +1,7 @@
-package com.simpaylog.generatorcore.utils;
+package com.simpaylog.generatorapi.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorcore.enums.export.TransactionCsvExportHeader;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
