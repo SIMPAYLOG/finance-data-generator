@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -68,4 +69,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countUsersBySessionId(String sessionId);
 
     Optional<User> findUserBySessionIdAndId(String sessionId, Long userId);
+
+    @Query("SELECT u.id FROM User u WHERE u.age = :ageGroup")
+    List<Long> findUserIdsByAgeGroup(@Param("ageGroup") int ageGroup);
 }

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -189,5 +190,14 @@ public class UserService {
 
     public SimulationSession getSimulationSessionOrException(String sessionId) {
         return redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
+    }
+
+    public List<Long> getIdsByAgeGroup(int ageGroup) throws IOException {
+        List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup);
+
+        if (userIds == null || userIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return userIds;
     }
 }

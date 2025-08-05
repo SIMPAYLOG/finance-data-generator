@@ -5,11 +5,12 @@ import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
-import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.util.NamedValue;
 import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
+import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,6 @@ import java.util.stream.Collectors;
 public class ElasticsearchRepository {
 
     private final ElasticsearchClient client;
-    private RangeQuery.Builder r;
 
     public void findAllTransactionsForExport(String sessionId, Consumer<TransactionLogDocument> consumer) {
         List<FieldValue> searchAfter = null;
@@ -188,5 +188,47 @@ public class ElasticsearchRepository {
             }
         }
         return completeData;
+    }
+
+    public List<ChartData> getCategorySummaryByAgeGroup(List<Long> userIds) throws IOException {
+        List<FieldValue> userIdFieldValues = userIds.stream()
+                .map(FieldValue::of)
+                .collect(Collectors.toList());
+
+        SearchResponse<Void> response = client.search(s -> s
+                        .index("transaction-logs")
+                        .size(0)
+                        .query(q -> q
+                                .terms(t -> t
+                                        .field("userId")
+                                        .terms(tv -> tv.value(userIdFieldValues))
+                                )
+                        )
+                        .aggregations("category_count", a -> a
+                                .terms(t -> t
+                                        .field("category")
+                                        .size(5)
+                                        .order(List.of(
+                                                NamedValue.of("total_amount", SortOrder.Desc)
+                                        ))
+                                )
+                                .aggregations("total_amount", sa -> sa
+                                        .sum(v -> v.script(sc -> sc.source("doc.containsKey('amount') ? doc['amount'].value : 0")))
+
+                                )
+                                .aggregations("total_amount", sa -> sa
+                                        .sum(v -> v.script(sc -> sc.source("doc.containsKey('amount') ? doc['amount'].value : 0")))
+                                )
+                        ),
+                Void.class
+        );
+
+        return response.aggregations().get("category_count").sterms().buckets().array().stream()
+                .map(b -> new ChartData(
+                        b.key().stringValue(),
+                        (long) b.aggregations().get("total_amount").sum().value(),
+                        b.docCount()
+                ))
+                .collect(Collectors.toList());
     }
 }
