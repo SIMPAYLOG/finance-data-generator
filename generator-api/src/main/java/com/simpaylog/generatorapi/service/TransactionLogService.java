@@ -16,8 +16,14 @@ import java.util.List;
 public class TransactionLogService {
     private final ElasticsearchRepository elasticsearchRepository;
 
-    public ChartResponse getCategoryCounts() throws IOException {
-        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary();
+    public ChartResponse getCategoryCounts(String sessionId) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary(sessionId);
+
+        return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
+    }
+
+    public ChartResponse getTopVomlumeCategoryCounts(String sessionId) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.topVolumeCategorySumary(sessionId);
 
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }

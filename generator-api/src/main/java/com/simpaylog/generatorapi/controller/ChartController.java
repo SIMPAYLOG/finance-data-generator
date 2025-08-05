@@ -24,9 +24,20 @@ public class ChartController {
     private final TransactionLogService transactionLogService;
 
     @GetMapping("/category-counts")
-    public Response<?> getCategoryCounts() {
+    public Response<?> getCategoryCounts(@RequestParam String sessionId) {
         try {
-            ChartResponse response = transactionLogService.getCategoryCounts();
+            ChartResponse response = transactionLogService.getCategoryCounts(sessionId);
+            return Response.success(HttpStatus.OK.value(), response);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    @GetMapping("/top-volume-category-counts")
+    public Response<?> getTopVolumeCategoryCounts(@RequestParam String sessionId) {
+        try {
+            ChartResponse response = transactionLogService.getTopVomlumeCategoryCounts(sessionId);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error(e.getMessage());

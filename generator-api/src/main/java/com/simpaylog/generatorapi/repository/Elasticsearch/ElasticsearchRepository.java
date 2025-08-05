@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.util.NamedValue;
 import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorcore.exception.CoreException;
@@ -75,10 +76,16 @@ public class ElasticsearchRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
-    public List<ChartCategoryDto> categorySumary() throws IOException {
+    public List<ChartCategoryDto> categorySumary(String sessionId) throws IOException {
         return client.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
+                                .query(q -> q
+                                        .term(t -> t
+                                                .field("sessionId")
+                                                .value(sessionId)
+                                        )
+                                )
                                 .aggregations("category_count", a -> a
                                         .terms(t -> t
                                                 .field("category")
@@ -93,6 +100,42 @@ public class ElasticsearchRepository {
                                 ),
                         Void.class
                 ).aggregations().get("category_count").sterms().buckets().array().stream()
+                .map(b -> new ChartCategoryDto(
+                        b.key().stringValue(),
+                        (long) b.aggregations().get("total_amount").sum().value(),
+                        b.docCount()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<ChartCategoryDto> topVolumeCategorySumary(String sessionId) throws IOException {
+        SearchResponse<Void> response = client.search(s -> s
+                        .index("transaction-logs")
+                        .size(0)
+                        .query(q -> q
+                                .term(t -> t
+                                        .field("sessionId")
+                                        .value(sessionId)
+                                )
+                        )
+                        .aggregations("category_count", a -> a
+                                .terms(t -> t
+                                        .field("category")
+                                        .size(5)
+                                        .order(NamedValue.of("total_amount", SortOrder.Desc))
+                                )
+                                .aggregations("total_amount", sa -> sa
+                                        .sum(v -> v
+                                                .script(sc -> sc
+                                                        .source("doc.containsKey('amount') ? doc['amount'].value : 0")
+                                                )
+                                        )
+                                )
+                        ),
+                Void.class
+        );
+
+        return response.aggregations().get("category_count").sterms().buckets().array().stream()
                 .map(b -> new ChartCategoryDto(
                         b.key().stringValue(),
                         (long) b.aggregations().get("total_amount").sum().value(),
