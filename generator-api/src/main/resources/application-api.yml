@@ -7,3 +7,8 @@ spring:
   mvc:
     async:
       request-timeout: 500000
+
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http

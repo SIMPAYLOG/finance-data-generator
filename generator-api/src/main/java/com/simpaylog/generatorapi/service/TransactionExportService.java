@@ -23,6 +23,7 @@ public class TransactionExportService {
     private final ElasticsearchRepository repository;
     private final FileExporter fileExporter;
 
+    // TODO: sessionId 없는 경우 예외처리 필요
     public StreamingResponseBody getExportStreamingBody(String format, String sessionId) {
         ExportFormat exportFormat = ExportFormat.fromString(format)
                 .orElseThrow(() -> new ApiException(INVALID_EXPORT_FORMAT));
