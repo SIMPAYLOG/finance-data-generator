@@ -4,8 +4,7 @@ import com.simpaylog.generatorapi.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Map;
-
+// TODO: success 메서드 httpStatus 매개변수 필요한지 체크
 public record Response<T>(Status status, T result) {
     public static <T> Response<T> success(int httpStatus, T result) {
         return new Response<>(new Status("SUCCESS", null, httpStatus), result);
