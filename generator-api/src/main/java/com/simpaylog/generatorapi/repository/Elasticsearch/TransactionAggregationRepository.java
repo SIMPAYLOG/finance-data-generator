@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.analysis.AggregationInterval;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
+import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.util.EntityUtils;
@@ -51,9 +52,33 @@ public class TransactionAggregationRepository {
 
             results.add(new PeriodTransaction.PTSummary(date, spentCount, spentAmount, incomeCount, incomeAmount));
         }
-
         return new PeriodTransaction(interval, results);
+    }
 
+    public TimeHeatmapCell searchTimeHeatmap(String sessionId, LocalDate from, LocalDate to) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.timeHeatmapQuery(sessionId, from, to);
+        request.setJsonEntity(queryJson);
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("by_day").path("buckets");
+
+        List<TimeHeatmapCell.TCSummary> results = new ArrayList<>();
+        for (JsonNode dayBucket : buckets) {
+            int dayOfWeek = dayBucket.path("key").asInt() - 1;
+            JsonNode hourBuckets = dayBucket.path("by_hour").path("buckets");
+
+            for (JsonNode hourBucket : hourBuckets) {
+                int hour = hourBucket.path("key").asInt(); // 0~23
+                int count = hourBucket.path("doc_count").asInt();
+
+                results.add(new TimeHeatmapCell.TCSummary(dayOfWeek, hour, count));
+            }
+        }
+        return new TimeHeatmapCell(results);
     }
 
     @SuppressWarnings("unchecked")

@@ -2,6 +2,7 @@ package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.dto.analysis.AggregationInterval;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
+import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.DateValidator;
@@ -31,7 +32,13 @@ public class AnalysisService {
         };
     }
 
+    public CommonChart<TimeHeatmapCell.TCSummary> searchTimeHeatmap(String sessionId, LocalDate durationStart, LocalDate durationEnd) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        TimeHeatmapCell result = transactionAggregationRepository.searchTimeHeatmap(sessionId, durationStart, durationEnd);
+        return new CommonChart<>("heatmap", "요일-시간대별 소비 건수", "시간대", "요일", result.results());
 
+    }
 
     private void getSimulationSessionOrException(String sessionId) {
         redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
