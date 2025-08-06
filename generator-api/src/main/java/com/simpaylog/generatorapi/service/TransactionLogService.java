@@ -22,8 +22,8 @@ public class TransactionLogService {
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }
 
-    public ChartResponse getTopVomlumeCategoryCounts(String sessionId) throws IOException {
-        List<ChartCategoryDto> dataList = elasticsearchRepository.topVolumeCategorySumary(sessionId);
+    public ChartResponse getTopVomlumeCategoryCounts(String sessionId, String durationStart, String durationEnd) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.topVolumeCategorySumary(sessionId, durationStart, durationEnd);
 
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }

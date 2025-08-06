@@ -108,14 +108,28 @@ public class ElasticsearchRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> topVolumeCategorySumary(String sessionId) throws IOException {
+    public List<ChartCategoryDto> topVolumeCategorySumary(String sessionId, String durationStart, String durationEnd) throws IOException {
         SearchResponse<Void> response = client.search(s -> s
                         .index("transaction-logs")
                         .size(0)
                         .query(q -> q
-                                .term(t -> t
-                                        .field("sessionId")
-                                        .value(sessionId)
+                                .bool(b -> b
+                                        .must(m -> m
+                                                .term(t -> t
+                                                        .field("sessionId")
+                                                        .value(sessionId)
+                                                )
+                                        )
+                                        .must(m -> m
+                                                .range(r -> r
+                                                        .date(d -> d
+                                                                .field("timestamp")
+                                                                .from(durationStart)
+                                                                .to(durationEnd)
+                                                                .timeZone("Asia/Seoul")
+                                                        )
+                                                )
+                                        )
                                 )
                         )
                         .aggregations("category_count", a -> a

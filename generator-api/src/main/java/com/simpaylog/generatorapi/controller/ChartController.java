@@ -35,9 +35,12 @@ public class ChartController {
     }
 
     @GetMapping("/top-volume-category-counts")
-    public Response<?> getTopVolumeCategoryCounts(@RequestParam String sessionId) {
+    public Response<?> getTopVolumeCategoryCounts(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
         try {
-            ChartResponse response = transactionLogService.getTopVomlumeCategoryCounts(sessionId);
+            ChartResponse response = transactionLogService.getTopVomlumeCategoryCounts(sessionId, durationStart, durationEnd);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error(e.getMessage());
