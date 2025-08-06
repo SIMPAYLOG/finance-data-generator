@@ -40,14 +40,14 @@ public class QueryBuilder2 {
                     "by_transaction_type": {
                       "terms": {
                         "field": "transactionType",
-                        "size": 2
+                        "size": 10
                       },
                       "aggs": {
                         "by_hour": {
                           "terms": {
                             "script": {
                               "lang": "painless",
-                              "source": "doc['timestamp'].value.getHour()"
+                              "source": "ZonedDateTime kst = ZonedDateTime.ofInstant(doc['timestamp'].value.toInstant(), ZoneId.of('Asia/Seoul')); return kst.getHour();"
                             },
                             "size": 24,
                             "order": {
@@ -62,6 +62,10 @@ public class QueryBuilder2 {
                             },
                             "average_amount": {
                               "avg": {
+                                "script": {
+                                  "source": "Math.round(_value)",
+                                  "lang": "painless"
+                                },
                                 "field": "amount"
                               }
                             }

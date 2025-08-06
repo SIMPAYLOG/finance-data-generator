@@ -36,54 +36,37 @@ public class TransactionAggregationRepository2 {
         JsonNode buckets = root.path("aggregations").path("by_transaction_type").path("buckets");
 
         // 시간별 데이터 맵핑: hour -> HourlySummaryBuilder
-        Map<Integer, HourlySummaryBuilder> hourlyMap = new HashMap<>();
+        Map<Integer, HourlySummary> hourlyMap = new HashMap<>();
 
         for (JsonNode typeBucket : buckets) {
-            String transactionType = typeBucket.path("key").asText(); // "WITHDRAW" or "DEPOSIT"
+            String transactionType = typeBucket.path("key").asText();
             JsonNode hourBuckets = typeBucket.path("by_hour").path("buckets");
 
             for (JsonNode hourBucket : hourBuckets) {
                 int hour = hourBucket.path("key").asInt();
-                int count = hourBucket.path("transaction_count").path("value").asInt();
-                double avgAmount = hourBucket.path("average_amount").path("value").asDouble(0.0);
+                int count = hourBucket.path("transaction_count").path("value").asInt(0);
+                int avgAmount = hourBucket.path("average_amount").path("value").asInt(0);
 
-                HourlySummaryBuilder builder = hourlyMap.getOrDefault(hour, new HourlySummaryBuilder(hour));
+                HourlySummary existing = hourlyMap.getOrDefault(hour, new HourlySummary(hour, 0, 0, 0, 0));
 
+                HourlySummary updated;
                 if ("WITHDRAW".equalsIgnoreCase(transactionType)) {
-                    builder.totalSpentCount = count;
-                    builder.avgSpentAmount = avgAmount;
-                } else if ("DEPOSIT".equalsIgnoreCase(transactionType)) {
-                    builder.totalIncomeCount = count;
-                    builder.avgIncomeAmount = avgAmount;
+                    updated = new HourlySummary(hour, count, avgAmount, existing.totalIncomeCount(), existing.avgIncomeAmount());
+                } else {
+                    updated = new HourlySummary(hour, existing.totalSpentCount(), existing.avgSpentAmount(), count, avgAmount);
                 }
 
-                hourlyMap.put(hour, builder);
+                hourlyMap.put(hour, updated);
             }
         }
 
         // 0~23시간까지 빠진 시간도 포함해서 정렬
         List<HourlySummary> summaries = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
-            HourlySummaryBuilder builder = hourlyMap.getOrDefault(i, new HourlySummaryBuilder(i));
-            summaries.add(builder.build());
+            HourlySummary hourlySummary = hourlyMap.getOrDefault(i, new HourlySummary(0, 0, 0, 0, 0));
+            summaries.add(hourlySummary);
         }
 
         return new HourlyTransaction(summaries);
-    }
-
-    private static class HourlySummaryBuilder {
-        int hour;
-        int totalSpentCount = 0;
-        double avgSpentAmount = 0.0;
-        int totalIncomeCount = 0;
-        double avgIncomeAmount = 0.0;
-
-        public HourlySummaryBuilder(int hour) {
-            this.hour = hour;
-        }
-
-        public HourlySummary build() {
-            return new HourlySummary(hour, totalSpentCount, avgSpentAmount, totalIncomeCount, avgIncomeAmount);
-        }
     }
 }

@@ -8,8 +8,8 @@ public record HourlyTransaction(
     public record HourlySummary(
             int hour,                  // 시간 (0~23)
             int totalSpentCount,      // WITHDRAW 거래 수
-            double avgSpentAmount,    // WITHDRAW 평균 금액
+            int avgSpentAmount,    // WITHDRAW 평균 금액
             int totalIncomeCount,     // DEPOSIT 거래 수
-            double avgIncomeAmount    // DEPOSIT 평균 금액
+            int avgIncomeAmount    // DEPOSIT 평균 금액
     ) {}
 }
