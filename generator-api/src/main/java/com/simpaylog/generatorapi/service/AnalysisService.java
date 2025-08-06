@@ -1,6 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.dto.analysis.AggregationInterval;
+import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
@@ -38,6 +39,13 @@ public class AnalysisService {
         TimeHeatmapCell result = transactionAggregationRepository.searchTimeHeatmap(sessionId, durationStart, durationEnd);
         return new CommonChart<>("heatmap", "요일-시간대별 소비 건수", "시간대", "요일", result.results());
 
+    }
+
+    public CommonChart<HourlyTransaction.HourlySummary> searchTimeAmountAvgByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        HourlyTransaction result = transactionAggregationRepository.searchByHour(sessionId, durationStart, durationEnd);
+        return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
     }
 
     private void getSimulationSessionOrException(String sessionId) {

@@ -1,5 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
+import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
@@ -41,6 +42,15 @@ public class AnalysisController {
             @RequestParam LocalDate durationEnd
     ) throws IOException {
         return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/hour-amount-average")
+    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
+            @RequestParam String sessionId,
+            @RequestParam LocalDate durationStart,
+            @RequestParam LocalDate durationEnd
+    ) throws IOException {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeAmountAvgByPeriod(sessionId, durationStart, durationEnd));
     }
 
 }
