@@ -74,4 +74,58 @@ public class QueryBuilder {
                 }
                 """.formatted(sessionId, gte, lte, interval);
     }
+
+    public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+        return """
+                {
+                    "size": 0,
+                    "query": {
+                      "bool": {
+                        "must": [
+                          { "term": { "sessionId": "%s" }  },
+                          { "term": { "transactionType": "WITHDRAW" } },
+                          {
+                            "range": {
+                              "timestamp": {
+                                "gte": "%s",
+                                "lte": "%s",
+                                "time_zone": "Asia/Seoul"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "aggs": {
+                      "by_day": {
+                        "terms": {
+                          "script": {
+                                  "lang": "painless",
+                                  "source": "def dow = doc['timestamp'].value.getDayOfWeekEnum().getValue(); dow = dow + 1 > 7 ? dow + 1 - 7 : dow + 1; return dow;"
+                                },
+                          "size": 7,
+                          "order": { "_key": "asc" }
+                        },
+                        "aggs": {
+                          "by_hour": {
+                            "terms": {
+                              "script": {
+                                            "lang": "painless",
+                                            "source": "def hour = doc['timestamp'].value.getHour() + 9; return hour >= 24 ? hour - 24 : hour;"
+                                          },
+                              "size": 24,
+                              "order": { "_key": "asc" }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                """.formatted(sessionId, gte, lte);
+    }
 }

@@ -6,7 +6,9 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.UserService;
-import com.simpaylog.generatorsimulator.dto.*;
+import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -74,7 +76,6 @@ public class TransactionService {
                     lastUsedMap.put(picked, curTime);
                     userBalance = userBalance.subtract(userTrade.cost());
                 } catch (Exception e) {
-                    log.error("[{}] userId={} 트랜잭션 생성 중 에러 발생", date, dto.userId());
                     dailyTransactionResultProducer.send(new DailyTransactionResult(dto.sessionId(), dto.userId(), false, date));
                 }
 
@@ -115,7 +116,7 @@ public class TransactionService {
             transactionLogProducer.send(transactionLog);
         } catch (Exception e) {
             // TODO: 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
-            log.error("[Kafka Send Fail] userId={}, type={}", userId, type);
+            log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", userId, type, timestamp, e.getMessage());
             throw new SimulatorException("카프카 데이터 전송 실패");
         }
     }
