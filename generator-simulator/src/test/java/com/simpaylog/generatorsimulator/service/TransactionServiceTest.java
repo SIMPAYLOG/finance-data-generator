@@ -8,7 +8,7 @@ import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import org.junit.jupiter.api.Test;

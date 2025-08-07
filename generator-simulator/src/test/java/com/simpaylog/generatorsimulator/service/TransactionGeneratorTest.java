@@ -1,10 +1,8 @@
 package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.TestConfig;
-import com.simpaylog.generatorsimulator.cache.CategoryPreferenceWeightLocalCache;
-import com.simpaylog.generatorsimulator.cache.CategorySpendingPatternLocalCache;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;

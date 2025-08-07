@@ -7,7 +7,7 @@ import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
@@ -39,7 +39,6 @@ public class TransactionService {
 
     public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         boolean salaryFlag = false;
-
 
         LocalDateTime from = date.atStartOfDay();
         LocalDateTime to = date.atTime(23, 59);

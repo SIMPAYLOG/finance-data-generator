@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
