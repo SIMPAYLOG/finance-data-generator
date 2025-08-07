@@ -42,7 +42,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "GROUP BY u.occupationCode ORDER BY COUNT(u) DESC")
     List<OccupationCodeStat> analyzeOccupation(String sessionId);
 
-    @Query("SELECT NEW com.simpaylog.generatorcore.dto.UserInfoDto(u.name, u.gender, u.age, u.userBehaviorProfile.preferenceId, u.occupationName) " +
+    @Query("SELECT NEW com.simpaylog.generatorcore.dto.UserInfoDto(u.name, u.gender, u.age, u.userBehaviorProfile.preferenceType, u.occupationName) " +
             "FROM User u " +
             "WHERE u.sessionId = :sessionId")
     List<UserInfoDto> findAllSimpleInfo(String sessionId);
@@ -52,7 +52,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "u.sessionId," +
             "u.decile, " +
             "u.balance, " +
-            "p.preferenceId, " +
+            "p.preferenceType, " +
             "p.wageType, " +
             "p.autoTransferDayOfMonth, " +
             "p.activeHours, " +

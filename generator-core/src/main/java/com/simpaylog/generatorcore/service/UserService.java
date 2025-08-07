@@ -146,7 +146,7 @@ public class UserService {
         return userRepository.findAllBySessionIdOrderByName(pageable, sessionId)
                 .map(user -> UserInfoResponse.userToUserInfoResponse(
                         user,
-                        preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceId()).name()
+                        preferenceLocalCache.get(user.getUserBehaviorProfile().getPreferenceType()).name()
                 ));
     }
 

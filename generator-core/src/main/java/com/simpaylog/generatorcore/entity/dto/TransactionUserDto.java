@@ -23,7 +23,7 @@ public record TransactionUserDto(
                 entity.getSessionId(),
                 entity.getDecile(),
                 entity.getBalance(),
-                entity.getUserBehaviorProfile().getPreferenceId(),
+                entity.getUserBehaviorProfile().getPreferenceType(),
                 entity.getUserBehaviorProfile().getWageType(),
                 entity.getUserBehaviorProfile().getAutoTransferDayOfMonth(),
                 entity.getUserBehaviorProfile().getActiveHours(),

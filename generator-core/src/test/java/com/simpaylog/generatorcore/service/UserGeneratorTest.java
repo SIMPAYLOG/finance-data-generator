@@ -3,6 +3,7 @@ package com.simpaylog.generatorcore.service;
 import com.simpaylog.generatorcore.TestConfig;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ class UserGeneratorTest extends TestConfig {
         List<User> result = userGenerator.generateUserPool(mockCondition);
         // Then(한 종류 이상인지 체크)
         assertEquals(userCount, result.size());
-        assertThat(result.stream().map(user -> user.getUserBehaviorProfile().getPreferenceId()).distinct().count()).isGreaterThan(1);
+        assertThat(result.stream().map(user -> user.getUserBehaviorProfile().getPreferenceType()).distinct().count()).isGreaterThan(1);
         assertThat(result.stream().map(User::getAge).distinct().count()).isGreaterThan(1);
         assertThat(result.stream().map(User::getGender).distinct().count()).isGreaterThan(1);
         assertThat(result.stream().map(User::getOccupationCode).distinct().count()).isGreaterThan(1);
@@ -48,7 +49,7 @@ class UserGeneratorTest extends TestConfig {
         List<User> result = userGenerator.generateUserPool(mockCondition);
         // Then
         assertEquals(userCount, result.size());
-        assertThat(result.stream().map(user -> user.getUserBehaviorProfile().getPreferenceId()).distinct().count()).isGreaterThan(1);
+        assertThat(result.stream().map(user -> user.getUserBehaviorProfile().getPreferenceType()).distinct().count()).isGreaterThan(1);
         assertThat(result).allMatch(user -> user.getConditionId() == 1);
         assertThat(result).allMatch(user -> user.getAge() == 30);
         assertThat(result).allMatch(user -> user.getGender() == Gender.F);
@@ -72,7 +73,7 @@ class UserGeneratorTest extends TestConfig {
         // Then
         assertEquals(userCount, result.size());
         assertThat(result).allMatch(user -> user.getConditionId() == 1);
-        assertThat(result).allMatch(user -> user.getUserBehaviorProfile().getPreferenceId() == 3);
+        assertThat(result).allMatch(user -> user.getUserBehaviorProfile().getPreferenceType().getKey() == 3);
         assertThat(result).allMatch(user -> user.getAge() == 30);
         assertThat(result).allMatch(user -> user.getGender() == Gender.M);
         assertThat(result).allMatch(user -> user.getOccupationCode() == Integer.parseInt(occupationCode));
@@ -114,10 +115,10 @@ class UserGeneratorTest extends TestConfig {
 
     public String toString(User user) {
         int age = user.getAge();
-        int preferenceId = user.getUserBehaviorProfile().getPreferenceId();
+        PreferenceType preferenceType = user.getUserBehaviorProfile().getPreferenceType();
         String gender = user.getGender().name();
         int occupationCode = user.getOccupationCode();
-        return String.format("연령대: %d, 소비성향: %d, 성별: %s 직업코드: %d", age, preferenceId, gender, occupationCode);
+        return String.format("연령대: %d, 소비성향: %s, 성별: %s 직업코드: %d", age, preferenceType, gender, occupationCode);
     }
 
 }
