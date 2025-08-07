@@ -2,9 +2,9 @@ package com.simpaylog.generatorapi.service;
 
 import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.exception.ApiException;
-import com.simpaylog.generatorcore.dto.Document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
-import com.simpaylog.generatorcore.repository.Elasticsearch.ElasticsearchRepository;
+import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

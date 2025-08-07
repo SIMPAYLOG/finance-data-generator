@@ -20,11 +20,14 @@ services:
     ports:
       - "9600:9600" # Logstash HTTP API (선택 사항, 모니터링/관리용)
     volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config:/usr/share/logstash/config
+      - ./logstash/scripts:/usr/share/logstash/scripts
       # pipeline 디렉토리 마운트 (conf 파일들이 있는 곳)
-      - type: bind
-        source: ./logstash/pipeline # docker-compose.yml 기준 상대 경로
-        target: /usr/share/logstash/pipeline
-        read_only: true
+#      - type: bind
+#        source: ./logstash/pipeline # docker-compose.yml 기준 상대 경로
+#        target: /usr/share/logstash/pipeline
+#        read_only: true
     environment:
       - "LS_JAVA_OPTS=-Xmx512m -Xms512m" # Logstash JVM 힙 메모리 설정 (필요시 조정)
       - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200" # Elasticsearch 컨테이너와 통신 (서비스 이름 사용)

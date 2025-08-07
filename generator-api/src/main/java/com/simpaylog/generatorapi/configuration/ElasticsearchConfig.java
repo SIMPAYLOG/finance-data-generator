@@ -1,4 +1,4 @@
-package com.simpaylog.generatorcore.configuration;
+package com.simpaylog.generatorapi.configuration;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;

@@ -4,8 +4,8 @@ import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.repository.Elasticsearch.ElasticsearchRepository;
-import com.simpaylog.generatorcore.utils.FileExporter;
+import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
+import com.simpaylog.generatorapi.utils.FileExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +23,7 @@ public class TransactionExportService {
     private final ElasticsearchRepository repository;
     private final FileExporter fileExporter;
 
+    // TODO: sessionId 없는 경우 예외처리 필요
     public StreamingResponseBody getExportStreamingBody(String format, String sessionId) {
         ExportFormat exportFormat = ExportFormat.fromString(format)
                 .orElseThrow(() -> new ApiException(INVALID_EXPORT_FORMAT));

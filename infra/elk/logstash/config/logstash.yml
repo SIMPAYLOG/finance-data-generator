@@ -1,0 +1,21 @@
+# --------- 기본 설정 ---------
+node.name: logstash-node
+pipeline.workers: 2              # 파이프라인 처리 스레드 수
+pipeline.batch.size: 125         # 이벤트 배치 크기
+pipeline.batch.delay: 5          # (ms) 배치 대기 시간
+
+# --------- 로그 출력 ---------
+log.level: info                  # 로그 레벨 (debug, info, warn, error)
+path.logs: /usr/share/logstash/logs
+
+# --------- 설정 파일 경로 ---------
+path.config: /usr/share/logstash/pipeline  # pipeline 설정파일(.conf) 위치
+path.data: /usr/share/logstash/data        # 상태 데이터 저장 경로
+
+# --------- HTTP API ---------
+http.host: "0.0.0.0"             # API 열기 (기본은 localhost)
+http.port: 9600
+
+# --------- 기타 ---------
+config.reload.automatic: true    # 설정파일 변경 시 자동 재로드
+config.reload.interval: 5s       # 재로드 간격

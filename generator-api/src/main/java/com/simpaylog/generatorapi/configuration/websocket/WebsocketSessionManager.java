@@ -28,10 +28,13 @@ public class WebsocketSessionManager {
         sessions.forEach(session -> {
             try {
                 if (session.isOpen()) {
-                    session.sendMessage(new TextMessage(message));
+                    synchronized (session) { // 세션 단위 직렬화
+                        session.sendMessage(new TextMessage(message));
+                    }
                 }
             } catch (IOException e) {
                 log.error("Failed to send message to session {}", session.getId(), e);
+                removeSession(session);
             }
         });
     }
