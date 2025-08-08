@@ -1,5 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
+import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.response.ChartResponse;
 import com.simpaylog.generatorapi.dto.response.Response;
@@ -57,13 +58,27 @@ public class ChartController {
         }
     }
 
-    @GetMapping("/summary/byAgeGroup")
-    public Response<?> getIdsByAge() throws IOException {
+    @GetMapping("/category/by-age-group")
+    public Response<?> getIdsByAge(
+            @RequestParam String sessionId
+    ) throws IOException {
         try {
-            Map<String, List<ChartData>> response = transactionAnalyzeService.getCategorySummaryByAllAgeGroups();
+            Map<String, List<ChartData>> response = transactionAnalyzeService.getCategorySummaryByAllAgeGroups(sessionId);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error("Elasticsearch error: {}", e.getMessage());
+            return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    @GetMapping("/income-expense/by-age-group")
+    public Response<?> getFinancialSummary(
+            @RequestParam String sessionId
+    ) {
+        try {
+            Map<String, AgeGroupIncomeExpenseAverageDto> response = transactionAnalyzeService.getFinancialsByAgeGroup(sessionId);
+            return Response.success(HttpStatus.OK.value(), response);
+        } catch (IOException e) {
             return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
     }

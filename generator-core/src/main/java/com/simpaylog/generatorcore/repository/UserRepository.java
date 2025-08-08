@@ -15,7 +15,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -70,6 +73,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findUserBySessionIdAndId(String sessionId, Long userId);
 
-    @Query("SELECT u.id FROM User u WHERE u.age = :ageGroup")
-    List<Long> findUserIdsByAgeGroup(@Param("ageGroup") int ageGroup);
+    @Query("SELECT u.id FROM User u WHERE u.age = :ageGroup AND u.sessionId = :sessionId")
+    List<Long> findUserIdsByAgeGroup(
+            @Param("ageGroup") int ageGroup,
+            @Param("sessionId") String sessionId
+    );
 }

@@ -3,28 +3,33 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
+import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.util.NamedValue;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.chart.GroupFinancials;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Repository
@@ -231,4 +236,80 @@ public class ElasticsearchRepository {
                 ))
                 .collect(Collectors.toList());
     }
+    private static final String ES_END_POINT = "/transaction-logs/_search";
+    private final RestClient elasticsearchRestClient;
+    public GroupFinancials getFinancialsForUsers(String sessionId, List<Long> userIds) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        if (sessionId == null || sessionId.isEmpty() || userIds == null || userIds.isEmpty()) {
+            return new GroupFinancials(0.0, 0.0);
+        }
+
+        String queryJson = """
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "term": {
+                            "sessionId": "%s"
+                          }
+                        },
+                        {
+                          "terms": {
+                            "userId": %s
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "financial_summary": {
+                      "filters": {
+                        "filters": {
+                          "income": {
+                            "term": {
+                              "transactionType": "DEPOSIT"
+                            }
+                          },
+                          "expense": {
+                            "bool": {
+                              "must_not": {
+                                "term": {
+                                  "transactionType": "DEPOSIT"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "aggs": {
+                        "total_amount": {
+                          "sum": {
+                            "script": {
+                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+        """.formatted(sessionId, userIds.toString());
+
+        request.setJsonEntity(queryJson);
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("financial_summary").path("buckets");
+
+        double incomeAmount = buckets.path("income").path("total_amount").path("value").asDouble();
+        double expenseAmount = buckets.path("expense").path("total_amount").path("value").asDouble();
+
+        return new GroupFinancials(incomeAmount, expenseAmount);
+    }
+
 }

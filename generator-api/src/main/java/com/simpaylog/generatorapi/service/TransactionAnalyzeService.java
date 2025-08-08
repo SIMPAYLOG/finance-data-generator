@@ -1,8 +1,7 @@
 package com.simpaylog.generatorapi.service;
 
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.chart.*;
 import com.simpaylog.generatorapi.dto.response.ChartResponse;
 import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -11,10 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -61,14 +57,14 @@ public class TransactionAnalyzeService {
         return new ChartResponse("line", title, "날짜", "거래금액", dataList);
     }
 
-    public Map<String, List<ChartData>> getCategorySummaryByAllAgeGroups() throws IOException {
+    public Map<String, List<ChartData>> getCategorySummaryByAllAgeGroups(String sessionId) throws IOException {
         // 1. 분석할 연령대 목록 정의
         List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
         // 2. 최종 결과를 담을 Map 생성
         Map<String, List<ChartData>> finalResults = new LinkedHashMap<>();
 
         for (Integer age : ageGroups) {
-            List<Long> userIds = userRepository.findUserIdsByAgeGroup(age);
+            List<Long> userIds = userRepository.findUserIdsByAgeGroup(age, sessionId);
 
             List<ChartData> categoryDataForAgeGroup = new ArrayList<>();
             if (userIds != null && !userIds.isEmpty()) {
@@ -78,6 +74,24 @@ public class TransactionAnalyzeService {
             finalResults.put(age + "대", categoryDataForAgeGroup);
         }
 
+        return finalResults;
+    }
+
+
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsByAgeGroup(String sessionId) throws IOException {
+        // 분석할 연령대 목록
+        List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
+
+        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
+        for (Integer age : ageGroups) {
+            List<Long> userIds = userRepository.findUserIdsByAgeGroup(age, sessionId);
+
+            GroupFinancials groupFinancials = null;
+            if (userIds != null && !userIds.isEmpty()) {
+                groupFinancials = elasticsearchRepository.getFinancialsForUsers(sessionId, userIds);
+            }
+            finalResults.put(age + "대", new AgeGroupIncomeExpenseAverageDto(groupFinancials == null? 0 : (long)(groupFinancials.totalIncome()/userIds.size()), groupFinancials == null? 0 : (long)(groupFinancials.totalExpense()/userIds.size())));
+        }
         return finalResults;
     }
 }

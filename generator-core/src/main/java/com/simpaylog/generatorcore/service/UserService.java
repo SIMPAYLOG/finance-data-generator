@@ -192,8 +192,8 @@ public class UserService {
         return redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public List<Long> getIdsByAgeGroup(int ageGroup) throws IOException {
-        List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup);
+    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId) throws IOException {
+        List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup, sessionId);
 
         if (userIds == null || userIds.isEmpty()) {
             return new ArrayList<>();
