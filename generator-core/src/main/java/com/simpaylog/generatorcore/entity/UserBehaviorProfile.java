@@ -25,20 +25,22 @@ public class UserBehaviorProfile {
     private String activeHours;
     private BigDecimal incomeValue;
     private BigDecimal assetValue;
+    private BigDecimal savingRate;
 
     protected UserBehaviorProfile() {
     }
 
-    private UserBehaviorProfile(BigDecimal incomeValue, PreferenceType preferenceType, WageType wageType, int autoTransferDayOfMonth) {
+    private UserBehaviorProfile(PreferenceType preferenceType, WageType wageType, int autoTransferDayOfMonth, BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate) {
         this.preferenceType = preferenceType;
         this.wageType = wageType;
-        this.incomeValue = incomeValue;
         this.autoTransferDayOfMonth = autoTransferDayOfMonth;
         this.activeHours = "{\"min\": 7, \"max\": 23}";
-        this.assetValue = BigDecimal.ZERO; //TODO: 자산 value 추가
+        this.incomeValue = incomeValue;
+        this.assetValue = assetValue;
+        this.savingRate = savingRate;
     }
 
-    public static UserBehaviorProfile of(BigDecimal incomeValue, PreferenceType preferenceType, WageType wageType, int autoTransferDayOfMonth) {
-        return new UserBehaviorProfile(incomeValue, preferenceType, wageType, autoTransferDayOfMonth);
+    public static UserBehaviorProfile of(PreferenceType preferenceType, WageType wageType, int autoTransferDayOfMonth,  BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate) {
+        return new UserBehaviorProfile(preferenceType, wageType, autoTransferDayOfMonth, incomeValue, assetValue, savingRate);
     }
 }

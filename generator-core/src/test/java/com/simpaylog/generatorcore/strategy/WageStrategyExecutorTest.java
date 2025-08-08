@@ -4,6 +4,7 @@ import com.simpaylog.generatorcore.TestConfig;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.UserBehaviorProfile;
 import com.simpaylog.generatorcore.enums.Gender;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -99,10 +100,10 @@ class WageStrategyExecutorTest extends TestConfig {
     }
 
     public static UserBehaviorProfile profileFixture(BigDecimal wage, WageType wageType) {
-        return UserBehaviorProfile.of(wage, 1, wageType, 1);
+        return UserBehaviorProfile.of(PreferenceType.DEFAULT, wageType, 1, wage, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     public static User userFixture(UserBehaviorProfile profile) {
-        return User.of("test", profile, 1, 20, Gender.M, BigDecimal.ZERO, 1, 1, "TEST-OCCUPATION", 1);
+        return User.of("test", profile, 1, 20, Gender.M, 1, "TEST-OCCUPATION", 1, List.of());
     }
 }

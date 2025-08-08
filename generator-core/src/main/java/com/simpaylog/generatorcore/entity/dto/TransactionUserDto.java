@@ -14,7 +14,8 @@ public record TransactionUserDto(
     WageType wageType,
     Integer autoTransferDayOfMonth,
     String activeHour,
-    BigDecimal incomeValue
+    BigDecimal incomeValue,
+    BigDecimal savingRate
 ) {
 
     public static TransactionUserDto fromEntity(User entity) {
@@ -22,12 +23,12 @@ public record TransactionUserDto(
                 entity.getId(),
                 entity.getSessionId(),
                 entity.getDecile(),
-                entity.getBalance(),
                 entity.getUserBehaviorProfile().getPreferenceType(),
                 entity.getUserBehaviorProfile().getWageType(),
                 entity.getUserBehaviorProfile().getAutoTransferDayOfMonth(),
                 entity.getUserBehaviorProfile().getActiveHours(),
-                entity.getUserBehaviorProfile().getIncomeValue()
+                entity.getUserBehaviorProfile().getIncomeValue(),
+                entity.getUserBehaviorProfile().getSavingRate()
         );
     }
 }
