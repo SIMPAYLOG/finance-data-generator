@@ -6,6 +6,7 @@ import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
+import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
@@ -21,13 +22,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -189,5 +189,33 @@ public class UserService {
 
     public SimulationSession getSimulationSessionOrException(String sessionId) {
         return redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
+    }
+
+    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId) throws IOException {
+        List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup, sessionId);
+
+        if (userIds == null || userIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return userIds;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<Long>> groupUserIdsByAgeForSession(String sessionId) {
+        Map<Integer, List<Long>> finalResult = new LinkedHashMap<>();
+        for (int ageGroup = 10; ageGroup <= 70; ageGroup += 10) {
+            finalResult.put(ageGroup, new ArrayList<>());
+        }
+
+        List<UserAgeInfo> users = userRepository.findUserAgeInfoBySessionId(sessionId);
+        Map<Integer, List<Long>> resultMapFromDB = users.stream()
+                .collect(Collectors.groupingBy(
+                        user -> user.age(),
+                        Collectors.mapping(UserAgeInfo::id, Collectors.toList())
+                ));
+
+        finalResult.putAll(resultMapFromDB);
+
+        return finalResult;
     }
 }
