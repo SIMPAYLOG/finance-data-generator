@@ -3,17 +3,20 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.*;
+import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
+import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.util.NamedValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.chart.GroupFinancials;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +29,12 @@ import org.springframework.stereotype.Repository;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 
 @Slf4j
 @Repository
@@ -37,6 +42,8 @@ import java.util.stream.Collectors;
 public class ElasticsearchRepository {
 
     private final ElasticsearchClient client;
+    private final RestClient elasticsearchRestClient;
+    private static final String ES_END_POINT = "/transaction-logs/_search";
 
     public void findAllTransactionsForExport(String sessionId, Consumer<TransactionLogDocument> consumer) {
         List<FieldValue> searchAfter = null;
@@ -80,10 +87,16 @@ public class ElasticsearchRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
-    public List<ChartCategoryDto> categorySumary() throws IOException {
+    public List<ChartCategoryDto> categorySumary(String sessionId) throws IOException {
         return client.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
+                                .query(q -> q
+                                        .term(t -> t
+                                                .field("sessionId")
+                                                .value(sessionId)
+                                        )
+                                )
                                 .aggregations("category_count", a -> a
                                         .terms(t -> t
                                                 .field("category")
@@ -98,6 +111,56 @@ public class ElasticsearchRepository {
                                 ),
                         Void.class
                 ).aggregations().get("category_count").sterms().buckets().array().stream()
+                .map(b -> new ChartCategoryDto(
+                        b.key().stringValue(),
+                        (long) b.aggregations().get("total_amount").sum().value(),
+                        b.docCount()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public List<ChartCategoryDto> topVolumeCategorySumary(String sessionId, String durationStart, String durationEnd) throws IOException {
+        SearchResponse<Void> response = client.search(s -> s
+                        .index("transaction-logs")
+                        .size(0)
+                        .query(q -> q
+                                .bool(b -> b
+                                        .must(m -> m
+                                                .term(t -> t
+                                                        .field("sessionId")
+                                                        .value(sessionId)
+                                                )
+                                        )
+                                        .must(m -> m
+                                                .range(r -> r
+                                                        .date(d -> d
+                                                                .field("timestamp")
+                                                                .from(durationStart)
+                                                                .to(durationEnd)
+                                                                .timeZone("Asia/Seoul")
+                                                        )
+                                                )
+                                        )
+                                )
+                        )
+                        .aggregations("category_count", a -> a
+                                .terms(t -> t
+                                        .field("category")
+                                        .size(5)
+                                        .order(NamedValue.of("total_amount", SortOrder.Desc))
+                                )
+                                .aggregations("total_amount", sa -> sa
+                                        .sum(v -> v
+                                                .script(sc -> sc
+                                                        .source("doc.containsKey('amount') ? doc['amount'].value : 0")
+                                                )
+                                        )
+                                )
+                        ),
+                Void.class
+        );
+
+        return response.aggregations().get("category_count").sterms().buckets().array().stream()
                 .map(b -> new ChartCategoryDto(
                         b.key().stringValue(),
                         (long) b.aggregations().get("total_amount").sum().value(),
@@ -236,68 +299,13 @@ public class ElasticsearchRepository {
                 ))
                 .collect(Collectors.toList());
     }
-    private static final String ES_END_POINT = "/transaction-logs/_search";
-    private final RestClient elasticsearchRestClient;
+
     public GroupFinancials getFinancialsForUsers(String sessionId, List<Long> userIds) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
         if (sessionId == null || sessionId.isEmpty() || userIds == null || userIds.isEmpty()) {
             return new GroupFinancials(0.0, 0.0);
         }
-
-        String queryJson = """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        {
-                          "term": {
-                            "sessionId": "%s"
-                          }
-                        },
-                        {
-                          "terms": {
-                            "userId": %s
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "aggs": {
-                    "financial_summary": {
-                      "filters": {
-                        "filters": {
-                          "income": {
-                            "term": {
-                              "transactionType": "DEPOSIT"
-                            }
-                          },
-                          "expense": {
-                            "bool": {
-                              "must_not": {
-                                "term": {
-                                  "transactionType": "DEPOSIT"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "aggs": {
-                        "total_amount": {
-                          "sum": {
-                            "script": {
-                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-        """.formatted(sessionId, userIds.toString());
-
-        request.setJsonEntity(queryJson);
+        request.setJsonEntity(QueryBuilder.incomeExpenseByAgeGroupQuery(sessionId, userIds));
         Response response = elasticsearchRestClient.performRequest(request);
         String jsonResult = EntityUtils.toString(response.getEntity());
 
@@ -310,6 +318,49 @@ public class ElasticsearchRepository {
         double expenseAmount = buckets.path("expense").path("total_amount").path("value").asDouble();
 
         return new GroupFinancials(incomeAmount, expenseAmount);
+    }
+
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsForGroup (String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
+        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
+        Request request = new Request("GET", ES_END_POINT);
+
+        request.setJsonEntity(QueryBuilder.test(sessionId, userIds, durationStart, durationEnd));
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("age_group_summary").path("buckets");
+
+        for (int i = 10; i <= 70; i += 10) {
+            String ageGroupKey = i + "대";
+
+            JsonNode currentAgeBucket = buckets.path(ageGroupKey);
+
+            long avgIncome = 0;
+            long avgExpense = 0;
+
+            if (!currentAgeBucket.isMissingNode()) {
+                avgIncome = currentAgeBucket
+                        .path("income_expense_split")
+                        .path("buckets")
+                        .path("income")
+                        .path("average_per_user")
+                        .path("value")
+                        .asLong(0);
+
+                avgExpense = currentAgeBucket
+                        .path("income_expense_split")
+                        .path("buckets")
+                        .path("expense")
+                        .path("average_per_user")
+                        .path("value")
+                        .asLong(0);
+            }
+            finalResults.put(ageGroupKey, new AgeGroupIncomeExpenseAverageDto(avgIncome, avgExpense));
+        }
+
+        return finalResults;
     }
 
 }

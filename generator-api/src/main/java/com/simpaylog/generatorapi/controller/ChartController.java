@@ -30,9 +30,23 @@ public class ChartController {
     private final UserService userService;
 
     @GetMapping("/category-counts")
-    public Response<?> getCategoryCounts() {
+    public Response<?> getCategoryCounts(@RequestParam String sessionId) {
         try {
-            ChartResponse response = transactionAnalyzeService.getCategoryCounts();
+            ChartResponse response = transactionAnalyzeService.getCategoryCounts(sessionId);
+            return Response.success(HttpStatus.OK.value(), response);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    @GetMapping("/top-volume-category-counts")
+    public Response<?> getTopVolumeCategoryCounts(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
+        try {
+            ChartResponse response = transactionAnalyzeService.getTopVomlumeCategoryCounts(sessionId, durationStart, durationEnd);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -71,7 +85,7 @@ public class ChartController {
         }
     }
 
-    @GetMapping("/income-expense/by-age-group")
+    @GetMapping("/income-expense/by-age-group2")
     public Response<?> getFinancialSummary(
             @RequestParam String sessionId
     ) {
@@ -80,6 +94,20 @@ public class ChartController {
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    @GetMapping("/income-expense/by-age-group")
+    public Response<?> getSummaryByAgeGroup(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
+        try {
+            Map<Integer, List<Long>> userIdsByAgeGroup = userService.groupUserIdsByAgeForSession(sessionId);
+            Map<String, AgeGroupIncomeExpenseAverageDto> response =transactionAnalyzeService.getFinancialsForGroup(sessionId, userIdsByAgeGroup, durationStart, durationEnd);
+            return Response.success(HttpStatus.OK.value(), response);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

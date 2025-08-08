@@ -7,6 +7,7 @@ import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchReposito
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -18,8 +19,14 @@ public class TransactionAnalyzeService {
     private final ElasticsearchRepository elasticsearchRepository;
     private final UserRepository userRepository;
 
-    public ChartResponse getCategoryCounts() throws IOException {
-        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary();
+    public ChartResponse getCategoryCounts(String sessionId) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary(sessionId);
+
+        return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
+    }
+
+    public ChartResponse getTopVomlumeCategoryCounts(String sessionId, String durationStart, String durationEnd) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.topVolumeCategorySumary(sessionId, durationStart, durationEnd);
 
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }
@@ -94,4 +101,9 @@ public class TransactionAnalyzeService {
         }
         return finalResults;
     }
+
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsForGroup(String sessionId, Map<Integer, List<Long>> idMap, String durationStart, String durationEnd) throws IOException {
+        return elasticsearchRepository.getFinancialsForGroup(sessionId, idMap, durationStart, durationEnd);
+    }
+
 }

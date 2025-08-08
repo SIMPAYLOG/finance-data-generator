@@ -6,6 +6,7 @@ import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
+import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
@@ -26,9 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -199,5 +198,24 @@ public class UserService {
             return new ArrayList<>();
         }
         return userIds;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<Long>> groupUserIdsByAgeForSession(String sessionId) {
+        Map<Integer, List<Long>> finalResult = new LinkedHashMap<>();
+        for (int ageGroup = 10; ageGroup <= 70; ageGroup += 10) {
+            finalResult.put(ageGroup, new ArrayList<>());
+        }
+
+        List<UserAgeInfo> users = userRepository.findUserAgeInfoBySessionId(sessionId);
+        Map<Integer, List<Long>> resultMapFromDB = users.stream()
+                .collect(Collectors.groupingBy(
+                        user -> user.age(),
+                        Collectors.mapping(UserAgeInfo::id, Collectors.toList())
+                ));
+
+        finalResult.putAll(resultMapFromDB);
+
+        return finalResult;
     }
 }

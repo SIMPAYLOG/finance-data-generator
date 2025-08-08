@@ -4,6 +4,7 @@ import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.AgeStat;
 import com.simpaylog.generatorcore.dto.analyze.GenderStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
+import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import org.springframework.data.domain.Page;
@@ -78,4 +79,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("ageGroup") int ageGroup,
             @Param("sessionId") String sessionId
     );
+
+    @Query("SELECT new com.simpaylog.generatorcore.dto.analyze.UserAgeInfo(u.id, u.age) FROM User u WHERE u.sessionId = :sessionId")
+    List<UserAgeInfo> findUserAgeInfoBySessionId(@Param("sessionId") String sessionId);
 }
