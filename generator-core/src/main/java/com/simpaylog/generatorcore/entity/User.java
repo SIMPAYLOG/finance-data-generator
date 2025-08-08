@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,35 +25,30 @@ public class User {
     private Integer age;
     @Enumerated(EnumType.STRING)
     private Gender gender;
-    @Setter
-    private BigDecimal balance;
-    private int jobNumber;
     private int occupationCode;
     private String occupationName;
     private Integer conditionId;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id")
+    List<Account> accounts;
 
     protected User() {
     }
 
-    private User(String sessionId, String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
-        this.sessionId = sessionId;
+    private User(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, int occupationCode, String occupationName, int conditionId, List<Account> accounts) {
         this.name = name;
         this.userBehaviorProfile = profile;
         this.decile = decile;
         this.age = age;
         this.gender = gender;
-        this.balance = balance;
-        this.jobNumber = jobNumber;
         this.occupationCode = occupationCode;
         this.occupationName = occupationName;
         this.conditionId = conditionId;
+        this.accounts = accounts;
     }
 
-    public static User of(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
-        return new User(null, name, profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName, conditionId);
+    public static User of(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, int occupationCode, String occupationName, int conditionId, List<Account> accounts) {
+        return new User(name, profile, decile, age, gender, occupationCode, occupationName, conditionId, accounts);
     }
 
-    public static User of(String sessionId, String name, UserBehaviorProfile profile, int decile, int age, Gender gender, BigDecimal balance, int jobNumber, int occupationCode, String occupationName, int conditionId) {
-        return new User(sessionId, name, profile, decile, age, gender, balance, jobNumber, occupationCode, occupationName, conditionId);
-    }
 }
