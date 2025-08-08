@@ -14,6 +14,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserGeneratorTest extends TestConfig {
     @Autowired
@@ -98,7 +99,7 @@ class UserGeneratorTest extends TestConfig {
     }
 
     @Test
-    void 존재하지_않는_성향ID를_넣으면_에러반환() {
+    void 존재하지_않는_성향ID를_넣으면_기본형으로_대체() {
         // Given
         int id = 1;
         int userCount = 10;
@@ -108,9 +109,8 @@ class UserGeneratorTest extends TestConfig {
         String occupationCode = "10";
         UserGenerationCondition mockCondition = new UserGenerationCondition(id, userCount, preferenceId, ageGroup, gender, occupationCode);
         // When
-        assertThatThrownBy(() -> userGenerator.generateUserPool(mockCondition))
-                .isInstanceOf(CoreException.class)
-                .hasMessageContaining("존재하지 않는 성향 아이디");
+        List<User> result = userGenerator.generateUserPool(mockCondition);
+        assertTrue(result.getFirst().getUserBehaviorProfile().getPreferenceType() == PreferenceType.DEFAULT);
     }
 
     public String toString(User user) {

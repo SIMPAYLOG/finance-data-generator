@@ -1,6 +1,7 @@
 package com.simpaylog.generatorcore.entity.dto;
 
 import com.simpaylog.generatorcore.entity.User;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 
 import java.math.BigDecimal;
@@ -9,8 +10,7 @@ public record TransactionUserDto(
     Long userId,
     String sessionId,
     Integer decile,
-    BigDecimal balance,
-    Integer preferenceId,
+    PreferenceType preferenceType,
     WageType wageType,
     Integer autoTransferDayOfMonth,
     String activeHour,

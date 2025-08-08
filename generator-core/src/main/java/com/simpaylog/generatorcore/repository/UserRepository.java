@@ -42,21 +42,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "GROUP BY u.occupationCode ORDER BY COUNT(u) DESC")
     List<OccupationCodeStat> analyzeOccupation(String sessionId);
 
-    @Query("SELECT NEW com.simpaylog.generatorcore.dto.UserInfoDto(u.name, u.gender, u.age, u.userBehaviorProfile.preferenceType, u.occupationName) " +
-            "FROM User u " +
-            "WHERE u.sessionId = :sessionId")
-    List<UserInfoDto> findAllSimpleInfo(String sessionId);
-
     @Query("SELECT NEW com.simpaylog.generatorcore.entity.dto.TransactionUserDto(" +
-            "u.id, " +
-            "u.sessionId," +
-            "u.decile, " +
-            "u.balance, " +
-            "p.preferenceType, " +
-            "p.wageType, " +
-            "p.autoTransferDayOfMonth, " +
-            "p.activeHours, " +
-            "p.incomeValue)" +
+            "u.id, u.sessionId, u.decile, p.preferenceType, p.wageType, p.autoTransferDayOfMonth, p.activeHours, p.incomeValue, p.savingRate) " +
             "FROM User u JOIN u.userBehaviorProfile p " +
             "WHERE u.sessionId = :sessionId")
     List<TransactionUserDto> findAllTransactionUserDtosBySessionId(String sessionId);
