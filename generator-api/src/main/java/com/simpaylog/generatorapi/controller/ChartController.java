@@ -85,18 +85,6 @@ public class ChartController {
         }
     }
 
-    @GetMapping("/income-expense/by-age-group2")
-    public Response<?> getFinancialSummary(
-            @RequestParam String sessionId
-    ) {
-        try {
-            Map<String, AgeGroupIncomeExpenseAverageDto> response = transactionAnalyzeService.getFinancialsByAgeGroup(sessionId);
-            return Response.success(HttpStatus.OK.value(), response);
-        } catch (IOException e) {
-            return Response.error(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
-        }
-    }
-
     @GetMapping("/income-expense/by-age-group")
     public Response<?> getSummaryByAgeGroup(
             @RequestParam String sessionId,

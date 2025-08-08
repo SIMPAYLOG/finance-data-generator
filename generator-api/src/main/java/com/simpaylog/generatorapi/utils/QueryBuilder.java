@@ -204,71 +204,14 @@ public class QueryBuilder {
                 """.formatted(gte, lte, sessionId);
     }
 
-    public static String incomeExpenseByAgeGroupQuery(String sessionId, List<Long> userIds) {
-        return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        {
-                          "term": {
-                            "sessionId": "%s"
-                          }
-                        },
-                        {
-                          "terms": {
-                            "userId": %s
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "aggs": {
-                    "financial_summary": {
-                      "filters": {
-                        "filters": {
-                          "income": {
-                            "term": {
-                              "transactionType": "DEPOSIT"
-                            }
-                          },
-                          "expense": {
-                            "bool": {
-                              "must_not": {
-                                "term": {
-                                  "transactionType": "DEPOSIT"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "aggs": {
-                        "total_amount": {
-                          "sum": {
-                            "script": {
-                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-        """.formatted(sessionId, userIds.toString());
-    }
-
-    public static String test(
+    public static String incomeExpenseByAgeGroupQuery(
             String sessionId,
             Map<Integer, List<Long>> ageGroupUserIds,
             String durationStart,
             String durationEnd)
     {
         String filtersJson = ageGroupUserIds.entrySet().stream()
-                // ID 목록이 비어있는 나이대는 쿼리에서 제외
                 .filter(entry -> !entry.getValue().isEmpty())
-                // 각 항목을 "10s": { "terms": { "userId": [101, 105] }} 형태의 문자열로 변환
                 .map(entry -> {
                     String ageGroupKey = "\"" + entry.getKey() + "대" + "\"";
                     String userIdsArray = entry.getValue().toString();

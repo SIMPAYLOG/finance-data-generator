@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
-import com.simpaylog.generatorapi.dto.chart.GroupFinancials;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.exception.CoreException;
@@ -300,31 +299,11 @@ public class ElasticsearchRepository {
                 .collect(Collectors.toList());
     }
 
-    public GroupFinancials getFinancialsForUsers(String sessionId, List<Long> userIds) throws IOException {
-        Request request = new Request("GET", ES_END_POINT);
-        if (sessionId == null || sessionId.isEmpty() || userIds == null || userIds.isEmpty()) {
-            return new GroupFinancials(0.0, 0.0);
-        }
-        request.setJsonEntity(QueryBuilder.incomeExpenseByAgeGroupQuery(sessionId, userIds));
-        Response response = elasticsearchRestClient.performRequest(request);
-        String jsonResult = EntityUtils.toString(response.getEntity());
-
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode root = objectMapper.readTree(jsonResult);
-        JsonNode buckets = root.path("aggregations").path("financial_summary").path("buckets");
-
-        double incomeAmount = buckets.path("income").path("total_amount").path("value").asDouble();
-        double expenseAmount = buckets.path("expense").path("total_amount").path("value").asDouble();
-
-        return new GroupFinancials(incomeAmount, expenseAmount);
-    }
-
     public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsForGroup (String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
         Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
         Request request = new Request("GET", ES_END_POINT);
 
-        request.setJsonEntity(QueryBuilder.test(sessionId, userIds, durationStart, durationEnd));
+        request.setJsonEntity(QueryBuilder.incomeExpenseByAgeGroupQuery(sessionId, userIds, durationStart, durationEnd));
         Response response = elasticsearchRestClient.performRequest(request);
         String jsonResult = EntityUtils.toString(response.getEntity());
 

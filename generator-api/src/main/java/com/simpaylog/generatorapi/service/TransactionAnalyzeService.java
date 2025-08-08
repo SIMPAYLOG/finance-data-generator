@@ -7,7 +7,6 @@ import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchReposito
 import com.simpaylog.generatorcore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -81,24 +80,6 @@ public class TransactionAnalyzeService {
             finalResults.put(age + "대", categoryDataForAgeGroup);
         }
 
-        return finalResults;
-    }
-
-
-    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsByAgeGroup(String sessionId) throws IOException {
-        // 분석할 연령대 목록
-        List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
-
-        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
-        for (Integer age : ageGroups) {
-            List<Long> userIds = userRepository.findUserIdsByAgeGroup(age, sessionId);
-
-            GroupFinancials groupFinancials = null;
-            if (userIds != null && !userIds.isEmpty()) {
-                groupFinancials = elasticsearchRepository.getFinancialsForUsers(sessionId, userIds);
-            }
-            finalResults.put(age + "대", new AgeGroupIncomeExpenseAverageDto(groupFinancials == null? 0 : (long)(groupFinancials.totalIncome()/userIds.size()), groupFinancials == null? 0 : (long)(groupFinancials.totalExpense()/userIds.size())));
-        }
         return finalResults;
     }
 
