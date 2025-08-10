@@ -73,7 +73,7 @@ public class TransactionService {
                 Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked);
                 if (accountService.withdraw(dto.userId(), userTrade.cost())) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
                     lastUsedMap.put(picked, curTime);
-                    generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost(), BigDecimal.ZERO, BigDecimal.ZERO));
+                    generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost()));
                 }
             }
         }
@@ -94,7 +94,7 @@ public class TransactionService {
                     payTime,
                     () -> {
                         accountService.deposit(user.userId(), wage);
-                        generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionLog.TransactionType.DEPOSIT, "급여 입금", wage, BigDecimal.ZERO, BigDecimal.ZERO));
+                        generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionLog.TransactionType.DEPOSIT, "급여 입금", wage));
                     }
             );
             events.add(wageEvent);
