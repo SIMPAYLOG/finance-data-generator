@@ -5,13 +5,10 @@ import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
-import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
-import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
-import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisSessionRepository;
@@ -23,8 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -41,7 +36,6 @@ import java.util.stream.Stream;
 public class UserService {
     private final OccupationLocalCache occupationLocalCache;
     private final UserRepository userRepository;
-    private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final UserGenerator userGenerator;
     private final RedisPaydayRepository redisPaydayRepository;
     private final RedisSessionRepository redisSessionRepository;
@@ -91,94 +85,6 @@ public class UserService {
                 redisPaydayRepository.register(sessionId, user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
             }
         }
-    }
-
-    // TODO: 거래 로그 생성
-    @Transactional
-    public boolean withdraw(String sessionId, Long userId, BigDecimal amount) {
-        if (amount == null || amount.signum() < 0) {
-            throw new CoreException("금액이 잘못되었습니다.");
-        }
-        User user = getUserOrException(sessionId, userId);
-        Account checking = getAccountByType(user, AccountType.CHECKING);
-        Account savings = getAccountByType(user, AccountType.SAVINGS);
-        if (checking.getBalance().compareTo(amount) >= 0) {
-            checking.setBalance(checking.getBalance().subtract(amount));
-            return true;
-        }
-        // 음수 허용
-        if (checking.getBalance().subtract(amount).compareTo(checking.getOverdraftLimit().negate()) >= 0) {
-            checking.setBalance(checking.getBalance().subtract(amount));
-            return true;
-        }
-        // 예금 인출 시도
-        BigDecimal additionalWithdraw = amount.subtract(checking.getBalance().add(checking.getOverdraftLimit())); // 추가로 필요한 출금액
-        if (savings != null && savings.getBalance().compareTo(additionalWithdraw) >= 0) {
-            savings.setBalance(savings.getBalance().subtract(additionalWithdraw));
-            deposit(sessionId, userId, additionalWithdraw); // 입출금 통장으로 송금
-            checking.setBalance(checking.getOverdraftLimit().negate()); // 지출 발생
-            return true;
-        }
-        // 실패
-        log.warn("userId={} 잔액 부족: {}원", userId, amount);
-        return false;
-    }
-
-    public BigDecimal getBalance(String sessionId, Long userId) {
-        User user = getUserOrException(sessionId, userId);
-        Account checking = getAccountByType(user, AccountType.CHECKING);
-        return checking.getBalance();
-    }
-
-    public void deposit(String sessionId, Long userId, BigDecimal amount) {
-        if (amount == null || amount.signum() < 0) {
-            throw new CoreException("금액이 잘못되었습니다.");
-        }
-        User user = getUserOrException(sessionId, userId);
-        Account checking = getAccountByType(user, AccountType.CHECKING);
-        checking.setBalance(checking.getBalance().add(amount));
-    }
-
-    public void transferToSavings(String sessionId, Long userId, BigDecimal salary, BigDecimal savingRate) {
-        User user = getUserOrException(sessionId, userId);
-        Account checking = getAccountByType(user, AccountType.CHECKING);
-        Account saving = getAccountByType(user, AccountType.SAVINGS);
-
-        BigDecimal savingAmount = salary.multiply(savingRate).setScale(0, RoundingMode.DOWN); // 1. 이체 금액 계산
-
-        if (checking.getBalance().compareTo(savingAmount) < 0) {
-            log.warn("잔액이 부족하여 이체할 수 없습니다.");
-            return;
-        }
-        checking.setBalance(checking.getBalance().subtract(savingAmount)); // 2. 입출금 통장에서 출금
-        saving.setBalance(saving.getBalance().add(savingAmount)); // 3. 예금 통장에 입금
-    }
-
-    public void applyMonthlyInterest(String sessionId, Long userId) {
-        User user = getUserOrException(sessionId, userId);
-        Account account = getAccountByType(user, AccountType.SAVINGS);
-        BigDecimal principal = account.getBalance();
-
-        BigDecimal monthlyRate = account.getInterestRate()
-                .divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP);
-
-        BigDecimal interest = principal
-                .multiply(monthlyRate)
-                .divide(BigDecimal.valueOf(100), 0, RoundingMode.DOWN); // 퍼센트로 계산
-
-        account.setBalance(principal.add(interest));
-    }
-
-    private Account getAccountByType(User user, AccountType type) {
-        return user.getAccounts().stream()
-                .filter(a -> a.getType() == type)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(type + " 계좌 없음"));
-    }
-
-    private User getUserOrException(String sessionId, Long userId) {
-        return userRepository.findUserBySessionIdAndId(sessionId, userId)
-                .orElseThrow(() -> new CoreException("NOT FOUND USER: " + userId));
     }
 
     public UserAnalyzeResultResponse analyzeUsers(String sessionId) {

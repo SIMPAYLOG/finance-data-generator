@@ -22,6 +22,9 @@ public class Account {
     private BigDecimal interestRate;
     @Column(precision = 12, scale = 2)
     private BigDecimal overdraftLimit;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     protected Account() {
     }
@@ -39,6 +42,13 @@ public class Account {
 
     public static Account ofSavings(BigDecimal balance, BigDecimal interestRate) {
         return new Account(AccountType.SAVINGS, balance, interestRate, BigDecimal.ZERO);
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+        if (!user.getAccounts().contains(this)) {
+            user.getAccounts().add(this);
+        }
     }
 
 }

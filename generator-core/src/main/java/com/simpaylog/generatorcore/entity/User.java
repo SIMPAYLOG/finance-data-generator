@@ -28,8 +28,7 @@ public class User {
     private int occupationCode;
     private String occupationName;
     private Integer conditionId;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Account> accounts;
 
     protected User() {
@@ -48,7 +47,12 @@ public class User {
     }
 
     public static User of(String name, UserBehaviorProfile profile, int decile, int age, Gender gender, int occupationCode, String occupationName, int conditionId, List<Account> accounts) {
-        return new User(name, profile, decile, age, gender, occupationCode, occupationName, conditionId, accounts);
+        User user = new User(name, profile, decile, age, gender, occupationCode, occupationName, conditionId, accounts);
+        for (Account account : accounts) {
+            account.setUser(user);
+        }
+
+        return user;
     }
 
 }

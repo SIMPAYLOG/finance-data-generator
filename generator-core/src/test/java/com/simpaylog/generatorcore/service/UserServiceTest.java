@@ -71,99 +71,6 @@ class UserServiceTest extends TestConfig {
         verify(redisPaydayRepository, times(months * mockList.size())).register(anyString(), anyLong(), any(), anyList());
     }
 
-
-    @Test
-    void 인출_정상케이스() {
-        // Given
-        String sessionId = "test-sessionId";
-        Long userId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(50000);
-        List<Account> accounts = createUserAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000), BigDecimal.ZERO);
-        Account check = accounts.stream().filter(a -> a.getType() == AccountType.CHECKING).findFirst().orElse(null);
-        User mockUser = createUser(accounts);
-        when(userRepository.findUserBySessionIdAndId(sessionId, userId)).thenReturn(Optional.of(mockUser));
-        // When
-        boolean result = userService.withdraw(sessionId, userId, amount);
-        // Then
-        assertTrue(result);
-        assertNotNull(check);
-        assertEquals(BigDecimal.valueOf(50000), check.getBalance());
-    }
-
-    @Test
-    void 인출_마이너스금액이지만_한도_내이므로_정상케이스() {
-        // Given
-        String sessionId = "test-sessionId";
-        Long userId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(130000);
-        List<Account> accounts = createUserAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000), BigDecimal.ZERO);
-        Account check = accounts.stream().filter(a -> a.getType() == AccountType.CHECKING).findFirst().orElse(null);
-        User mockUser = createUser(accounts);
-        when(userRepository.findUserBySessionIdAndId(sessionId, userId)).thenReturn(Optional.of(mockUser));
-        // When
-        boolean result = userService.withdraw(sessionId, userId, amount);
-        // Then
-        assertTrue(result);
-        assertNotNull(check);
-        assertEquals(BigDecimal.valueOf(-30000), check.getBalance());
-    }
-
-    @Test
-    void 인출_음수의_금액이_넘어왔을_때_에러반환() {
-        // Given
-        String sessionId = "test-sessionId";
-        Long userId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(-50000);
-        // When & Then
-        assertThatThrownBy(() -> userService.withdraw(sessionId, userId, amount))
-                .isInstanceOf(CoreException.class)
-                .hasMessageContaining("금액이 잘못되었습니다.");
-    }
-
-    @Test
-    void 인출_할때_한도를_넘어가면_false반환() {
-        // Given
-        String sessionId = "test-sessionId";
-        Long userId = 1L;
-        BigDecimal originBalance = BigDecimal.valueOf(100000);
-        BigDecimal amount = BigDecimal.valueOf(160000);
-        List<Account> accounts = createUserAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000), BigDecimal.ZERO);
-        Account check = accounts.stream().filter(a -> a.getType() == AccountType.CHECKING).findFirst().orElse(null);
-        User mockUser = createUser(accounts);
-        when(userRepository.findUserBySessionIdAndId(sessionId, userId)).thenReturn(Optional.of(mockUser));
-        // When
-        boolean result = userService.withdraw(sessionId, userId, amount);
-        // Then
-        assertFalse(result);
-        assertNotNull(check);
-        assertEquals(originBalance, check.getBalance());
-    }
-
-    @Test
-    void 인출_할때_돈이_모자르면_입출금통장에서_송금_후_인출() {
-        // Given
-        String sessionId = "test-sessionId";
-        Long userId = 1L;
-        BigDecimal amount = BigDecimal.valueOf(160000); // 결제 금액
-        BigDecimal expectedCheckingAmount = BigDecimal.valueOf(-50000);
-        BigDecimal expectedSavingAmount = BigDecimal.valueOf(20000);
-
-        List<Account> accounts = createUserAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000), BigDecimal.valueOf(30000));
-        Account check = accounts.stream().filter(a -> a.getType() == AccountType.CHECKING).findFirst().orElse(null);
-        Account saving = accounts.stream().filter(a -> a.getType() == AccountType.SAVINGS).findFirst().orElse(null);
-        User mockUser = createUser(accounts);
-        when(userRepository.findUserBySessionIdAndId(sessionId, userId)).thenReturn(Optional.of(mockUser));
-        // When
-        boolean result = userService.withdraw(sessionId, userId, amount);
-        // Then
-        assertTrue(result);
-        assertNotNull(check);
-        assertNotNull(saving);
-        assertEquals(expectedCheckingAmount, check.getBalance());
-        assertEquals(expectedSavingAmount, saving.getBalance());
-    }
-
-
     public static TransactionUserDto createTransactionUserDto() {
         return new TransactionUserDto(
                 1L,
@@ -176,29 +83,6 @@ class UserServiceTest extends TestConfig {
                 BigDecimal.valueOf(3000000),
                 BigDecimal.ZERO
         );
-    }
-
-    private User createUser(List<Account> accounts) {
-        PreferenceType preferenceType = PreferenceType.DEFAULT;
-        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, WageType.DAILY, 25, getIncomeValue(), getAssetValue(), BigDecimal.ZERO);
-        User mockUser = User.of("test-name", profile, 8, 10, Gender.M, 1, "TEST-OCCUPATION", 1, accounts);
-        mockUser.setSessionId("TEST-sessionId");
-        return mockUser;
-    }
-
-    private List<Account> createUserAccount(BigDecimal balance, BigDecimal overDraftLimit, BigDecimal savingBalance) {
-        List<Account> accounts = new ArrayList<>();
-        accounts.add(Account.ofChecking(balance, overDraftLimit));
-        accounts.add(Account.ofSavings(savingBalance, BigDecimal.ZERO)); // 계좌 잔고 없음
-        return accounts;
-    }
-
-    private BigDecimal getIncomeValue() {
-        return new BigDecimal("5500000");
-    }
-
-    private BigDecimal getAssetValue() {
-        return new BigDecimal("15000000");
     }
 
 }
