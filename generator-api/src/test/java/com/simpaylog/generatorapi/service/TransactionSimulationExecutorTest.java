@@ -43,7 +43,7 @@ class TransactionSimulationExecutorTest extends TestConfig {
         verify(producer, times(users.size())).send(any(TransactionRequestEvent.class));
     }
 
-    public static TransactionUserDto createTransactionUserDto(Long userId) {
+    private TransactionUserDto createTransactionUserDto(Long userId) {
         return new TransactionUserDto(
                 userId,
                 "test-sessionId",

@@ -89,7 +89,7 @@ class SimulationServiceTest extends TestConfig {
         verify(transactionSimulationExecutor, never()).simulateTransaction(any(), any(), any());
     }
 
-    public static TransactionUserDto createTransactionUserDto() {
+    private TransactionUserDto createTransactionUserDto() {
         return new TransactionUserDto(
                 1L,
                 "test-sessionId",
