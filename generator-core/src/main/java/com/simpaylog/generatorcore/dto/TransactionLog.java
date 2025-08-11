@@ -14,16 +14,14 @@ public record TransactionLog(
         LocalDateTime timestamp,
         TransactionType transactionType,
         String description,
-        BigDecimal amount,
-        BigDecimal balanceBefore,
-        BigDecimal balanceAfter
+        BigDecimal amount
 ) {
     public enum TransactionType {
         WITHDRAW,
         DEPOSIT
     }
 
-    public static TransactionLog of(Long userId, String sessionId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+    public static TransactionLog of(Long userId, String sessionId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount) {
         return new TransactionLog(
                 UUID.randomUUID().toString(),
                 sessionId,
@@ -31,9 +29,7 @@ public record TransactionLog(
                 timestamp,
                 transactionType,
                 description,
-                amount,
-                balanceBefore,
-                balanceAfter
+                amount
         );
     }
 

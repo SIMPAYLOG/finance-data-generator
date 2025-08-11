@@ -16,10 +16,8 @@ public class TransactionSimulationExecutor {
     private final TransactionGenerationRequestProducer transactionGenerationRequestProducer;
 
     public void simulateTransaction(List<TransactionUserDto> users, LocalDate from, LocalDate to) {
-        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            for (TransactionUserDto user : users) {
-                transactionGenerationRequestProducer.send(new TransactionRequestEvent(user, date));
-            }
+        for (TransactionUserDto user : users) {
+            transactionGenerationRequestProducer.send(new TransactionRequestEvent(user, from, to));
         }
     }
 }

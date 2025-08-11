@@ -4,6 +4,7 @@ import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.service.UserService;
@@ -40,7 +41,7 @@ class SimulationServiceTest extends TestConfig {
         String sessionId = "test-sessionId";
         LocalDate from = LocalDate.of(2025, 7, 1);
         LocalDate to = LocalDate.of(2025, 7, 31);
-        when(userService.findAllTransactionUserBySessionId(anyString())).thenReturn(List.of(new TransactionUserDto(1L, sessionId, 1, BigDecimal.TEN, 1, WageType.REGULAR, 25, "test-active-hour", BigDecimal.TEN)));
+        when(userService.findAllTransactionUserBySessionId(anyString())).thenReturn(List.of(createTransactionUserDto()));
         // When
         simulationService.startSimulation(sessionId, from, to);
         // Then
@@ -86,6 +87,20 @@ class SimulationServiceTest extends TestConfig {
 
         verify(transactionProgressTracker, never()).initProgress(any(), anyInt());
         verify(transactionSimulationExecutor, never()).simulateTransaction(any(), any(), any());
+    }
+
+    private TransactionUserDto createTransactionUserDto() {
+        return new TransactionUserDto(
+                1L,
+                "test-sessionId",
+                1,
+                PreferenceType.DEFAULT,
+                WageType.REGULAR,
+                10,
+                "TEST-active-hour",
+                BigDecimal.valueOf(3000000),
+                BigDecimal.ZERO
+        );
     }
 
 }

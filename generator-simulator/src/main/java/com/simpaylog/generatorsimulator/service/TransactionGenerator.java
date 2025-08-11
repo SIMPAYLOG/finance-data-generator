@@ -5,7 +5,7 @@ import com.simpaylog.generatorsimulator.cache.CategorySpendingPatternLocalCache;
 import com.simpaylog.generatorsimulator.cache.dto.CategorySpendingPattern;
 import com.simpaylog.generatorsimulator.dto.CategorySpendingWeight;
 import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -17,9 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class FileExporter {
 
     private final ObjectMapper objectMapper;

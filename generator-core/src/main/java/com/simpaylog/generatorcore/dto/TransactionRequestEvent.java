@@ -8,6 +8,8 @@ import java.time.LocalDate;
 public record TransactionRequestEvent(
         TransactionUserDto transactionUserDto,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        LocalDate date
+        LocalDate from,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+        LocalDate to
 ) {
 }

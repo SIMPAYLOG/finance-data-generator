@@ -17,11 +17,11 @@ public class TransactionAsyncHandler {
     public void handler(TransactionRequestEvent event) {
         try {
             concurrencyLimiter.run(() ->
-                    transactionService.generateTransaction(event.transactionUserDto(), event.date())
+                    transactionService.generate(event.transactionUserDto(), event.from(), event.to())
             );
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("트랜잭션 처리 중 예외 발생 - userId={}, date={}", event.transactionUserDto().userId(), event.date());
+            log.error("트랜잭션 처리 중 예외 발생 - userId={}, from={}, to={}", event.transactionUserDto().userId(), event.from(), event.to());
         }
     }
 }
