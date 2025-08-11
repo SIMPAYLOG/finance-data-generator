@@ -2,10 +2,7 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorapi.dto.analysis.AggregationInterval;
-import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
-import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
-import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
+import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.util.EntityUtils;
@@ -25,9 +22,9 @@ public class TransactionAggregationRepository {
     private final RestClient elasticsearchRestClient;
     private static final String ES_END_POINT = "/transaction-logs/_search";
 
-    public PeriodTransaction searchByPeriod(String sessionId, LocalDate from, LocalDate to, AggregationInterval interval) throws IOException {
+    public PeriodTransaction searchByPeriod(String sessionId, LocalDate from, LocalDate to, AggregationInterval interval, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.periodAggregationQuery(sessionId, from, to, interval.getCalendarInterval());
+        String queryJson = QueryBuilder.periodAggregationQuery(sessionId, from, to, interval.getCalendarInterval(), userId);
         request.setJsonEntity(queryJson);
         Response response = elasticsearchRestClient.performRequest(request);
         String jsonResult = EntityUtils.toString(response.getEntity());
@@ -79,7 +76,7 @@ public class TransactionAggregationRepository {
         return new TimeHeatmapCell(results);
     }
 
-    public HourlyTransaction searchByHour(String sessionId, LocalDate from, LocalDate to) throws IOException {
+    public HourlyTransaction searchHourAmountAvg(String sessionId, LocalDate from, LocalDate to) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
         String queryJson = QueryBuilder.hourAggregationQuery(sessionId, from, to);
         request.setJsonEntity(queryJson);
@@ -125,6 +122,29 @@ public class TransactionAggregationRepository {
 
         return new HourlyTransaction(summaries);
     }
+
+    public AmountAvgTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, int userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.userTradeAmountAvgQuery(sessionId, from, to, userId);
+        request.setJsonEntity(queryJson);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("by_type").path("buckets");
+
+        List<AmountAvgTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String transactionType = bucket.path("key").asText();
+            int avgAmount = bucket.path("average_amount").path("value").asInt(0);
+            summaries.add(new AmountAvgTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
+        }
+
+        return new AmountAvgTransaction(summaries);
+    }
+
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getMap(Map<String, Object> parent, String key) {

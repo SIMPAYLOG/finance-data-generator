@@ -1,5 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
+import com.simpaylog.generatorapi.dto.analysis.AmountAvgTransaction;
 import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
@@ -29,7 +30,18 @@ public class AnalysisController {
             @RequestParam LocalDate durationEnd,
             @RequestParam String interval
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, null));
+    }
+
+    @GetMapping("/search-by-period-and-id")
+    public Response<CommonChart<PeriodTransaction.PTSummary>> searchByPeriod(
+            @RequestParam String sessionId,
+            @RequestParam LocalDate durationStart,
+            @RequestParam LocalDate durationEnd,
+            @RequestParam String interval,
+            @RequestParam Integer userId
+    ) throws IOException {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId));
     }
 
     @GetMapping("/time-heatmap")
@@ -41,7 +53,7 @@ public class AnalysisController {
         return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd));
     }
 
-    @GetMapping("/hour-amount-average")
+    @GetMapping("/amount-avg/by-hour")
     public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
@@ -50,4 +62,13 @@ public class AnalysisController {
         return Response.success(HttpStatus.OK.value(), analysisService.searchTimeAmountAvgByPeriod(sessionId, durationStart, durationEnd));
     }
 
+    @GetMapping("/amount-avg/by-transaction-type")
+    public Response<CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary>> searchTypeAmountAvgByPeriod(
+            @RequestParam String sessionId,
+            @RequestParam LocalDate durationStart,
+            @RequestParam LocalDate durationEnd,
+            @RequestParam Integer userId
+    ) throws IOException {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId));
+    }
 }

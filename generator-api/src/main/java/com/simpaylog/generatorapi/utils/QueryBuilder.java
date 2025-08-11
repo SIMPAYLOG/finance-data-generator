@@ -5,78 +5,84 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class QueryBuilder {
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    public static String periodAggregationQuery(String sessionId, LocalDate from, LocalDate to, String interval) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+    public static String periodAggregationQuery(String sessionId, LocalDate from, LocalDate to, String interval, Integer userId) {
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
         String lte = end.format(formatter);
+
+        // userId 조건문 (널이면 빈 문자열)
+        String userIdQuery = (userId != null)
+                ? String.format("{ \"term\": {\"userId\": %d} },", userId)
+                : "";
+
         return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        { "term": {"sessionId": "%s"} },
-                        {
-                          "range": {
-                            "timestamp": {
-                              "gte": "%s",
-                              "lte": "%s",
-                              "time_zone": "Asia/Seoul"
-                            }
-                          }
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    %s
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
                         }
-                      ]
+                      }
                     }
+                  ]
+                }
+              },
+              "aggs": {
+                "results": {
+                  "date_histogram": {
+                    "field": "timestamp",
+                    "calendar_interval": "%s",
+                    "time_zone": "Asia/Seoul",
+                    "format": "yyyy-MM-dd"
                   },
                   "aggs": {
-                    "results": {
-                      "date_histogram": {
-                        "field": "timestamp",
-                        "calendar_interval": "%s",
-                        "time_zone": "Asia/Seoul",
-                        "format": "yyyy-MM-dd"
+                    "total_spent": {
+                      "filter": {
+                        "term": {
+                          "transactionType": "WITHDRAW"
+                        }
                       },
                       "aggs": {
-                        "total_spent": {
-                          "filter": {
-                            "term": {
-                              "transactionType": "WITHDRAW"
-                            }
-                          },
-                          "aggs": {
-                            "amount_sum": {
-                              "sum": {
-                                "field": "amount"
-                              }
-                            }
+                        "amount_sum": {
+                          "sum": {
+                            "field": "amount"
                           }
-                        },
-                        "total_income": {
-                          "filter": {
-                            "term": {
-                              "transactionType": "DEPOSIT"
-                            }
-                          },
-                          "aggs": {
-                            "amount_sum": {
-                              "sum": {
-                                "field": "amount"
-                              }
-                            }
+                        }
+                      }
+                    },
+                    "total_income": {
+                      "filter": {
+                        "term": {
+                          "transactionType": "DEPOSIT"
+                        }
+                      },
+                      "aggs": {
+                        "amount_sum": {
+                          "sum": {
+                            "field": "amount"
                           }
                         }
                       }
                     }
                   }
                 }
-                """.formatted(sessionId, gte, lte, interval);
+              }
+            }
+            """.formatted(userIdQuery, sessionId, gte, lte, interval);
     }
 
     public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
@@ -130,7 +136,6 @@ public class QueryBuilder {
     }
 
     public static String hourAggregationQuery(String sessionId, LocalDate from, LocalDate to) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
@@ -185,10 +190,6 @@ public class QueryBuilder {
                             },
                             "average_amount": {
                               "avg": {
-                                "script": {
-                                  "source": "Math.round(_value)",
-                                  "lang": "painless"
-                                },
                                 "field": "amount"
                               }
                             }
@@ -199,5 +200,50 @@ public class QueryBuilder {
                   }
                 }
                 """.formatted(gte, lte, sessionId);
+    }
+
+    public static String userTradeAmountAvgQuery(String sessionId, LocalDate from, LocalDate to, int userId) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        return """
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        { "terms": { "transactionType": ["WITHDRAW", "DEPOSIT"] }},
+                        { "term": { "userId": %d }},
+                        { "term": {"sessionId": "%s"} },
+                        {
+                          "range": {
+                            "timestamp": {
+                              "gte": "%s",
+                              "lte": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "by_type": {
+                      "terms": {
+                        "field": "transactionType"
+                      },
+                      "aggs": {
+                        "average_amount": {
+                          "avg": {
+                            "field": "amount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """.formatted(userId, sessionId, gte, lte);
     }
 }
