@@ -30,7 +30,6 @@ class TransactionSimulationExecutorTest extends TestConfig {
     @Test
     void 정해진_날짜와_유저에대해_정확히_생성된다() {
         // Given
-        String sessionId = "sessionId";
         List<TransactionUserDto> users = List.of(createTransactionUserDto(1L), createTransactionUserDto(2L));
 
         LocalDate from = LocalDate.of(2025, 7, 1);
@@ -40,8 +39,8 @@ class TransactionSimulationExecutorTest extends TestConfig {
         executor.simulateTransaction(users, from, to);
 
         // Then
-        // 2명 × 3일 = 6번 전송
-        verify(producer, times(6)).send(any(TransactionRequestEvent.class));
+        // 2명 -> 2번 전송
+        verify(producer, times(users.size())).send(any(TransactionRequestEvent.class));
     }
 
     public static TransactionUserDto createTransactionUserDto(Long userId) {
