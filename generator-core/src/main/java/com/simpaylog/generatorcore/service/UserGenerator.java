@@ -10,12 +10,17 @@ import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.AssetRange;
 import com.simpaylog.generatorcore.cache.dto.OccupationInfos.AgeGroupInfo;
 import com.simpaylog.generatorcore.cache.dto.OccupationInfos.Occupation;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.UserBehaviorProfile;
 import com.simpaylog.generatorcore.enums.Gender;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
+import com.simpaylog.generatorcore.utils.AccountFactory;
 import com.simpaylog.generatorcore.utils.NameUtil;
+import com.simpaylog.generatorcore.utils.SavingRateCalculator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -26,6 +31,7 @@ import java.util.Random;
 import static com.simpaylog.generatorcore.utils.MultinomialAllocator.normalize;
 import static com.simpaylog.generatorcore.utils.MultinomialAllocator.sampleMultinomial;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserGenerator {
@@ -34,6 +40,7 @@ public class UserGenerator {
     private final DetailOccupationLocalCache detailOccupationLocalCache;
     private final PreferenceLocalCache preferenceLocalCache;
     private final Random random = new Random();
+    private final AccountFactory accountFactory = new AccountFactory();
     private final NameUtil nameUtil;
 
     public List<User> generateUserPool(UserGenerationCondition condition) {
@@ -51,16 +58,16 @@ public class UserGenerator {
     }
 
     // 직업카테고리로 인원 나눈 부분
-    private List<User> generateUserPoolByOccupation(UserGenerationCondition condition, int code, int totalUserCnt) {
+    private List<User> generateUserPoolByOccupation(UserGenerationCondition condition, int occupationCode, int totalUserCnt) {
         List<User> userPool = new ArrayList<>();
-        Occupation occupation = occupationLocalCache.get(code);
+        Occupation occupation = occupationLocalCache.get(occupationCode);
         double[] ageGroupRatio = setAgeGroupByCondition(occupation, condition.ageGroup());
         double[] normalizeRatio = normalize(ageGroupRatio);
         int[] totalCntByAge = sampleMultinomial(normalizeRatio, totalUserCnt);
 
         for (int age = 0; age < totalCntByAge.length; age++) {
             for (int num = 0; num < totalCntByAge[age]; num++) {
-                userPool.add(generateUser(occupation, condition, code, age));
+                userPool.add(generateUser(occupation, condition, occupationCode, age));
             }
         }
         return userPool;
@@ -71,16 +78,19 @@ public class UserGenerator {
         String occupationCode = occupationLocalCache.get(code).occupationCategory().substring(0, 1); // 직업 코드
         int decile = random.nextInt(dominantDeciles[1] - dominantDeciles[0] + 1) + dominantDeciles[0]; // 소득 분위
         Gender gender = setGenderByCondition(condition.gender());
-        String name = (gender == Gender.M) ? nameUtil.getRandomName('M', (age + 1) * 10) : nameUtil.getRandomName('F', (age + 1) * 10);
-        int preferenceId = setPreferenceIdByCondition(condition.preferenceId());
-        BigDecimal incomeValue = BigDecimal.valueOf(occupation.decileDistribution()[decile - 1] * occupation.averageMonthlyWage()); // 월임금
+        String name = (gender == Gender.M) ?
+                nameUtil.getRandomName('M', (age + 1) * 10)
+                : nameUtil.getRandomName('F', (age + 1) * 10);
+        PreferenceType preferenceType = PreferenceType.fromKey(setPreferenceIdByCondition(condition.preferenceId()));
+        BigDecimal incomeValue = BigDecimal.valueOf(occupation.decileDistribution()[decile - 1] * occupation.averageMonthlyWage()); // 월급여
         Job jobInfo = getRandomJob(occupationCode, decile);
         AssetRange assetRange = incomeLevelLocalCache.get(decile).assetRange();
-        int asset = (random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10;
+        BigDecimal assetValue = BigDecimal.valueOf((random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10);
         int autoTransferDayOfMonth = random.nextInt(28) + 1; // 공과금
-
-        UserBehaviorProfile profile = UserBehaviorProfile.of(incomeValue, preferenceId, jobInfo.wageType(), autoTransferDayOfMonth);
-        return User.of(name, profile, decile, (age + 1) * 10, gender, BigDecimal.valueOf(asset), decile, code, jobInfo.jobTitle(), condition.id());
+        BigDecimal savingRate = SavingRateCalculator.calculateSavingRate(decile, age, preferenceType);
+        List<Account> accounts = accountFactory.generateAccountsFor(incomeValue, assetValue, age, decile, preferenceType);
+        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, jobInfo.wageType(), autoTransferDayOfMonth, incomeValue, assetValue, savingRate);
+        return User.of(name, profile, decile, (age + 1) * 10, gender, code, jobInfo.jobTitle(), condition.id(), accounts);
     }
 
     private Job getRandomJob(String occupationCode, int decile) {
@@ -146,6 +156,9 @@ public class UserGenerator {
         }
         int result = Integer.parseInt(preferenceId);
         if (1 <= result && result <= preferenceCnt) return result;
-        throw new CoreException(String.format("존재하지 않는 성향 아이디: %d", result));
+        log.warn("존재하지 않는 성향 아이디: {} -> 기본형으로 대체", result);
+        return 0;
     }
+
+
 }

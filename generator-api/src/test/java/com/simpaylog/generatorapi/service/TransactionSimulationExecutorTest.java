@@ -4,6 +4,7 @@ import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.kafka.producer.TransactionGenerationRequestProducer;
 import com.simpaylog.generatorcore.dto.TransactionRequestEvent;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,7 @@ class TransactionSimulationExecutorTest extends TestConfig {
     @Test
     void 정해진_날짜와_유저에대해_정확히_생성된다() {
         // Given
-        String sessionId = "sessionId";
-        TransactionUserDto user1 = new TransactionUserDto(1L, sessionId, 5, BigDecimal.TEN, 1, WageType.REGULAR, 25, "TEST-active-hour", BigDecimal.valueOf(3000000));
-        TransactionUserDto user2 = new TransactionUserDto(2L, sessionId, 7, BigDecimal.valueOf(5000), 2, WageType.REGULAR, 15, "TEST-active-hour", BigDecimal.valueOf(3500000));
-        List<TransactionUserDto> users = List.of(user1, user2);
+        List<TransactionUserDto> users = List.of(createTransactionUserDto(1L), createTransactionUserDto(2L));
 
         LocalDate from = LocalDate.of(2025, 7, 1);
         LocalDate to = LocalDate.of(2025, 7, 3); // 3일간
@@ -41,7 +39,21 @@ class TransactionSimulationExecutorTest extends TestConfig {
         executor.simulateTransaction(users, from, to);
 
         // Then
-        // 2명 × 3일 = 6번 전송
-        verify(producer, times(6)).send(any(TransactionRequestEvent.class));
+        // 2명 -> 2번 전송
+        verify(producer, times(users.size())).send(any(TransactionRequestEvent.class));
+    }
+
+    private TransactionUserDto createTransactionUserDto(Long userId) {
+        return new TransactionUserDto(
+                userId,
+                "test-sessionId",
+                1,
+                PreferenceType.DEFAULT,
+                WageType.REGULAR,
+                10,
+                "TEST-active-hour",
+                BigDecimal.valueOf(3000000),
+                BigDecimal.ZERO
+        );
     }
 }

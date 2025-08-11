@@ -1,16 +1,17 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
+import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
-import com.simpaylog.generatorcore.service.UserService;
+import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.TestConfig;
+import com.simpaylog.generatorsimulator.dto.CategoryType;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
-import com.simpaylog.generatorsimulator.dto.CategoryType;
-import com.simpaylog.generatorsimulator.dto.PreferenceType;
-import com.simpaylog.generatorcore.dto.TransactionLog;
-import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -38,7 +39,7 @@ class TransactionServiceTest extends TestConfig {
     @MockitoBean
     TransactionGenerator transactionGenerator;
     @MockitoBean
-    UserService userService;
+    AccountService accountService;
     @MockitoBean
     RedisPaydayRepository redisPaydayRepository;
 
@@ -47,45 +48,15 @@ class TransactionServiceTest extends TestConfig {
         // Given
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
         LocalDate date = LocalDate.of(2025, 7, 1);
-        doNothing().when(transactionLogProducer).send(any());
+        when(accountService.getAccountByType(mockUser.userId(), AccountType.CHECKING)).thenReturn(createCheckingAccount(BigDecimal.valueOf(50000), BigDecimal.ZERO));
         when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.of(CategoryType.ALCOHOLIC_BEVERAGES_TOBACCO));
+        when(accountService.withdraw(anyLong(), any(BigDecimal.class), any())).thenReturn(true);
         // When
         transactionService.generateTransaction(mockUser, date);
 
         // Then
         verify(transactionLogProducer, atLeastOnce()).send(any());
         verify(dailyTransactionResultProducer, times(1)).send(any());
-        verify(userService, times(1)).updateUserBalance(anyString(), eq(mockUser.userId()), any());
-    }
-
-    @Test
-    void 사용자의_잔액이_동일하다면_잔액을_업데이트_하지않는다() {
-        // Given
-        TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
-        LocalDate date = LocalDate.of(2025, 7, 1);
-        doNothing().when(transactionLogProducer).send(any());
-        when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.empty());
-        // When
-        transactionService.generateTransaction(mockUser, date);
-
-        // Then
-        verify(transactionLogProducer, never()).send(any());
-        verify(dailyTransactionResultProducer, times(1)).send(any());
-        verify(userService, never()).updateUserBalance(anyString(), eq(mockUser.userId()), any());
-    }
-
-    @Test
-    void 예외가_발생하면_fail_결과를_반환한다() {
-        // Given
-        TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
-        LocalDate date = LocalDate.of(2025, 7, 1);
-        when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.of(CategoryType.ALCOHOLIC_BEVERAGES_TOBACCO));
-        doThrow(new SimulatorException("카프카 데이터 전송 실패")).when(transactionLogProducer).send(any());
-        // When
-        transactionService.generateTransaction(mockUser, date);
-
-        // Then
-        verify(userService, never()).updateUserBalance(anyString(), eq(mockUser.userId()), any());
     }
 
     @Test
@@ -105,18 +76,22 @@ class TransactionServiceTest extends TestConfig {
         ));
     }
 
-    public static TransactionUserDto mockUser(int decile, WageType wageType) {
+    private TransactionUserDto mockUser(int decile, WageType wageType) {
         return new TransactionUserDto(
                 1L,
-                "sessionId",
+                "test-sessionId",
                 decile,
-                BigDecimal.valueOf(10000000),
-                1,
+                PreferenceType.DEFAULT,
                 wageType,
                 10,
                 "TEST-active-hour",
-                BigDecimal.valueOf(3000000)
+                BigDecimal.valueOf(3000000),
+                BigDecimal.ZERO
         );
     }
+    private Account createCheckingAccount(BigDecimal balance, BigDecimal overDraftLimit) {
+        return Account.ofChecking(balance, overDraftLimit);
+    }
+
 
 }

@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.dto;
+package com.simpaylog.generatorcore.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

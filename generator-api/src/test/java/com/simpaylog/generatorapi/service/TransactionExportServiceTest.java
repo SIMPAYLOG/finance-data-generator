@@ -3,6 +3,7 @@ package com.simpaylog.generatorapi.service;
 import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.utils.FileExporter;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
 import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.service.UserService;
@@ -23,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @TestPropertySource(properties = "spring.kafka.consumer.group-id=test-group")
-@Import(TransactionExportService.class)
+@Import({TransactionExportService.class, FileExporter.class})
 public class TransactionExportServiceTest extends TestConfig {
     @Autowired
     TransactionExportService transactionExportService;

@@ -11,11 +11,6 @@ spring:
   config:
     activate:
       on-profile: common
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    open-in-view: false
 
   data:
     redis:
@@ -88,6 +83,11 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
 
   sql:
     init:
