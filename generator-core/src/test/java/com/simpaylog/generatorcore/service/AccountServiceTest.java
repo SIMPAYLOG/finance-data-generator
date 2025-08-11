@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,6 +28,7 @@ class AccountServiceTest extends TestConfig {
     void 인출_정상케이스() {
         // Given
         Long userId = 1L;
+        LocalDateTime now = LocalDateTime.of(2025, 7, 1, 0 ,0);
         BigDecimal amount = BigDecimal.valueOf(50000);
         Account mockChecking = createCheckingAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000));
         Account mockSaving = createSavingsAccount(BigDecimal.ZERO);
@@ -34,7 +36,7 @@ class AccountServiceTest extends TestConfig {
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.SAVINGS)).thenReturn(Optional.of(mockSaving));
 
         // When
-        boolean result = accountService.withdraw(userId, amount);
+        boolean result = accountService.withdraw(userId, amount, now);
         // Then
         assertTrue(result);
         assertEquals(BigDecimal.valueOf(50000), mockChecking.getBalance());
@@ -44,6 +46,7 @@ class AccountServiceTest extends TestConfig {
     void 인출_마이너스금액이지만_한도_내이므로_정상케이스() {
         // Given
         Long userId = 1L;
+        LocalDateTime now = LocalDateTime.of(2025, 7, 1, 0 ,0);
         BigDecimal amount = BigDecimal.valueOf(130000);
         Account mockChecking = createCheckingAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000));
         Account mockSaving = createSavingsAccount(BigDecimal.ZERO);
@@ -51,7 +54,7 @@ class AccountServiceTest extends TestConfig {
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.SAVINGS)).thenReturn(Optional.of(mockSaving));
 
         // When
-        boolean result = accountService.withdraw(userId, amount);
+        boolean result = accountService.withdraw(userId, amount, now);
         // Then
         assertTrue(result);
         assertEquals(BigDecimal.valueOf(-30000), mockChecking.getBalance());
@@ -61,9 +64,10 @@ class AccountServiceTest extends TestConfig {
     void 인출_음수의_금액이_넘어왔을_때_에러반환() {
         // Given
         Long userId = 1L;
+        LocalDateTime now = LocalDateTime.of(2025, 7, 1, 0 ,0);
         BigDecimal amount = BigDecimal.valueOf(-50000);
         // When & Then
-        assertThatThrownBy(() -> accountService.withdraw(userId, amount))
+        assertThatThrownBy(() -> accountService.withdraw(userId, amount, now))
                 .isInstanceOf(CoreException.class)
                 .hasMessageContaining("금액이 잘못되었습니다.");
     }
@@ -72,6 +76,7 @@ class AccountServiceTest extends TestConfig {
     void 인출_할때_한도를_넘어가면_false반환() {
         // Given
         Long userId = 1L;
+        LocalDateTime now = LocalDateTime.of(2025, 7, 1, 0 ,0);
         BigDecimal originBalance = BigDecimal.valueOf(100000);
         BigDecimal amount = BigDecimal.valueOf(160000);
         Account mockChecking = createCheckingAccount(BigDecimal.valueOf(100000), BigDecimal.valueOf(50000));
@@ -79,7 +84,7 @@ class AccountServiceTest extends TestConfig {
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.CHECKING)).thenReturn(Optional.of(mockChecking));
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.SAVINGS)).thenReturn(Optional.of(mockSaving));
         // When
-        boolean result = accountService.withdraw(userId, amount);
+        boolean result = accountService.withdraw(userId, amount, now);
         // Then
         assertFalse(result);
         assertEquals(originBalance, mockChecking.getBalance());
@@ -89,6 +94,7 @@ class AccountServiceTest extends TestConfig {
     void 인출_할때_돈이_모자르면_입출금통장에서_송금_후_인출() {
         // Given
         Long userId = 1L;
+        LocalDateTime now = LocalDateTime.of(2025, 7, 1, 0 ,0);
         BigDecimal amount = BigDecimal.valueOf(160000); // 결제 금액
         BigDecimal expectedCheckingAmount = BigDecimal.valueOf(-50000);
         BigDecimal expectedSavingAmount = BigDecimal.valueOf(20000);
@@ -98,7 +104,7 @@ class AccountServiceTest extends TestConfig {
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.CHECKING)).thenReturn(Optional.of(mockChecking));
         when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.SAVINGS)).thenReturn(Optional.of(mockSaving));
         // When
-        boolean result = accountService.withdraw(userId, amount);
+        boolean result = accountService.withdraw(userId, amount, now);
         // Then
         assertTrue(result);
 

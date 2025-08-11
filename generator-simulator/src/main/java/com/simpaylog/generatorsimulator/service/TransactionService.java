@@ -2,7 +2,9 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
+import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
@@ -34,6 +36,12 @@ public class TransactionService {
     private final DailyTransactionResultProducer dailyTransactionResultProducer;
     private final RedisPaydayRepository redisPaydayRepository;
 
+    public void generate(TransactionUserDto dto, LocalDate from, LocalDate to) {
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            generateTransaction(dto, date);
+        }
+    }
+
     public void generateTransaction(TransactionUserDto dto, LocalDate date) {
         LocalDateTime from = date.atStartOfDay();
         LocalDateTime to = date.atTime(23, 59);
@@ -60,18 +68,19 @@ public class TransactionService {
                     continue;
                 }
                 // 통장 잔고 마이너스일 시 가중치 높여 제한
-                BigDecimal balance = accountService.getBalance(dto.userId());
-                if (balance.compareTo(BigDecimal.ZERO) < 0) {
-                    double ratio = Math.min(balance.abs().doubleValue() / 1000000, 1.0);
+                Account checking = accountService.getAccountByType(dto.userId(), AccountType.CHECKING);
+                if (checking.getBalance().compareTo(BigDecimal.ZERO) < 0) {
+                    double ratio = Math.min(checking.getBalance().abs().doubleValue() / checking.getOverdraftLimit().doubleValue(), 1.0);
                     double prob = 0.8 - (0.5 * ratio); // 최대 0.3까지 낮춤
                     if (ThreadLocalRandom.current().nextDouble() > prob) {
+//                        log.info("{} {}원 소비 스킵 prob: {}", dto.userId(), checking.getBalance(), prob);
                         continue; // 소비 스킵
                     }
                 }
 
                 // 유저가 해당 카테고리에서 소비한 상품 및 서비스 추출
                 Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked);
-                if (accountService.withdraw(dto.userId(), userTrade.cost())) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
+                if (accountService.withdraw(dto.userId(), userTrade.cost(), curTime)) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
                     lastUsedMap.put(picked, curTime);
                     generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), userTrade.cost()));
                 }
@@ -93,7 +102,7 @@ public class TransactionService {
             TimedEvent wageEvent = new TimedEvent(
                     payTime,
                     () -> {
-                        accountService.deposit(user.userId(), wage);
+                        accountService.deposit(user.userId(), wage, payTime);
                         generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionLog.TransactionType.DEPOSIT, "급여 입금", wage));
                     }
             );
@@ -101,16 +110,17 @@ public class TransactionService {
             LocalDateTime saveTime = date.atTime(LocalTime.from(wageEvent.time().plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1)));
             TimedEvent saveEvent = new TimedEvent(
                     saveTime,
-                    () -> accountService.transferToSavings(user.userId(), wage, user.savingRate())
+                    () -> accountService.transferToSavings(user.userId(), wage, user.savingRate(), saveTime)
             );
             events.add(saveEvent);
         }
 
         // 2. 이자 발생(월말 발생)
         if (date.isEqual(YearMonth.of(date.getYear(), date.getMonth()).atEndOfMonth())) {
+            LocalDateTime interestTime = date.atTime(ThreadLocalRandom.current().nextInt(4) + 8, ThreadLocalRandom.current().nextInt(60));
             TimedEvent interestEvent = new TimedEvent(
-                    date.atTime(ThreadLocalRandom.current().nextInt(4) + 8, ThreadLocalRandom.current().nextInt(60)),
-                    () -> accountService.applyMonthlyInterest(user.userId())
+                    interestTime,
+                    () -> accountService.applyMonthlyInterest(user.userId(), interestTime)
             );
             events.add(interestEvent);
         }
@@ -120,6 +130,7 @@ public class TransactionService {
 
     private void generateMessage(TransactionLog transactionLog) {
         try {
+//            log.info("로그: {}", transactionLog);
             transactionLogProducer.send(transactionLog);
         } catch (Exception e) {
             // TODO: 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등

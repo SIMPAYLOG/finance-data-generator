@@ -1,7 +1,9 @@
 package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
+import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
@@ -46,9 +48,9 @@ class TransactionServiceTest extends TestConfig {
         // Given
         TransactionUserDto mockUser = mockUser(3, WageType.REGULAR);
         LocalDate date = LocalDate.of(2025, 7, 1);
-        when(accountService.getBalance(mockUser.userId())).thenReturn(BigDecimal.valueOf(500000));
+        when(accountService.getAccountByType(mockUser.userId(), AccountType.CHECKING)).thenReturn(createCheckingAccount(BigDecimal.valueOf(50000), BigDecimal.ZERO));
         when(transactionGenerator.pickOneCategory(any(LocalDateTime.class), any(PreferenceType.class), anyMap())).thenReturn(Optional.of(CategoryType.ALCOHOLIC_BEVERAGES_TOBACCO));
-        when(accountService.withdraw(anyLong(), any(BigDecimal.class))).thenReturn(true);
+        when(accountService.withdraw(anyLong(), any(BigDecimal.class), any())).thenReturn(true);
         // When
         transactionService.generateTransaction(mockUser, date);
 
@@ -87,5 +89,9 @@ class TransactionServiceTest extends TestConfig {
                 BigDecimal.ZERO
         );
     }
+    private Account createCheckingAccount(BigDecimal balance, BigDecimal overDraftLimit) {
+        return Account.ofChecking(balance, overDraftLimit);
+    }
+
 
 }
