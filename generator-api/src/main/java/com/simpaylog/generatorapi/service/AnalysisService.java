@@ -1,9 +1,6 @@
 package com.simpaylog.generatorapi.service;
 
-import com.simpaylog.generatorapi.dto.analysis.AggregationInterval;
-import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
-import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
-import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
+import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.DateValidator;
@@ -21,11 +18,11 @@ public class AnalysisService {
     private final TransactionAggregationRepository transactionAggregationRepository;
     private final RedisSessionRepository redisSessionRepository;
 
-    public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval) throws IOException {
+    public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
         AggregationInterval aggregationInterval = AggregationInterval.from(interval);
-        PeriodTransaction result = transactionAggregationRepository.searchByPeriod(sessionId, durationStart, durationEnd, aggregationInterval);
+        PeriodTransaction result = transactionAggregationRepository.searchByPeriod(sessionId, durationStart, durationEnd, aggregationInterval, userId);
         return switch (aggregationInterval) {
             case DAY -> new CommonChart<>("line", "일 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
             case WEEK -> new CommonChart<>("line", "주 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
@@ -44,8 +41,15 @@ public class AnalysisService {
     public CommonChart<HourlyTransaction.HourlySummary> searchTimeAmountAvgByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        HourlyTransaction result = transactionAggregationRepository.searchByHour(sessionId, durationStart, durationEnd);
+        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd);
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
+    }
+
+    public CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        AmountAvgTransaction result = transactionAggregationRepository.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId);
+        return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "평균 금액", result.results());
     }
 
     private void getSimulationSessionOrException(String sessionId) {
