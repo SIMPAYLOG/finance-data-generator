@@ -18,8 +18,8 @@ public class TransactionAnalyzeService {
     private final ElasticsearchRepository elasticsearchRepository;
     private final UserRepository userRepository;
 
-    public ChartResponse getCategoryCounts(String sessionId) throws IOException {
-        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary(sessionId);
+    public ChartResponse getCategoryCounts(String sessionId, String durationStart, String durationEnd) throws IOException {
+        List<ChartCategoryDto> dataList = elasticsearchRepository.categorySumary(sessionId, durationStart, durationEnd);
 
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }
@@ -63,7 +63,7 @@ public class TransactionAnalyzeService {
         return new ChartResponse("line", title, "날짜", "거래금액", dataList);
     }
 
-    public Map<String, List<ChartData>> getCategorySummaryByAllAgeGroups(String sessionId) throws IOException {
+    public Map<String, List<ChartData>> getCategorySummaryByAllAgeGroups(String sessionId, String durationStart, String durationEnd) throws IOException {
         // 1. 분석할 연령대 목록 정의
         List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
         // 2. 최종 결과를 담을 Map 생성
@@ -74,7 +74,7 @@ public class TransactionAnalyzeService {
 
             List<ChartData> categoryDataForAgeGroup = new ArrayList<>();
             if (userIds != null && !userIds.isEmpty()) {
-                categoryDataForAgeGroup = elasticsearchRepository.getCategorySummaryByAgeGroup(userIds);
+                categoryDataForAgeGroup = elasticsearchRepository.getCategorySummaryByAgeGroup(sessionId, userIds, durationStart, durationEnd);
             }
 
             finalResults.put(age + "대", categoryDataForAgeGroup);

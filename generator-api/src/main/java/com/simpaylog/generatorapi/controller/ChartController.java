@@ -31,10 +31,13 @@ public class ChartController {
     private final TransactionAnalyzeService transactionAnalyzeService;
     private final UserService userService;
 
-    @GetMapping("/category-counts")
-    public Response<?> getCategoryCounts(@RequestParam String sessionId) {
+    @GetMapping("/all-category-counts")
+    public Response<?> getCategoryCounts(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
         try {
-            ChartResponse response = transactionAnalyzeService.getCategoryCounts(sessionId);
+            ChartResponse response = transactionAnalyzeService.getCategoryCounts(sessionId, durationStart, durationEnd);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -76,10 +79,11 @@ public class ChartController {
 
     @GetMapping("/category/by-age-group")
     public Response<?> getIdsByAge(
-            @RequestParam String sessionId
-    ) throws IOException {
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
         try {
-            Map<String, List<ChartData>> response = transactionAnalyzeService.getCategorySummaryByAllAgeGroups(sessionId);
+            Map<String, List<ChartData>> response = transactionAnalyzeService.getCategorySummaryByAllAgeGroups(sessionId, durationStart, durationEnd);
             return Response.success(HttpStatus.OK.value(), response);
         } catch (IOException e) {
             log.error("Elasticsearch error: {}", e.getMessage());

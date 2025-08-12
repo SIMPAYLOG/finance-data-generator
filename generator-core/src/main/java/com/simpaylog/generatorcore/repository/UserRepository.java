@@ -1,6 +1,5 @@
 package com.simpaylog.generatorcore.repository;
 
-import com.simpaylog.generatorcore.dto.UserInfoDto;
 import com.simpaylog.generatorcore.dto.analyze.AgeStat;
 import com.simpaylog.generatorcore.dto.analyze.GenderStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
@@ -16,10 +15,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -33,19 +29,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "       CAST(SUM(CASE WHEN u.gender = 'F' THEN 1 ELSE 0 END) as int)) " +
             "FROM User u " +
             "WHERE u.sessionId = :sessionId")
-    GenderStat analyzeGender(String sessionId);
+    GenderStat analyzeGender(@Param("sessionId") String sessionId);
 
     @Query("SELECT new com.simpaylog.generatorcore.dto.analyze.AgeStat(u.age, COUNT(u)) " +
             "FROM User u " +
             "WHERE u.sessionId = :sessionId " +
             "GROUP BY u.age ORDER BY u.age")
-    List<AgeStat> analyzeAgeGroup(String sessionId);
+    List<AgeStat> analyzeAgeGroup(@Param("sessionId") String sessionId);
 
     @Query("SELECT new com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat(u.occupationCode, COUNT(u)) " +
             "FROM User u " +
             "WHERE u.sessionId = :sessionId " +
             "GROUP BY u.occupationCode ORDER BY COUNT(u) DESC")
-    List<OccupationCodeStat> analyzeOccupation(String sessionId);
+    List<OccupationCodeStat> analyzeOccupation(@Param("sessionId") String sessionId);
 
     @Query("SELECT NEW com.simpaylog.generatorcore.entity.dto.TransactionUserDto(" +
             "u.id, u.sessionId, u.decile, p.preferenceType, p.wageType, p.autoTransferDayOfMonth, p.activeHours, p.incomeValue, p.savingRate) " +

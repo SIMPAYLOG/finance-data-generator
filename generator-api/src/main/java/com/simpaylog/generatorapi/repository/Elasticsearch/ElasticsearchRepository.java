@@ -88,14 +88,28 @@ public class ElasticsearchRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
-    public List<ChartCategoryDto> categorySumary(String sessionId) throws IOException {
+    public List<ChartCategoryDto> categorySumary(String sessionId, String durationStart, String durationEnd) throws IOException {
         return client.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
                                 .query(q -> q
-                                        .term(t -> t
-                                                .field("sessionId")
-                                                .value(sessionId)
+                                        .bool(b -> b
+                                                .must(m -> m
+                                                        .term(t -> t
+                                                                .field("sessionId")
+                                                                .value(sessionId)
+                                                        )
+                                                )
+                                                .must(m -> m
+                                                        .range(r -> r
+                                                                .date(d -> d
+                                                                        .field("timestamp")
+                                                                        .from(durationStart)
+                                                                        .to(durationEnd)
+                                                                        .timeZone("Asia/Seoul")
+                                                                )
+                                                        )
+                                                )
                                         )
                                 )
                                 .aggregations("category_count", a -> a
@@ -180,8 +194,8 @@ public class ElasticsearchRepository {
                                                 .range(r -> r
                                                         .date(d -> d
                                                                 .field("timestamp")
-                                                                .from(start)
-                                                                .to(end)
+                                                                .from(durationStart)
+                                                                .to(durationEnd)
                                                                 .timeZone("Asia/Seoul")
                                                         )
                                                 )
@@ -221,8 +235,8 @@ public class ElasticsearchRepository {
                 ));
 
         List<ChartCategoryDto> completeData = new ArrayList<>();
-        LocalDate startDate = LocalDate.parse(start, DateTimeFormatter.ISO_LOCAL_DATE);
-        LocalDate endDate = LocalDate.parse(end, DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate startDate = LocalDate.parse(durationStart, DateTimeFormatter.ISO_LOCAL_DATE);
+        LocalDate endDate = LocalDate.parse(durationEnd, DateTimeFormatter.ISO_LOCAL_DATE);
 
         LocalDate currentDate;
         // 시작 날짜를 각 interval의 시작점으로 정렬
@@ -259,7 +273,7 @@ public class ElasticsearchRepository {
         return completeData;
     }
 
-    public List<ChartData> getCategorySummaryByAgeGroup(List<Long> userIds) throws IOException {
+    public List<ChartData> getCategorySummaryByAgeGroup(String sessionId, List<Long> userIds, String durationStart, String durationEnd) throws IOException {
         List<FieldValue> userIdFieldValues = userIds.stream()
                 .map(FieldValue::of)
                 .collect(Collectors.toList());
@@ -268,9 +282,29 @@ public class ElasticsearchRepository {
                         .index("transaction-logs")
                         .size(0)
                         .query(q -> q
-                                .terms(t -> t
-                                        .field("userId")
-                                        .terms(tv -> tv.value(userIdFieldValues))
+                                .bool(b -> b
+                                        .must(m -> m
+                                                .range(r -> r
+                                                        .date(d -> d
+                                                                .field("timestamp")
+                                                                .from(durationStart)
+                                                                .to(durationEnd)
+                                                                .timeZone("Asia/Seoul")
+                                                        )
+                                                )
+                                        )
+                                        .must(m -> m
+                                                .term(t -> t
+                                                        .field("sessionId")
+                                                        .value(sessionId)
+                                                )
+                                        )
+                                        .must(m -> m
+                                                .terms(t -> t
+                                                        .field("userId")
+                                                        .terms(tv -> tv.value(userIdFieldValues))
+                                                )
+                                        )
                                 )
                         )
                         .aggregations("category_count", a -> a
