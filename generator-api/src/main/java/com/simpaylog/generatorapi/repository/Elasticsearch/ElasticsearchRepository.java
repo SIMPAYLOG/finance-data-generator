@@ -16,6 +16,7 @@ import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
@@ -112,7 +113,7 @@ public class ElasticsearchRepository {
                         Void.class
                 ).aggregations().get("category_count").sterms().buckets().array().stream()
                 .map(b -> new ChartCategoryDto(
-                        b.key().stringValue(),
+                        CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
                 ))
@@ -162,14 +163,14 @@ public class ElasticsearchRepository {
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
                 .map(b -> new ChartCategoryDto(
-                        b.key().stringValue(),
+                        CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> getTransactionSummary(String start, String end, String intervalType, CalendarInterval interval, DateTimeFormatter formatter, String typeStr, String sessionId) throws IOException {
+    public List<ChartCategoryDto> getTransactionSummary(String durationStart, String durationEnd, String intervalType, CalendarInterval interval, DateTimeFormatter formatter, String typeStr, String sessionId) throws IOException {
         SearchResponse<Void> response = client.search(s -> s
                         .index("transaction-logs")
                         .size(0)
@@ -293,7 +294,7 @@ public class ElasticsearchRepository {
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
                 .map(b -> new ChartData(
-                        b.key().stringValue(),
+                        CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
                 ))

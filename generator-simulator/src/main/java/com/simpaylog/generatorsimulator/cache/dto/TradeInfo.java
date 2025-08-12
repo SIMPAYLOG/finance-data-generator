@@ -1,6 +1,6 @@
 package com.simpaylog.generatorsimulator.cache.dto;
 
-import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.CategoryType;
 
 import java.util.List;
 

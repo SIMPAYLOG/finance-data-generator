@@ -69,4 +69,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT new com.simpaylog.generatorcore.dto.analyze.UserAgeInfo(u.id, u.age) FROM User u WHERE u.sessionId = :sessionId")
     List<UserAgeInfo> findUserAgeInfoBySessionId(@Param("sessionId") String sessionId);
+
+    @Query(value = "SELECT p.preference_type, ARRAY_AGG(u.id) AS user_ids " +
+            "FROM users u JOIN user_behavior_profiles p ON u.profile_id = p.id " +
+            "WHERE u.session_id = :sessionId " +
+            "GROUP BY p.preference_type", nativeQuery = true)
+    List<Object[]> findUserIdsGroupedByPreferenceType(@Param("sessionId") String sessionId);
 }

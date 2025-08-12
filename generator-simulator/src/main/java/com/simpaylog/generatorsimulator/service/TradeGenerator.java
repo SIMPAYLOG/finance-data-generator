@@ -2,7 +2,7 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
 import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
-import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
 import lombok.AllArgsConstructor;

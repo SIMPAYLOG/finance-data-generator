@@ -1,5 +1,7 @@
 package com.simpaylog.generatorsimulator.dto;
 
+import com.simpaylog.generatorcore.dto.CategoryType;
+
 public record CategorySpendingWeight(
         double groceriesNonAlcoholicBeverages,
         double alcoholicBeveragesTobacco,
