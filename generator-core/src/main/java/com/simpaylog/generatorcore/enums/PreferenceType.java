@@ -3,6 +3,10 @@ package com.simpaylog.generatorcore.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Getter
 @AllArgsConstructor
 public enum PreferenceType {
@@ -25,5 +29,12 @@ public enum PreferenceType {
             case 5 -> STABLE;
             default -> DEFAULT;
         };
+    }
+
+    public static List<Integer> getKeyList() {
+        return Arrays.stream(PreferenceType.values())
+                .filter(type -> type != DEFAULT)
+                .map(PreferenceType::getKey)
+                .collect(Collectors.toList());
     }
 }

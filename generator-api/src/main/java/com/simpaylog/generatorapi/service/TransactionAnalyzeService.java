@@ -87,4 +87,8 @@ public class TransactionAnalyzeService {
         return elasticsearchRepository.getFinancialsForGroup(sessionId, idMap, durationStart, durationEnd);
     }
 
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsByPrefereceForGroup(String sessionId, Map<Integer, List<Long>> idMap, String durationStart, String durationEnd) throws IOException {
+        return elasticsearchRepository.getFinancialsByPrefereceForGroup(sessionId, idMap, durationStart, durationEnd);
+    }
+
 }

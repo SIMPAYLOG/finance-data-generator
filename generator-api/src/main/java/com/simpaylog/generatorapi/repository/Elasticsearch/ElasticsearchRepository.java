@@ -16,6 +16,7 @@ import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -299,44 +300,68 @@ public class ElasticsearchRepository {
                 .collect(Collectors.toList());
     }
 
-    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsForGroup (String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
-        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
+    private JsonNode executeAndGetBucketsForFinancial(String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
+        String query = QueryBuilder.incomeExpenseByAgeGroupQuery(sessionId, userIds, durationStart, durationEnd);
+        request.setJsonEntity(query);
 
-        request.setJsonEntity(QueryBuilder.incomeExpenseByAgeGroupQuery(sessionId, userIds, durationStart, durationEnd));
         Response response = elasticsearchRestClient.performRequest(request);
         String jsonResult = EntityUtils.toString(response.getEntity());
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode root = objectMapper.readTree(jsonResult);
-        JsonNode buckets = root.path("aggregations").path("age_group_summary").path("buckets");
+
+        return root.path("aggregations").path("age_group_summary").path("buckets");
+    }
+
+    private AgeGroupIncomeExpenseAverageDto parseFinancialsFromBucket(JsonNode bucketNode) {
+        if (bucketNode.isMissingNode()) {
+            return new AgeGroupIncomeExpenseAverageDto(0L, 0L);
+        }
+
+        long avgIncome = bucketNode
+                .path("income_expense_split")
+                .path("buckets")
+                .path("income")
+                .path("average_per_user")
+                .path("value")
+                .asLong(0);
+
+        long avgExpense = bucketNode
+                .path("income_expense_split")
+                .path("buckets")
+                .path("expense")
+                .path("average_per_user")
+                .path("value")
+                .asLong(0);
+
+        return new AgeGroupIncomeExpenseAverageDto(avgIncome, avgExpense);
+    }
+
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsForGroup (String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
+        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
+        JsonNode buckets = executeAndGetBucketsForFinancial(sessionId, userIds, durationStart, durationEnd);
 
         for (int i = 10; i <= 70; i += 10) {
-            String ageGroupKey = i + "대";
-
+            String ageGroupKey = Integer.toString(i);
             JsonNode currentAgeBucket = buckets.path(ageGroupKey);
 
-            long avgIncome = 0;
-            long avgExpense = 0;
+            AgeGroupIncomeExpenseAverageDto dto = parseFinancialsFromBucket(currentAgeBucket);
+            finalResults.put(ageGroupKey + "대", dto);
+        }
 
-            if (!currentAgeBucket.isMissingNode()) {
-                avgIncome = currentAgeBucket
-                        .path("income_expense_split")
-                        .path("buckets")
-                        .path("income")
-                        .path("average_per_user")
-                        .path("value")
-                        .asLong(0);
+        return finalResults;
+    }
 
-                avgExpense = currentAgeBucket
-                        .path("income_expense_split")
-                        .path("buckets")
-                        .path("expense")
-                        .path("average_per_user")
-                        .path("value")
-                        .asLong(0);
-            }
-            finalResults.put(ageGroupKey, new AgeGroupIncomeExpenseAverageDto(avgIncome, avgExpense));
+    public Map<String, AgeGroupIncomeExpenseAverageDto> getFinancialsByPrefereceForGroup (String sessionId, Map<Integer, List<Long>> userIds, String durationStart, String durationEnd) throws IOException {
+        Map<String, AgeGroupIncomeExpenseAverageDto> finalResults = new LinkedHashMap<>();
+        JsonNode buckets = executeAndGetBucketsForFinancial(sessionId, userIds, durationStart, durationEnd);
+
+        for (int key : PreferenceType.getKeyList()) {
+            JsonNode currentAgeBucket = buckets.path(Integer.toString(key));
+
+            AgeGroupIncomeExpenseAverageDto dto = parseFinancialsFromBucket(currentAgeBucket);
+            finalResults.put(PreferenceType.fromKey(key).getName(), dto);
         }
 
         return finalResults;

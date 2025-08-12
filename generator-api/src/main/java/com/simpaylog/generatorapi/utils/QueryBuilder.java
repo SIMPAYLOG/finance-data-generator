@@ -261,9 +261,9 @@ public class QueryBuilder {
         String filtersJson = ageGroupUserIds.entrySet().stream()
                 .filter(entry -> !entry.getValue().isEmpty())
                 .map(entry -> {
-                    String ageGroupKey = "\"" + entry.getKey() + "대" + "\"";
+                    String groupKey = "\"" + entry.getKey() + "\"";
                     String userIdsArray = entry.getValue().toString();
-                    return String.format("%s: { \"terms\": { \"userId\": %s }}", ageGroupKey, userIdsArray);
+                    return String.format("%s: { \"terms\": { \"userId\": %s }}", groupKey, userIdsArray);
                 })
                 // 변환된 모든 문자열을 콤마(,)로 연결
                 .collect(Collectors.joining(", "));

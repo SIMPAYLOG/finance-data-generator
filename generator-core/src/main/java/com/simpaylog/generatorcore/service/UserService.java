@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -179,5 +180,19 @@ public class UserService {
         finalResult.putAll(resultMapFromDB);
 
         return finalResult;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<Long>> getUserIdsGroupedByPreference(String sessionId) throws SQLException {
+        List<Object[]> results = userRepository.findUserIdsGroupedByPreferenceType(sessionId);
+
+        Map<Integer, List<Long>> resultMap = new HashMap<>();
+        for (Object[] row : results) {
+            int preferenceKey = PreferenceType.valueOf((String)row[0]).getKey();
+            Long[] userIds = (Long[]) row[1];
+
+            resultMap.put(preferenceKey, Arrays.asList(userIds));
+        }
+        return resultMap;
     }
 }

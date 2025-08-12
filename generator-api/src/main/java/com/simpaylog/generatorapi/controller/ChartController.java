@@ -6,6 +6,7 @@ import com.simpaylog.generatorapi.dto.response.ChartResponse;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorapi.service.TransactionAnalyzeService;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -92,8 +94,24 @@ public class ChartController {
             @RequestParam String durationEnd) {
         try {
             Map<Integer, List<Long>> userIdsByAgeGroup = userService.groupUserIdsByAgeForSession(sessionId);
-            Map<String, AgeGroupIncomeExpenseAverageDto> response =transactionAnalyzeService.getFinancialsForGroup(sessionId, userIdsByAgeGroup, durationStart, durationEnd);
+            Map<String, AgeGroupIncomeExpenseAverageDto> response = transactionAnalyzeService.getFinancialsForGroup(sessionId, userIdsByAgeGroup, durationStart, durationEnd);
             return Response.success(HttpStatus.OK.value(), response);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @GetMapping("/income-expense/preference")
+    public Response<?> getSummaryByPreference(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd) {
+        try {
+            Map<Integer, List<Long>> userIdsByAgeGroup = userService.getUserIdsGroupedByPreference(sessionId);
+            Map<String, AgeGroupIncomeExpenseAverageDto> response = transactionAnalyzeService.getFinancialsByPrefereceForGroup(sessionId, userIdsByAgeGroup, durationStart, durationEnd);
+            return Response.success(HttpStatus.OK.value(), response);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
