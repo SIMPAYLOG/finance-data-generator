@@ -3,9 +3,9 @@ package com.simpaylog.generatorapi.service;
 import com.simpaylog.generatorapi.TestConfig;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.FileExporter;
 import com.simpaylog.generatorcore.enums.export.ExportFormat;
-import com.simpaylog.generatorapi.repository.Elasticsearch.ElasticsearchRepository;
 import com.simpaylog.generatorcore.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class TransactionExportServiceTest extends TestConfig {
     @Autowired
     TransactionExportService transactionExportService;
     @MockitoBean
-    ElasticsearchRepository repository;
+    TransactionAggregationRepository repository;
     @MockitoBean
     UserService userService;
 

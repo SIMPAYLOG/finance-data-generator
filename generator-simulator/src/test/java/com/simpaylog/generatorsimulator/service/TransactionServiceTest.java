@@ -9,7 +9,7 @@ import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.TestConfig;
-import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import org.junit.jupiter.api.Test;
