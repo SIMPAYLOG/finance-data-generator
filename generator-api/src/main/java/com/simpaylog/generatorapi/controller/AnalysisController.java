@@ -4,6 +4,7 @@ import com.simpaylog.generatorapi.dto.analysis.AmountAvgTransaction;
 import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
+import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.service.AnalysisService;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analysis")
@@ -70,5 +73,62 @@ public class AnalysisController {
             @RequestParam Integer userId
     ) throws IOException {
         return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId));
+    }
+
+    @GetMapping("/all-category-info")
+    public Response<?> searchAllCategoryInfo(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/category/by-volume-top5")
+    public Response<?> searchCategoryByVomlumeTop5(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/category/by-age-group")
+    public Response<?> searchCategoryByVomlumeTop5EachAgeGroup(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd
+    ) {
+        Map<String, List<ChartData>> response = analysisService.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, durationStart, durationEnd);
+        return Response.success(HttpStatus.OK.value(), response);
+    }
+
+    @GetMapping("/transactions/info")
+    public Response<?> searchTransactionInfo(
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd,
+            @RequestParam String intervalType,
+            @RequestParam String sessionId
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(durationStart, durationEnd, intervalType, sessionId));
+    }
+
+
+    @GetMapping("/income-expense/by-age-group")
+    public Response<?> searchIncomeExpenseForAgeGroup(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpenseForAgeGroup(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/income-expense/by-preference")
+    public Response<?> searchIncomeExpenseForPreferece(
+            @RequestParam String sessionId,
+            @RequestParam String durationStart,
+            @RequestParam String durationEnd
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpenseForPreferece(sessionId, durationStart, durationEnd));
     }
 }
