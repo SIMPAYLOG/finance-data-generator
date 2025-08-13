@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -154,7 +153,8 @@ public class UserService {
         return redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId) throws IOException {
+    //원하는 나이대의 아이디 값을 불러오는 메소드 (ageGroup이 10일 때, 10대의 userId 리스트를 반환)
+    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId){
         List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup, sessionId);
 
         if (userIds == null || userIds.isEmpty()) {
@@ -164,7 +164,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Integer, List<Long>> groupUserIdsByAgeForSession(String sessionId) {
+    public Map<Integer, List<Long>> getUserIdsByAgeGroup(String sessionId) {
         Map<Integer, List<Long>> finalResult = new LinkedHashMap<>();
         for (int ageGroup = 10; ageGroup <= 70; ageGroup += 10) {
             finalResult.put(ageGroup, new ArrayList<>());
@@ -183,7 +183,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Integer, List<Long>> getUserIdsGroupedByPreference(String sessionId) throws SQLException {
+    public Map<Integer, List<Long>> getUserIdsGroupedByPreference(String sessionId){
         List<Object[]> results = userRepository.findUserIdsGroupedByPreferenceType(sessionId);
 
         Map<Integer, List<Long>> resultMap = new HashMap<>();

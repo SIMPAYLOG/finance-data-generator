@@ -22,67 +22,67 @@ public class QueryBuilder {
                 : "";
 
         return """
-            {
-              "size": 0,
-              "query": {
-                "bool": {
-                  "must": [
-                    %s
-                    { "term": {"sessionId": "%s"} },
-                    {
-                      "range": {
-                        "timestamp": {
-                          "gte": "%s",
-                          "lte": "%s",
-                          "time_zone": "Asia/Seoul"
-                        }
-                      }
-                    }
-                  ]
-                }
-              },
-              "aggs": {
-                "results": {
-                  "date_histogram": {
-                    "field": "timestamp",
-                    "calendar_interval": "%s",
-                    "time_zone": "Asia/Seoul",
-                    "format": "yyyy-MM-dd"
-                  },
-                  "aggs": {
-                    "total_spent": {
-                      "filter": {
-                        "term": {
-                          "transactionType": "WITHDRAW"
-                        }
-                      },
-                      "aggs": {
-                        "amount_sum": {
-                          "sum": {
-                            "field": "amount"
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        %s
+                        { "term": {"sessionId": "%s"} },
+                        {
+                          "range": {
+                            "timestamp": {
+                              "gte": "%s",
+                              "lte": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
                           }
                         }
-                      }
-                    },
-                    "total_income": {
-                      "filter": {
-                        "term": {
-                          "transactionType": "DEPOSIT"
-                        }
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "results": {
+                      "date_histogram": {
+                        "field": "timestamp",
+                        "calendar_interval": "%s",
+                        "time_zone": "Asia/Seoul",
+                        "format": "yyyy-MM-dd"
                       },
                       "aggs": {
-                        "amount_sum": {
-                          "sum": {
-                            "field": "amount"
+                        "total_spent": {
+                          "filter": {
+                            "term": {
+                              "transactionType": "WITHDRAW"
+                            }
+                          },
+                          "aggs": {
+                            "amount_sum": {
+                              "sum": {
+                                "field": "amount"
+                              }
+                            }
+                          }
+                        },
+                        "total_income": {
+                          "filter": {
+                            "term": {
+                              "transactionType": "DEPOSIT"
+                            }
+                          },
+                          "aggs": {
+                            "amount_sum": {
+                              "sum": {
+                                "field": "amount"
+                              }
+                            }
                           }
                         }
                       }
                     }
                   }
                 }
-              }
-            }
-            """.formatted(userIdQuery, sessionId, gte, lte, interval);
+                """.formatted(userIdQuery, sessionId, gte, lte, interval);
     }
 
     public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
@@ -256,8 +256,7 @@ public class QueryBuilder {
             String sessionId,
             Map<Integer, List<Long>> ageGroupUserIds,
             String durationStart,
-            String durationEnd)
-    {
+            String durationEnd) {
         String filtersJson = ageGroupUserIds.entrySet().stream()
                 .filter(entry -> !entry.getValue().isEmpty())
                 .map(entry -> {
@@ -265,49 +264,48 @@ public class QueryBuilder {
                     String userIdsArray = entry.getValue().toString();
                     return String.format("%s: { \"terms\": { \"userId\": %s }}", groupKey, userIdsArray);
                 })
-                // 변환된 모든 문자열을 콤마(,)로 연결
                 .collect(Collectors.joining(", "));
         return String.format(
-"""
-{
-  "size": 0,
-  "query": {
-    "bool": {
-      "must": [
-        {
-          "range": {
-            "timestamp": {
-              "from": "%s",
-              "to": "%s",
-              "time_zone": "Asia/Seoul"
-            }
-          }
-        },
-        {
-          "term": {
-            "sessionId": "%s"
-          }
-        }
-      ]
-    }
-  },
-  "aggs": {
-    "age_group_summary": {
-      "filters": { "filters": { %s }},
-      "aggs": { "income_expense_split": { "filters": { "filters": {
-        "income": { "term": { "transactionType": "DEPOSIT" }},
-        "expense": { "bool": { "must_not": { "term": { "transactionType": "DEPOSIT" }}}}
-      }},
-      "aggs": { "total_amount": { "sum": { "script": { "source": "doc.containsKey('amount') ? doc['amount'].value : 0" }}},
-               "user_count": { "cardinality": { "field": "userId" }},
-               "average_per_user": { "bucket_script": {
-                 "buckets_path": { "total": "total_amount", "count": "user_count" },
-                 "script": "params.count > 0 ? params.total / params.count : 0"
-               }}
-      }}}
-    }
-  }
-}
-""", durationStart, durationEnd, sessionId, filtersJson);
+                """
+                        {
+                          "size": 0,
+                          "query": {
+                            "bool": {
+                              "must": [
+                                {
+                                  "range": {
+                                    "timestamp": {
+                                      "from": "%s",
+                                      "to": "%s",
+                                      "time_zone": "Asia/Seoul"
+                                    }
+                                  }
+                                },
+                                {
+                                  "term": {
+                                    "sessionId": "%s"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "aggs": {
+                            "age_group_summary": {
+                              "filters": { "filters": { %s }},
+                              "aggs": { "income_expense_split": { "filters": { "filters": {
+                                "income": { "term": { "transactionType": "DEPOSIT" }},
+                                "expense": { "bool": { "must_not": { "term": { "transactionType": "DEPOSIT" }}}}
+                              }},
+                              "aggs": { "total_amount": { "sum": { "script": { "source": "doc.containsKey('amount') ? doc['amount'].value : 0" }}},
+                                       "user_count": { "cardinality": { "field": "userId" }},
+                                       "average_per_user": { "bucket_script": {
+                                         "buckets_path": { "total": "total_amount", "count": "user_count" },
+                                         "script": "params.count > 0 ? params.total / params.count : 0"
+                                       }}
+                              }}}
+                            }
+                          }
+                        }
+                        """, durationStart, durationEnd, sessionId, filtersJson);
     }
 }

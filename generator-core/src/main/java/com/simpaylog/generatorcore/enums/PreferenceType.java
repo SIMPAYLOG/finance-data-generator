@@ -30,11 +30,4 @@ public enum PreferenceType {
             default -> DEFAULT;
         };
     }
-
-    public static List<Integer> getKeyList() {
-        return Arrays.stream(PreferenceType.values())
-                .filter(type -> type != DEFAULT)
-                .map(PreferenceType::getKey)
-                .collect(Collectors.toList());
-    }
 }
