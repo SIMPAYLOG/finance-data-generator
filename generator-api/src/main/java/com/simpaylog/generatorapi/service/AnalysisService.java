@@ -11,10 +11,11 @@ import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.DateValidator;
+import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
+import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisSessionRepository;
-import com.simpaylog.generatorcore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,7 +32,6 @@ import java.util.Map;
 public class AnalysisService {
     private final TransactionAggregationRepository transactionAggregationRepository;
     private final RedisSessionRepository redisSessionRepository;
-    private final UserService userService;
     private final UserRepository userRepository;
 
     public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
@@ -74,7 +72,7 @@ public class AnalysisService {
         redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public ChartResponse searchTransactionInfo(String durationStart, String durationEnd, String type, String sessionId){
+    public ChartResponse searchTransactionInfo(String durationStart, String durationEnd, String type, String sessionId) {
         final String title;
         final CalendarInterval interval;
         final DateTimeFormatter formatter;
@@ -103,14 +101,14 @@ public class AnalysisService {
         }
 
         try {
-            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(durationStart, durationEnd,type, interval, formatter, typeStr, sessionId));
+            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(durationStart, durationEnd, type, interval, formatter, typeStr, sessionId));
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
     }
 
-    public Map<String, List<ChartData>> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, String durationStart, String durationEnd){
+    public Map<String, List<ChartData>> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, String durationStart, String durationEnd) {
         // 분석할 연령대 목록 정의
         List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
         Map<String, List<ChartData>> finalResults = new LinkedHashMap<>();
@@ -158,18 +156,38 @@ public class AnalysisService {
         return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }
 
-    public Map<String, AgeGroupIncomeExpenseAverageDto> searchIncomeExpenseForAgeGroup(String sessionId, String durationStart, String durationEnd){
+    public Map<String, AgeGroupIncomeExpenseAverageDto> searchIncomeExpenseForAgeGroup(String sessionId, String durationStart, String durationEnd) {
+        Map<Integer, List<Long>> idMap = new LinkedHashMap<>();
+        for (int ageGroup = 10; ageGroup <= 70; ageGroup += 10) {
+            idMap.put(ageGroup, new ArrayList<>());
+        }
+
+        Map<Integer, List<Long>> idMapFromDB = userRepository.findUserAgeInfoBySessionId(sessionId).stream()
+                .collect(Collectors.groupingBy(
+                        UserAgeInfo::age,
+                        Collectors.mapping(UserAgeInfo::id, Collectors.toList())
+                ));
+
+        idMap.putAll(idMapFromDB);
         try {
-            return transactionAggregationRepository.getFinancialsForGroup(sessionId, userService.getUserIdsByAgeGroup(sessionId), durationStart, durationEnd);
+            return transactionAggregationRepository.getFinancialsForGroup(sessionId, idMap, durationStart, durationEnd);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
     }
 
-    public Map<String, AgeGroupIncomeExpenseAverageDto> searchIncomeExpenseForPreferece(String sessionId, String durationStart, String durationEnd){
+    public Map<String, AgeGroupIncomeExpenseAverageDto> searchIncomeExpenseForPreferece(String sessionId, String durationStart, String durationEnd) {
+        Map<Integer, List<Long>> idMap = new HashMap<>();
+        for (Object[] row : userRepository.findUserIdsGroupedByPreferenceType(sessionId)) {
+            int preferenceKey = PreferenceType.valueOf((String) row[0]).getKey();
+            Long[] userIds = (Long[]) row[1];
+
+            idMap.put(preferenceKey, Arrays.asList(userIds));
+        }
+
         try {
-            return transactionAggregationRepository.getFinancialsByPrefereceForGroup(sessionId, userService.getUserIdsGroupedByPreference(sessionId), durationStart, durationEnd);
+            return transactionAggregationRepository.getFinancialsByPrefereceForGroup(sessionId, idMap, durationStart, durationEnd);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

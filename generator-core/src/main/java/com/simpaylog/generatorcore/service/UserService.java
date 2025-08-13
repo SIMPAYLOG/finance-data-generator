@@ -2,9 +2,7 @@ package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
-import com.simpaylog.generatorcore.dto.analyze.OccupationCodeStat;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
-import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
@@ -86,23 +84,20 @@ public class UserService {
         }
     }
 
+    //생성된 유저의 성별 비율, 직업군 비율, 연령대 비율을 반환해주는 메소드
     public UserAnalyzeResultResponse analyzeUsers(String sessionId) {
         getSimulationSessionOrException(sessionId);
         return new UserAnalyzeResultResponse(
                 userRepository.countUsersBySessionId(sessionId),
                 userRepository.analyzeAgeGroup(sessionId),
-                occupationCodeToName(userRepository.analyzeOccupation(sessionId)),
+                userRepository.analyzeOccupation(sessionId).stream()
+                        .map(stat -> new OccupationNameStat(
+                                occupationLocalCache.get(stat.occupationCategory()).occupationCategory().substring(2),
+                                stat.count()
+                        ))
+                        .collect(Collectors.toList()),
                 userRepository.analyzeGender(sessionId)
         );
-    }
-
-    private List<OccupationNameStat> occupationCodeToName(List<OccupationCodeStat> occupationCodeStats) {
-        return occupationCodeStats.stream()
-                .map(stat -> new OccupationNameStat(
-                        occupationLocalCache.get(stat.occupationCategory()).occupationCategory().substring(2),
-                        stat.count()
-                ))
-                .collect(Collectors.toList());
     }
 
     public Page<UserInfoResponse> findUsersByPage(Pageable pageable, String sessionId) {
@@ -111,6 +106,7 @@ public class UserService {
                 .map(UserInfoResponse::userToUserInfoResponse);
     }
 
+    // 클라이언트가 조건 생성시에 나이대로 선택할 수 있는 리스트를 생성해주는 메소드
     public AgeGroupResponse getAgeGroup() {
         return new AgeGroupResponse(Stream.concat(occupationLocalCache.get(1).ageGroupInfo().stream()
                                 .map(ageInfo -> new AgeGroupDetailResponse(
@@ -124,6 +120,7 @@ public class UserService {
                 .collect(Collectors.toList()));
     }
 
+    // 클라이언트가 조건 생성시에 직업군으로 선택할 수 있는 리스트를 생성해주는 메소드
     public OccupationListResponse getOccupationCategory() {
         return new OccupationListResponse(Stream.concat(
                         occupationLocalCache.getCache().values().stream()
@@ -136,6 +133,7 @@ public class UserService {
         );
     }
 
+    // 클라이언트가 조건 생성시에 소비성향으로 선택할 수 있는 리스트를 생성해주는 메소드
     public PreferenceListResponse getPreferenceList() {
         List<PreferenceResponse> preferences = Stream.concat(
                 Arrays.stream(PreferenceType.values())
@@ -154,45 +152,12 @@ public class UserService {
     }
 
     //원하는 나이대의 아이디 값을 불러오는 메소드 (ageGroup이 10일 때, 10대의 userId 리스트를 반환)
-    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId){
+    public List<Long> getIdsByAgeGroup(int ageGroup, String sessionId) {
         List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup, sessionId);
 
         if (userIds == null || userIds.isEmpty()) {
             return new ArrayList<>();
         }
         return userIds;
-    }
-
-    @Transactional(readOnly = true)
-    public Map<Integer, List<Long>> getUserIdsByAgeGroup(String sessionId) {
-        Map<Integer, List<Long>> finalResult = new LinkedHashMap<>();
-        for (int ageGroup = 10; ageGroup <= 70; ageGroup += 10) {
-            finalResult.put(ageGroup, new ArrayList<>());
-        }
-
-        List<UserAgeInfo> users = userRepository.findUserAgeInfoBySessionId(sessionId);
-        Map<Integer, List<Long>> resultMapFromDB = users.stream()
-                .collect(Collectors.groupingBy(
-                        user -> user.age(),
-                        Collectors.mapping(UserAgeInfo::id, Collectors.toList())
-                ));
-
-        finalResult.putAll(resultMapFromDB);
-
-        return finalResult;
-    }
-
-    @Transactional(readOnly = true)
-    public Map<Integer, List<Long>> getUserIdsGroupedByPreference(String sessionId){
-        List<Object[]> results = userRepository.findUserIdsGroupedByPreferenceType(sessionId);
-
-        Map<Integer, List<Long>> resultMap = new HashMap<>();
-        for (Object[] row : results) {
-            int preferenceKey = PreferenceType.valueOf((String)row[0]).getKey();
-            Long[] userIds = (Long[]) row[1];
-
-            resultMap.put(preferenceKey, Arrays.asList(userIds));
-        }
-        return resultMap;
     }
 }
