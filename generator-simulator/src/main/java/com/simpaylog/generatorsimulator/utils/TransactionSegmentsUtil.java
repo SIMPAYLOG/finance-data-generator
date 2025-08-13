@@ -1,6 +1,6 @@
 package com.simpaylog.generatorsimulator.utils;
 
-import com.simpaylog.generatorsimulator.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.CategoryType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

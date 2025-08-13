@@ -1,5 +1,6 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
@@ -8,13 +9,11 @@ import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
-import com.simpaylog.generatorcore.dto.CategoryType;
-import com.simpaylog.generatorsimulator.utils.MoneyUtil;
 import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
-import com.simpaylog.generatorsimulator.dto.CategoryType;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
+import com.simpaylog.generatorsimulator.utils.MoneyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -74,7 +73,7 @@ public class TransactionService {
                 curTime = hourStart.plusMinutes(minute);
 
                 // 1. 고정 이벤트 처리
-                if(drainFixedEvents(fixedEvents, curTime)) {
+                if (drainFixedEvents(fixedEvents, curTime)) {
                     continue;
                 }
                 // 2. 해당 시간에 맞는 카테고리 선별하기
@@ -105,7 +104,7 @@ public class TransactionService {
 
     private boolean drainFixedEvents(List<OneTimeEvent> events, LocalDateTime curTime) {
         boolean flag = false;
-        while(!events.isEmpty() && events.getFirst().time().isEqual(curTime)) {
+        while (!events.isEmpty() && events.getFirst().time().isEqual(curTime)) {
             events.removeFirst().run();
             flag = true;
         }
@@ -175,9 +174,9 @@ public class TransactionService {
         List<Integer> minutes = new ArrayList<>(fixed);
 
         int cnt = ThreadLocalRandom.current().nextInt(4);
-        while(cnt-- > 0) {
+        while (cnt-- > 0) {
             int minute = ThreadLocalRandom.current().nextInt(60);
-            if(fixed.add(minute)) minutes.add(minute);
+            if (fixed.add(minute)) minutes.add(minute);
         }
         Collections.sort(minutes);
         return minutes;
