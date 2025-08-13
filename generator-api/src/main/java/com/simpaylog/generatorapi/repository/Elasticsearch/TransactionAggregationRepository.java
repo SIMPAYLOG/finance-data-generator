@@ -298,6 +298,12 @@ public class TransactionAggregationRepository {
                                                                 )
                                                         )
                                                 )
+                                                .must(m -> m
+                                                        .term(t -> t
+                                                                .field("transactionType")
+                                                                .value("WITHDRAW")
+                                                        )
+                                                )
                                         )
                                 )
                                 .aggregations("category_count", a -> a
@@ -342,6 +348,12 @@ public class TransactionAggregationRepository {
                                                                 .to(durationEnd)
                                                                 .timeZone("Asia/Seoul")
                                                         )
+                                                )
+                                        )
+                                        .must(m -> m
+                                                .term(t -> t
+                                                        .field("transactionType")
+                                                        .value("WITHDRAW")
                                                 )
                                         )
                                 )
