@@ -54,11 +54,6 @@ public class AccountService {
         return false;
     }
 
-    public BigDecimal getBalance(Long userId) {
-        Account checking = getAccountByType(userId, AccountType.CHECKING);
-        return checking.getBalance();
-    }
-
     public void deposit(Long userId, BigDecimal amount, LocalDateTime dateTime) {
         if (amount == null || amount.signum() < 0) {
             throw new CoreException("금액이 잘못되었습니다.");

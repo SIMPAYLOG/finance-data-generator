@@ -1,0 +1,172 @@
+[
+  {
+    "decile": 1,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 276203,
+      "alcoholicBeveragesTobacco": 23852,
+      "clothingFootwear": 55336,
+      "housingUtilitiesFuel": 275006,
+      "householdGoodsServices": 45998,
+      "health": 124210,
+      "transportation": 77213,
+      "communication": 64072,
+      "recreationCulture": 40236,
+      "education": 7715,
+      "foodAccommodation": 149462,
+      "otherGoodsServices": 75602
+    }
+  },
+  {
+    "decile": 2,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 338813,
+      "alcoholicBeveragesTobacco": 28991,
+      "clothingFootwear": 77181,
+      "housingUtilitiesFuel": 275692,
+      "householdGoodsServices": 64083,
+      "health": 184456,
+      "transportation": 125695,
+      "communication": 79250,
+      "recreationCulture": 59251,
+      "education": 16957,
+      "foodAccommodation": 204974,
+      "otherGoodsServices": 100776
+    }
+  },
+  {
+    "decile": 3,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 335361,
+      "alcoholicBeveragesTobacco": 29263,
+      "clothingFootwear": 90782,
+      "housingUtilitiesFuel": 287301,
+      "householdGoodsServices": 72649,
+      "health": 184735,
+      "transportation": 247133,
+      "communication": 100746,
+      "recreationCulture": 79601,
+      "education": 31887,
+      "foodAccommodation": 264110,
+      "otherGoodsServices": 129174
+    }
+  },
+  {
+    "decile": 4,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 348893,
+      "alcoholicBeveragesTobacco": 35925,
+      "clothingFootwear": 111395,
+      "housingUtilitiesFuel": 344276,
+      "householdGoodsServices": 74805,
+      "health": 178006,
+      "transportation": 198745,
+      "communication": 125624,
+      "recreationCulture": 101108,
+      "education": 49570,
+      "foodAccommodation": 362151,
+      "otherGoodsServices": 159358
+    }
+  },
+  {
+    "decile": 5,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 409535,
+      "alcoholicBeveragesTobacco": 40998,
+      "clothingFootwear": 127221,
+      "housingUtilitiesFuel": 346037,
+      "householdGoodsServices": 111782,
+      "health": 223800,
+      "transportation": 241161,
+      "communication": 161794,
+      "recreationCulture": 125542,
+      "education": 125156,
+      "foodAccommodation": 406009,
+      "otherGoodsServices": 177173
+    }
+  },
+  {
+    "decile": 6,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 460518,
+      "alcoholicBeveragesTobacco": 41915,
+      "clothingFootwear": 164848,
+      "housingUtilitiesFuel": 361606,
+      "householdGoodsServices": 106361,
+      "health": 233995,
+      "transportation": 421353,
+      "communication": 181148,
+      "recreationCulture": 161640,
+      "education": 184321,
+      "foodAccommodation": 460445,
+      "otherGoodsServices": 247705
+    }
+  },
+  {
+    "decile": 7,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 489286,
+      "alcoholicBeveragesTobacco": 39287,
+      "clothingFootwear": 188880,
+      "housingUtilitiesFuel": 363041,
+      "householdGoodsServices": 130107,
+      "health": 265473,
+      "transportation": 316206,
+      "communication": 204951,
+      "recreationCulture": 189396,
+      "education": 241480,
+      "foodAccommodation": 528434,
+      "otherGoodsServices": 241956
+    }
+  },
+  {
+    "decile": 8,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 560710,
+      "alcoholicBeveragesTobacco": 43048,
+      "clothingFootwear": 245963,
+      "housingUtilitiesFuel": 387909,
+      "householdGoodsServices": 150075,
+      "health": 276773,
+      "transportation": 429321,
+      "communication": 211876,
+      "recreationCulture": 235958,
+      "education": 321825,
+      "foodAccommodation": 623440,
+      "otherGoodsServices": 308931
+    }
+  },
+  {
+    "decile": 9,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 606831,
+      "alcoholicBeveragesTobacco": 42677,
+      "clothingFootwear": 265583,
+      "housingUtilitiesFuel": 408928,
+      "householdGoodsServices": 170942,
+      "health": 353158,
+      "transportation": 475916,
+      "communication": 225128,
+      "recreationCulture": 273107,
+      "education": 379446,
+      "foodAccommodation": 691468,
+      "otherGoodsServices": 353362
+    }
+  },
+  {
+    "decile": 10,
+    "byCategory": {
+      "groceriesNonAlcoholicBeverages": 678786,
+      "alcoholicBeveragesTobacco": 44302,
+      "clothingFootwear": 374492,
+      "housingUtilitiesFuel": 437219,
+      "householdGoodsServices": 292348,
+      "health": 388180,
+      "transportation": 692425,
+      "communication": 263407,
+      "recreationCulture": 526565,
+      "education": 450279,
+      "foodAccommodation": 857223,
+      "otherGoodsServices": 542869
+    }
+  }
+]
