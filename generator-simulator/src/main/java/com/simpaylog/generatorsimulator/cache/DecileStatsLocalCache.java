@@ -21,12 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 @Component
 public class DecileStatsLocalCache {
-    private final Map<Integer, Map<CategoryType, BigDecimal>> cache = new ConcurrentHashMap<>();
+    private final Map<Integer, DecileStat> cache = new ConcurrentHashMap<>();
 
-    public Map<CategoryType, BigDecimal> getDecileStat(int decile) {
-        Map<CategoryType, BigDecimal> env = cache.get(decile);
-        if (env == null) throw new IllegalArgumentException("No stats for decile=" + decile);
-        return new EnumMap<>(env); // 복사본
+    public DecileStat getDecileStat(int decile) {
+        DecileStat stat = cache.get(decile);
+        if (stat == null) throw new IllegalArgumentException("No stats for decile=" + decile);
+        return stat;
     }
 
     @PostConstruct
@@ -34,13 +34,11 @@ public class DecileStatsLocalCache {
         try {
             ObjectMapper mapper = new ObjectMapper();
             InputStream input = new ClassPathResource("stats.json").getInputStream();
-            TypeReference<List<DecileStat>> typeRef = new TypeReference<>() {
-            };
+            TypeReference<List<DecileStat>> typeRef = new TypeReference<>() {};
             List<DecileStat> decileStats = mapper.readValue(input, typeRef);
+
             for (DecileStat stat : decileStats) {
-                Map<CategoryType, BigDecimal> env = new EnumMap<>(CategoryType.class);
-                stat.byCategory().forEach((k, v) -> env.put(CategoryType.fromKey(k), v));
-                cache.put(stat.decile(), env);
+                cache.put(stat.decile(), stat);
             }
             log.info("[DecileStatsLocalCache] 캐시 로딩 완료: 10개 중 {}개", cache.size());
         } catch (Exception e) {
