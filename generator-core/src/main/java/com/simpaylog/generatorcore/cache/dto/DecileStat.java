@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.cache.dto;
+package com.simpaylog.generatorcore.cache.dto;
 
 import com.simpaylog.generatorcore.dto.CategoryType;
 

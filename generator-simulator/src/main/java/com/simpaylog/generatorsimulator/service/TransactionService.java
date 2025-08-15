@@ -6,11 +6,12 @@ import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
-import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
-import com.simpaylog.generatorsimulator.cache.dto.DecileStat;
+import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorcore.cache.dto.DecileStat;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -145,7 +146,7 @@ public class TransactionService {
                 // 5. 결제 요청
                 if (accountService.withdraw(dto.userId(), scaledAmount, curTime)) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
                     lastUsedMap.put(picked, curTime);
-                    generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionLog.TransactionType.WITHDRAW, userTrade.tradeName(), scaledAmount));
+                    generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionType.WITHDRAW, userTrade.tradeName(), scaledAmount));
                 } else {
                     scaler.rollback(picked, scaledAmount);
                 }
@@ -178,7 +179,7 @@ public class TransactionService {
                     payTime,
                     () -> {
                         accountService.deposit(user.userId(), finalWage, payTime);
-                        generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionLog.TransactionType.DEPOSIT, "급여 입금", finalWage));
+                        generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionType.DEPOSIT, "급여 입금", finalWage));
                     }
             );
             events.add(wageEvent);

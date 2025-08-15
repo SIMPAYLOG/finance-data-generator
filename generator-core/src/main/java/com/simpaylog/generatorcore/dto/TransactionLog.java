@@ -1,6 +1,7 @@
 package com.simpaylog.generatorcore.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.simpaylog.generatorcore.enums.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,10 +17,7 @@ public record TransactionLog(
         String description,
         BigDecimal amount
 ) {
-    public enum TransactionType {
-        WITHDRAW,
-        DEPOSIT
-    }
+
 
     public static TransactionLog of(Long userId, String sessionId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount) {
         return new TransactionLog(

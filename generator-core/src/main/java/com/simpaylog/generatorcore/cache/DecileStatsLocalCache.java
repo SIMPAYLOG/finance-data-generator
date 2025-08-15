@@ -1,9 +1,8 @@
-package com.simpaylog.generatorsimulator.cache;
+package com.simpaylog.generatorcore.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorcore.dto.CategoryType;
-import com.simpaylog.generatorsimulator.cache.dto.DecileStat;
+import com.simpaylog.generatorcore.cache.dto.DecileStat;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
