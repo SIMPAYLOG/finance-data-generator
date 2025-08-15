@@ -10,6 +10,7 @@ import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorsimulator.cache.dto.DecileStat;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -46,14 +48,64 @@ public class TransactionService {
 
     public void generate(TransactionUserDto dto, LocalDate from, LocalDate to) {
         for (MonthSegment seg : splitByMonth(from, to)) {
-            Map<CategoryType, BigDecimal> budget = decileStatsLocalCache.getDecileStat(dto.decile());
-            Map<CategoryType, BigDecimal> segBudget = scaleBudget(budget, seg.factor());
+            Map<CategoryType, BigDecimal> monthlyBudget = readjustSegBudget(decileStatsLocalCache.getDecileStat(dto.decile()), dto.incomeValue());
+            Map<CategoryType, BigDecimal> segBudget = scaleBudget(monthlyBudget, seg.factor());
+
             Map<CategoryType, Integer> eventsCnt = tradeGenerator.estimateCounts(dto.decile(), segBudget);
             SimpleEnvelopeScaler scaler = new SimpleEnvelopeScaler(segBudget, eventsCnt);
+            for(CategoryType ct : CategoryType.values()) {
+                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
+            }
             for (LocalDate date = seg.start(); !date.isAfter(seg.end()); date = date.plusDays(1)) {
                 generateTransaction(dto, date, scaler);
             }
+            for(CategoryType ct : CategoryType.values()) {
+                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
+            }
         }
+    }
+
+    // TODO: 필요하면 성향 정보 추가
+    // 유저의 평균 급여, segBudget
+    public static Map<CategoryType, BigDecimal> readjustSegBudget(DecileStat decileStat, BigDecimal incomeValue) {
+        Objects.requireNonNull(decileStat, "decileStat is required");
+        Objects.requireNonNull(incomeValue, "incomeValue is required");
+        // 1. 카테고리별 총 소비 금액 가져오기
+        Map<CategoryType, BigDecimal> base = decileStat.byCategory();
+        if (base == null || base.isEmpty()) {
+            return new EnumMap<>(CategoryType.class); // 빈 EnumMap 안전 반환
+        }
+        BigDecimal baseTotal = base.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        if(baseTotal.signum() == 0) return new EnumMap<>(base);
+
+        // 2. 비율 계산하기
+        BigDecimal avgDisposable = decileStat.averageDisposableIncome();    // 처분 가능 소득
+        if (avgDisposable == null || avgDisposable.signum() <= 0) {
+            throw new IllegalStateException("averageDisposableIncome must be positive to compute APC ratio.");
+        }
+        BigDecimal ratio = baseTotal.divide(avgDisposable, 8, RoundingMode.HALF_UP);
+
+        // 3. 사용자 월 급여에 비례하는 소비 총액 설정
+        BigDecimal target = incomeValue.max(BigDecimal.ZERO).multiply(ratio).setScale(8, RoundingMode.HALF_UP);
+        if (target.signum() == 0) {
+            return new EnumMap<>(CategoryType.class);
+        }
+
+         BigDecimal lo = baseTotal.multiply(new BigDecimal("0.5"));
+         BigDecimal hi = baseTotal.multiply(new BigDecimal("1.8"));
+         if (target.compareTo(lo) < 0 || target.compareTo(hi) > 0) {
+             log.warn("Target clamped. income={}, ratio={}, target(before)={}", incomeValue, ratio, target);
+             target = target.min(hi).max(lo);
+         }
+
+        // 4. 총 금액을 조절한 새로운 예산 설정
+        BigDecimal scale = target.divide(baseTotal, 8 , RoundingMode.HALF_UP);
+        Map<CategoryType, BigDecimal> scaledBudget = new EnumMap<>(CategoryType.class);
+        for(Map.Entry<CategoryType, BigDecimal> entry : base.entrySet()) {
+            BigDecimal newVal = entry.getValue().multiply(scale).setScale(8, RoundingMode.HALF_UP);
+            scaledBudget.put(entry.getKey(), newVal);
+        }
+        return scaledBudget;
     }
 
     private void generateTransaction(TransactionUserDto dto, LocalDate date, SimpleEnvelopeScaler scaler) {
@@ -130,7 +182,7 @@ public class TransactionService {
                     }
             );
             events.add(wageEvent);
-            LocalDateTime saveTime = date.atTime(LocalTime.from(wageEvent.time().plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1)));
+            LocalDateTime saveTime = date.atTime(LocalTime.from(payTime.plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1)));
             TimedEvent saveEvent = new TimedEvent(
                     saveTime,
                     () -> accountService.transferToSavings(user.userId(), finalWage, user.savingRate(), saveTime)

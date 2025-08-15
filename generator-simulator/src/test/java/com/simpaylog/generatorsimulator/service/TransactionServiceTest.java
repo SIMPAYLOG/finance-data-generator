@@ -11,6 +11,7 @@ import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.TestConfig;
 import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorsimulator.cache.dto.DecileStat;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
@@ -68,7 +69,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
@@ -127,7 +129,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
@@ -164,7 +167,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
