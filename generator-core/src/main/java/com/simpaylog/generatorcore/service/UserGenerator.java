@@ -17,6 +17,7 @@ import com.simpaylog.generatorcore.enums.Gender;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.utils.AccountFactory;
+import com.simpaylog.generatorcore.utils.MoneyUtil;
 import com.simpaylog.generatorcore.utils.NameUtil;
 import com.simpaylog.generatorcore.utils.SavingRateCalculator;
 import lombok.RequiredArgsConstructor;
@@ -82,10 +83,10 @@ public class UserGenerator {
                 nameUtil.getRandomName('M', (age + 1) * 10)
                 : nameUtil.getRandomName('F', (age + 1) * 10);
         PreferenceType preferenceType = PreferenceType.fromKey(setPreferenceIdByCondition(condition.preferenceId()));
-        BigDecimal incomeValue = BigDecimal.valueOf(occupation.decileDistribution()[decile - 1] * occupation.averageMonthlyWage()); // 월급여
+        BigDecimal incomeValue = MoneyUtil.roundTo10(BigDecimal.valueOf(occupation.decileDistribution()[decile - 1] * occupation.averageMonthlyWage())); // 월급여
         Job jobInfo = getRandomJob(occupationCode, decile);
         AssetRange assetRange = incomeLevelLocalCache.get(decile).assetRange();
-        BigDecimal assetValue = BigDecimal.valueOf((random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10);
+        BigDecimal assetValue = MoneyUtil.roundTo10(BigDecimal.valueOf((random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10));
         int autoTransferDayOfMonth = random.nextInt(28) + 1; // 공과금
         BigDecimal savingRate = SavingRateCalculator.calculateSavingRate(decile, age, preferenceType);
         List<Account> accounts = accountFactory.generateAccountsFor(incomeValue, assetValue, age, decile, preferenceType);

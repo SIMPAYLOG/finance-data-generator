@@ -13,7 +13,7 @@ import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
-import com.simpaylog.generatorsimulator.utils.MoneyUtil;
+import com.simpaylog.generatorcore.utils.MoneyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.dto.CategoryType;
-import com.simpaylog.generatorsimulator.utils.MoneyUtil;
+import com.simpaylog.generatorcore.utils.MoneyUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
