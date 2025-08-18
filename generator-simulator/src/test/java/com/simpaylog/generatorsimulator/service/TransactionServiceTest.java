@@ -205,9 +205,9 @@ class TransactionServiceTest extends TestConfig {
                 1L,
                 "test-sessionId",
                 decile,
+                10,
                 PreferenceType.DEFAULT,
                 wageType,
-                10,
                 "TEST-active-hour",
                 BigDecimal.valueOf(3000000),
                 BigDecimal.ZERO
