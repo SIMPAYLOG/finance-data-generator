@@ -2,12 +2,14 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
+import com.simpaylog.generatorcore.dto.FixedObligation;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
+import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
@@ -22,10 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -42,6 +41,7 @@ public class TransactionService {
     private final DecileStatsLocalCache decileStatsLocalCache;
     private final RedisPaydayRepository redisPaydayRepository;
     private final TransactionGenerator transactionGenerator;
+    private final FixedObligationRepository fixedObligationRepository;
     private final TradeGenerator tradeGenerator;
 
     private static final double OVERDRAFT_BASE_PROB = 0.8;
@@ -54,13 +54,13 @@ public class TransactionService {
 
             Map<CategoryType, Integer> eventsCnt = tradeGenerator.estimateCounts(dto.decile(), segBudget);
             SimpleEnvelopeScaler scaler = new SimpleEnvelopeScaler(segBudget, eventsCnt);
-            for(CategoryType ct : CategoryType.values()) {
+            for (CategoryType ct : CategoryType.values()) {
                 log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
             }
             for (LocalDate date = seg.start(); !date.isAfter(seg.end()); date = date.plusDays(1)) {
                 generateTransaction(dto, date, scaler);
             }
-            for(CategoryType ct : CategoryType.values()) {
+            for (CategoryType ct : CategoryType.values()) {
                 log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
             }
         }
@@ -77,7 +77,7 @@ public class TransactionService {
             return new EnumMap<>(CategoryType.class); // 빈 EnumMap 안전 반환
         }
         BigDecimal baseTotal = base.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        if(baseTotal.signum() == 0) return new EnumMap<>(base);
+        if (baseTotal.signum() == 0) return new EnumMap<>(base);
 
         // 2. 비율 계산하기
         BigDecimal avgDisposable = decileStat.averageDisposableIncome();    // 처분 가능 소득
@@ -92,17 +92,17 @@ public class TransactionService {
             return new EnumMap<>(CategoryType.class);
         }
 
-         BigDecimal lo = baseTotal.multiply(new BigDecimal("0.5"));
-         BigDecimal hi = baseTotal.multiply(new BigDecimal("1.8"));
-         if (target.compareTo(lo) < 0 || target.compareTo(hi) > 0) {
-             log.warn("Target clamped. income={}, ratio={}, target(before)={}", incomeValue, ratio, target);
-             target = target.min(hi).max(lo);
-         }
+        BigDecimal lo = baseTotal.multiply(new BigDecimal("0.5"));
+        BigDecimal hi = baseTotal.multiply(new BigDecimal("1.8"));
+        if (target.compareTo(lo) < 0 || target.compareTo(hi) > 0) {
+            log.warn("Target clamped. income={}, ratio={}, target(before)={}", incomeValue, ratio, target);
+            target = target.min(hi).max(lo);
+        }
 
         // 4. 총 금액을 조절한 새로운 예산 설정
-        BigDecimal scale = target.divide(baseTotal, 8 , RoundingMode.HALF_UP);
+        BigDecimal scale = target.divide(baseTotal, 8, RoundingMode.HALF_UP);
         Map<CategoryType, BigDecimal> scaledBudget = new EnumMap<>(CategoryType.class);
-        for(Map.Entry<CategoryType, BigDecimal> entry : base.entrySet()) {
+        for (Map.Entry<CategoryType, BigDecimal> entry : base.entrySet()) {
             BigDecimal newVal = entry.getValue().multiply(scale).setScale(8, RoundingMode.HALF_UP);
             scaledBudget.put(entry.getKey(), newVal);
         }
@@ -117,7 +117,6 @@ public class TransactionService {
 
         long hours = ChronoUnit.HOURS.between(from, to);
         for (int hour = 0; hour <= hours; hour++) {
-            // TODO: 공과금, 통신비
             LocalDateTime curTime = from.plusHours(hour);
             List<Integer> minutes = getRandomMinutes(curTime.getHour(), fixedEvents);
             LocalDateTime hourStart = from.plusHours(hour);
@@ -200,6 +199,27 @@ public class TransactionService {
             );
             events.add(interestEvent);
         }
+        // 3. 고정 지출/수입(Redis에서 가져오기)
+        List<FixedObligation> items = fixedObligationRepository.findAll(user.sessionId(), user.userId());
+        for (FixedObligation item : items) {
+            if (date.isBefore(LocalDate.parse(item.effectiveFrom()))) continue;
+            if (item.effectiveTo() != null && date.isAfter(LocalDate.parse(item.effectiveTo()))) continue;
+            if (item.recurrence().dayOfMonth() == date.getDayOfMonth()) {
+                LocalDateTime time = date.atTime(9, 30);
+                TimedEvent fixedEvent = new TimedEvent(
+                        time,
+                        () -> {
+                            if (item.transactionType() == TransactionType.DEPOSIT) {
+                                accountService.deposit(user.userId(), item.amount(), time);
+                            } else {
+                                accountService.withdraw(user.userId(), item.amount(), time);
+                                generateMessage(TransactionLog.of(user.userId(), user.sessionId(), time, TransactionType.WITHDRAW, item.description(), item.amount()));
+                            }
+                        }
+                );
+                events.add(fixedEvent);
+            }
+        }
         events.sort(Comparator.comparing(OneTimeEvent::time)); // 시간순 정렬
         return events;
     }
@@ -207,6 +227,7 @@ public class TransactionService {
     private void generateMessage(TransactionLog transactionLog) {
         try {
             transactionLogProducer.send(transactionLog);
+            log.info("{}",transactionLog);
         } catch (Exception e) {
             // TODO: 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
             log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
