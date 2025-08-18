@@ -87,10 +87,9 @@ public class UserGenerator {
         Job jobInfo = getRandomJob(occupationCode, decile);
         AssetRange assetRange = incomeLevelLocalCache.get(decile).assetRange();
         BigDecimal assetValue = MoneyUtil.roundTo10(BigDecimal.valueOf((random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10));
-        int autoTransferDayOfMonth = random.nextInt(28) + 1; // 공과금
         BigDecimal savingRate = SavingRateCalculator.calculateSavingRate(decile, age, preferenceType);
         List<Account> accounts = accountFactory.generateAccountsFor(incomeValue, assetValue, age, decile, preferenceType);
-        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, jobInfo.wageType(), autoTransferDayOfMonth, incomeValue, assetValue, savingRate);
+        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, jobInfo.wageType(), incomeValue, assetValue, savingRate);
         return User.of(name, profile, decile, (age + 1) * 10, gender, code, jobInfo.jobTitle(), condition.id(), accounts);
     }
 
