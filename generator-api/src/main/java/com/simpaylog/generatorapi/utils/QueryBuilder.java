@@ -369,4 +369,76 @@ public class QueryBuilder {
                                 }
                         """, sessionId, durationStart, durationEnd);
     }
+
+    public static String transactionInfoQuery(
+            String durationStart,
+            String durationEnd,
+            String sessionId,
+            String interval,
+            String format
+    ) {
+        return String.format(
+                        """
+                                {
+                                  "size": 0,
+                                  "query": {
+                                    "bool": {
+                                      "must": [
+                                        {
+                                          "range": {
+                                            "timestamp": {
+                                              "from": "%s",
+                                              "to": "%s",
+                                              "time_zone": "Asia/Seoul"
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "term": {
+                                            "sessionId": {
+                                              "value": "%s"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "aggs": {
+                                    "summary": {
+                                      "date_histogram": {
+                                        "field": "timestamp",
+                                        "calendar_interval": "%s",
+                                        "time_zone": "Asia/Seoul",
+                                        "format": "%s"
+                                      },
+                                      "aggs": {
+                                        "transaction_summary": {
+                                          "filters": {
+                                            "filters": {
+                                              "income": {
+                                                "term": {
+                                                  "transactionType": "WITHDRAW"
+                                                }
+                                              },
+                                              "expense": {
+                                                "term": {
+                                                  "transactionType": "DEPOSIT"
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "aggs": {
+                                            "total_amount": {
+                                              "sum": {
+                                                "field": "amount"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                        """, durationStart, durationEnd, sessionId, interval, format);
+    }
 }

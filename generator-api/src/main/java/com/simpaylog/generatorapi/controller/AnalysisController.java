@@ -106,8 +106,8 @@ public class AnalysisController {
 
     @GetMapping("/transactions/info")
     public Response<?> searchTransactionInfo(
-            @RequestParam String durationStart,
-            @RequestParam String durationEnd,
+            @RequestParam(required = false) String durationStart,
+            @RequestParam(required = false) String durationEnd,
             @RequestParam String intervalType,
             @RequestParam String sessionId
     ) {

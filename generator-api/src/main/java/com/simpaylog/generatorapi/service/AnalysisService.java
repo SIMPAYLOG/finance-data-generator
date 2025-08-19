@@ -75,31 +75,27 @@ public class AnalysisService {
 
     public ChartResponse searchTransactionInfo(String sessionId, Optional<String> durationStartOpt, Optional<String> durationEndOpt, String type) {
         final String title;
-        final CalendarInterval interval;
-        final DateTimeFormatter formatter;
-        final String typeStr;
         String durationStart = null;
         String durationEnd = null;
+        String format;
+        String interval;
 
         switch (type.toLowerCase()) {
             case "monthly":
                 title = "월별 거래 요약";
-                interval = CalendarInterval.Month;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-                typeStr = "yyyy-MM";
+                interval = CalendarInterval.Month.aliases()[0];
+                format = "yyyy-MM";
                 break;
             case "weekly":
                 title = "주간 거래 요약";
-                interval = CalendarInterval.Week;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                typeStr = "yyyy-MM-dd";
+                interval = CalendarInterval.Week.aliases()[0];
+                format = "yyyy-MM-dd";
                 break;
             case "daily":
             default:
                 title = "일별 거래 요약";
-                interval = CalendarInterval.Day;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                typeStr = "yyyy-MM-dd";
+                interval = CalendarInterval.Day.aliases()[0];
+                format = "yyyy-MM-dd";
                 break;
         }
 
@@ -112,7 +108,7 @@ public class AnalysisService {
                 durationStart = durationStartOpt.get();
                 durationEnd = durationEndOpt.get();
             }
-            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, type, typeStr, interval, formatter));
+            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, interval, format));
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

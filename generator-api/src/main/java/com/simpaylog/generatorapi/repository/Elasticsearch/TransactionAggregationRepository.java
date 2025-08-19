@@ -7,6 +7,7 @@ import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -32,11 +33,14 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Repository
@@ -387,55 +391,40 @@ public class TransactionAggregationRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String intervalType, String typeStr, CalendarInterval interval, DateTimeFormatter formatter) throws IOException {
-        SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                        .index("transaction-logs")
-                        .size(0)
-                        .query(q -> q
-                                .bool(b -> b
-                                        .must(m -> m
-                                                .range(r -> r
-                                                        .date(d -> d
-                                                                .field("timestamp")
-                                                                .from(durationStart)
-                                                                .to(durationEnd)
-                                                                .timeZone("Asia/Seoul")
-                                                        )
-                                                )
-                                        )
-                                        .must(m -> m
-                                                .term(t -> t
-                                                        .field("sessionId")
-                                                        .value(sessionId)
-                                                )
-                                        )
-                                )
-                        )
-                        .aggregations("summary", aggBuilder -> aggBuilder
-                                .dateHistogram(histBuilder -> histBuilder
-                                        .field("timestamp")
-                                        .calendarInterval(interval)
-                                        .timeZone("Asia/Seoul")
-                                        .format(typeStr)
-                                )
-                                .aggregations("total_amount", subAggBuilder -> subAggBuilder
-                                        .sum(sumBuilder -> sumBuilder
-                                                .field("amount")
-                                        )
-                                )
-                        ),
-                Void.class
-        );
+    public List<ChartCategoryDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String query = QueryBuilder.transactionInfoQuery(durationStart, durationEnd, sessionId, interval, format);
+        request.setJsonEntity(query);
 
-        Map<String, ChartCategoryDto> resultsMap = response.aggregations().get("summary").dateHistogram().buckets().array().stream()
-                .collect(Collectors.toMap(
-                        DateHistogramBucket::keyAsString,
-                        b -> new ChartCategoryDto(
-                                b.keyAsString(),
-                                (long) b.aggregations().get("total_amount").sum().value(),
-                                b.docCount()
-                        )
-                ));
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+
+
+        Map<String, ChartCategoryDto> resultsMap = StreamSupport.stream(
+                root.path("aggregations").path("summary").path("buckets").spliterator(), false)
+                .map(dateBucket -> {
+                    String dateKey = dateBucket.path("key_as_string").asText();
+                    JsonNode transactionBuckets = dateBucket.path("transaction_summary").path("buckets");
+
+                    // 4. income 버킷에서 합계(total_amount) 추출
+                    // path()는 노드가 없으면 MissingNode를 반환하므로 .asDouble(0.0)으로 기본값 처리
+                    double incomeSum = transactionBuckets.path("income").path("total_amount").path("value").asDouble(0.0);
+
+                    // 5. expense 버킷에서 합계(total_amount) 추출
+                    double expenseSum = transactionBuckets.path("expense").path("total_amount").path("value").asDouble(0.0);
+
+                    // 6. 추출한 정보로 ChartCategoryDto 객체 생성
+                    return new ChartCategoryDto(
+                            dateKey,
+                            (long) incomeSum,
+                            (long) expenseSum
+                    );
+                })
+                // 7. 날짜(dateKey)를 키로, 생성된 DTO를 값으로 하는 Map으로 수집
+                .collect(Collectors.toMap(ChartCategoryDto::name, dto -> dto));
 
         List<ChartCategoryDto> completeData = new ArrayList<>();
         LocalDate startDate = LocalDate.parse(durationStart, DateTimeFormatter.ISO_LOCAL_DATE);
@@ -443,11 +432,11 @@ public class TransactionAggregationRepository {
 
         LocalDate currentDate;
         // 시작 날짜를 각 interval의 시작점으로 정렬
-        switch (intervalType.toLowerCase()) {
-            case "monthly":
+        switch (interval) {
+            case "1M":
                 currentDate = startDate.withDayOfMonth(1);
                 break;
-            case "weekly":
+            case "1W":
                 currentDate = startDate.with(java.time.DayOfWeek.MONDAY);
                 break;
             default: // daily
@@ -456,15 +445,15 @@ public class TransactionAggregationRepository {
         }
 
         while (!currentDate.isAfter(endDate)) {
-            String dateKey = currentDate.format(formatter);
+            String dateKey = currentDate.format(DateTimeFormatter.ofPattern(format));
             ChartCategoryDto chartData = resultsMap.getOrDefault(dateKey, new ChartCategoryDto(dateKey, 0L, 0L));
             completeData.add(chartData);
 
-            switch (intervalType.toLowerCase()) {
-                case "monthly":
+            switch (interval) {
+                case "1M":
                     currentDate = currentDate.plusMonths(1);
                     break;
-                case "weekly":
+                case "1W":
                     currentDate = currentDate.plusWeeks(1);
                     break;
                 default: // daily
@@ -572,7 +561,7 @@ public class TransactionAggregationRepository {
         SearchResponse<Void> minMaxResponse = elasticsearchClient.search(s -> s
                         .index("transaction-logs")
                         .size(0)
-                        .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)))
+                        .query(q -> q.term(t -> t.field("sessionId").value(sessionId)))
                         .aggregations("min_date", a -> a.min(m -> m.field("timestamp")))
                         .aggregations("max_date", a -> a.max(m -> m.field("timestamp"))),
                 Void.class
@@ -581,6 +570,9 @@ public class TransactionAggregationRepository {
         MinAggregate minAgg = minMaxResponse.aggregations().get("min_date").min();
         MaxAggregate maxAgg = minMaxResponse.aggregations().get("max_date").max();
 
-        return new MinMaxDayDto(minAgg.toString(), maxAgg.toString());
+        String durationStart = Instant.ofEpochMilli((long)minAgg.value()).atZone(ZoneId.of("Asia/Seoul")).toLocalDate().toString();
+        String durationEnd = Instant.ofEpochMilli((long)maxAgg.value()).atZone(ZoneId.of("Asia/Seoul")).toLocalDate().toString();
+
+        return new MinMaxDayDto(durationStart, durationEnd);
     }
 }
