@@ -1,9 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
-import com.simpaylog.generatorapi.dto.analysis.AmountTransaction;
-import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
-import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
-import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
+import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.dto.response.Response;
@@ -67,7 +64,7 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-transaction-type")
-    public Response<CommonChart<AmountTransaction.AmountAvgTransactionSummary>> searchTypeAmountAvgByPeriod(
+    public Response<CommonChart<AmountTransaction.AmountTransactionSummary>> searchTypeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
@@ -78,9 +75,9 @@ public class AnalysisController {
 
     @GetMapping("/all-category-info")
     public Response<?> searchAllCategoryInfo(
-            @RequestParam String sessionId,
-            @RequestParam String durationStart,
-            @RequestParam String durationEnd
+    @RequestParam String sessionId,
+    @RequestParam String durationStart,
+    @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd));
     }
@@ -92,6 +89,16 @@ public class AnalysisController {
             @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/category/by-userId")
+    public Response<CommonChart<CategoryAmountTransaction.AmountTransactionSummary>> searchUserCategoryTradeAmount(
+            @RequestParam String sessionId,
+            @RequestParam LocalDate durationStart,
+            @RequestParam LocalDate durationEnd,
+            @RequestParam Optional<Integer> userId
+    ) throws IOException {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId.orElse(null)));
     }
 
     @GetMapping("/category/by-age-group")

@@ -61,11 +61,18 @@ public class AnalysisService {
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
     }
 
-    public CommonChart<AmountTransaction.AmountAvgTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+    public CommonChart<AmountTransaction.AmountTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        AmountTransaction result = transactionAggregationRepository.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId);
+        AmountTransaction result = transactionAggregationRepository.searchUserTradeAmountByUserId(sessionId, durationStart, durationEnd, userId);
         return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "총 금액", result.results());
+    }
+
+    public CommonChart<CategoryAmountTransaction.AmountTransactionSummary> searchUserCategoryTradeAmount(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        CategoryAmountTransaction result = transactionAggregationRepository.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId);
+        return new CommonChart<>("line", "카테고리별 수입/지출", "카테고리 종류", "총 금액", result.results());
     }
 
     private void getSimulationSessionOrException(String sessionId) {

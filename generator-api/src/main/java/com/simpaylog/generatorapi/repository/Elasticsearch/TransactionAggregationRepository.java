@@ -145,7 +145,7 @@ public class TransactionAggregationRepository {
         return new HourlyTransaction(summaries);
     }
 
-    public AmountTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
+    public AmountTransaction searchUserTradeAmountByUserId(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
         String queryJson = QueryBuilder.userTradeAmountQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
@@ -157,11 +157,11 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
         JsonNode buckets = root.path("aggregations").path("by_type").path("buckets");
 
-        List<AmountTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
+        List<AmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
         for (JsonNode bucket : buckets) {
             String transactionType = bucket.path("key").asText();
             int avgAmount = bucket.path("total_amount").path("value").asInt(0);
-            summaries.add(new AmountTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
+            summaries.add(new AmountTransaction.AmountTransactionSummary(transactionType, avgAmount));
         }
 
         return new AmountTransaction(summaries);
@@ -546,5 +546,30 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
 
         return root.path("aggregations").path("age_group_summary").path("buckets");
+    }
+
+    public CategoryAmountTransaction searchUserCategoryTradeAmount(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.userCategoryAmountQuery(sessionId, from, to, userId);
+        request.setJsonEntity(queryJson);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("by_category").path("buckets");
+
+        List<CategoryAmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String category = bucket.path("key").asText();
+
+            int amount;
+            amount = bucket.path("total_amount").path("value").asInt(0);
+
+            summaries.add(new CategoryAmountTransaction.AmountTransactionSummary(category, amount));
+        }
+
+        return new CategoryAmountTransaction(summaries);
     }
 }

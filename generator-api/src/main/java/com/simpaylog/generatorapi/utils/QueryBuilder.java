@@ -349,4 +349,90 @@ public class QueryBuilder {
                         }
                         """, durationStart, durationEnd, sessionId, filtersJson);
     }
+
+    public static String userCategoryAmountQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        if (userId != null) {
+            // 특정 userId → 카테고리별 총합 (지출만 WITHDRAW 고정)
+            return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                { "term": { "userId": %d }},
+                { "term": {"sessionId": "%s"} },
+                { "term": { "transactionType": "WITHDRAW" }},
+                {
+                  "range": {
+                    "timestamp": {
+                      "gte": "%s",
+                      "lte": "%s",
+                      "time_zone": "Asia/Seoul"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "by_category": {
+              "terms": { "field": "category", "size": 1000 },
+              "aggs": {
+                "total_amount": {
+                  "sum": { "field": "amount" }
+                }
+              }
+            }
+          }
+        }
+        """.formatted(userId, sessionId, gte, lte);
+
+        } else {
+            // 전체 user → 카테고리별 합계 → 사용자 수만큼 나눈 평균
+            return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                { "term": {"sessionId": "%s"} },
+                { "term": { "transactionType": "WITHDRAW" }},
+                {
+                  "range": {
+                    "timestamp": {
+                      "gte": "%s",
+                      "lte": "%s",
+                      "time_zone": "Asia/Seoul"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "by_category": {
+              "terms": { "field": "category", "size": 1000 },
+              "aggs": {
+                "by_user": {
+                  "terms": { "field": "userId", "size": 10000 },
+                  "aggs": {
+                    "user_total_amount": { "sum": { "field": "amount" } }
+                  }
+                },
+                "total_amount": {
+                  "avg_bucket": { "buckets_path": "by_user>user_total_amount" }
+                }
+              }
+            }
+          }
+        }
+        """.formatted(sessionId, gte, lte);
+        }
+    }
+
 }

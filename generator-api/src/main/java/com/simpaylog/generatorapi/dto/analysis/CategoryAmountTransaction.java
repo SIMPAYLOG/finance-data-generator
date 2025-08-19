@@ -2,11 +2,11 @@ package com.simpaylog.generatorapi.dto.analysis;
 
 import java.util.List;
 
-public record AmountTransaction(
-        List<AmountTransactionSummary> results
+public record CategoryAmountTransaction(
+        List<CategoryAmountTransaction.AmountTransactionSummary> results
 ){
     public record AmountTransactionSummary(
-            String transactionType,
+            String categoryType,
             int amount
     ) {}
 }
