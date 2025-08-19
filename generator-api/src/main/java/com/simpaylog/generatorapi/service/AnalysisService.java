@@ -11,6 +11,7 @@ import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.DateValidator;
+import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
 import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
@@ -72,11 +73,13 @@ public class AnalysisService {
         redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public ChartResponse searchTransactionInfo(String durationStart, String durationEnd, String type, String sessionId) {
+    public ChartResponse searchTransactionInfo(String sessionId, Optional<String> durationStartOpt, Optional<String> durationEndOpt, String type) {
         final String title;
         final CalendarInterval interval;
         final DateTimeFormatter formatter;
         final String typeStr;
+        String durationStart = null;
+        String durationEnd = null;
 
         switch (type.toLowerCase()) {
             case "monthly":
@@ -101,7 +104,15 @@ public class AnalysisService {
         }
 
         try {
-            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(durationStart, durationEnd, type, interval, formatter, typeStr, sessionId));
+            if (durationStartOpt.isEmpty() || durationEndOpt.isEmpty()) {
+                MinMaxDayDto days = transactionAggregationRepository.saerchMinMaxDay(sessionId);
+                durationStart = days.minDay();
+                durationEnd = days.maxDay();
+            } else {
+                durationStart = durationStartOpt.get();
+                durationEnd = durationEndOpt.get();
+            }
+            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, type, typeStr, interval, formatter));
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
@@ -188,6 +199,15 @@ public class AnalysisService {
 
         try {
             return transactionAggregationRepository.getFinancialsByPrefereceForGroup(sessionId, idMap, durationStart, durationEnd);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    public IncomeExpenseDto searchIncomeExpense(String sessionId, String durationStart, String durationEnd) {
+        try {
+            return transactionAggregationRepository.saerchIncomeExpense(sessionId, durationStart, durationEnd);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/analysis")
@@ -110,7 +111,7 @@ public class AnalysisController {
             @RequestParam String intervalType,
             @RequestParam String sessionId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(durationStart, durationEnd, intervalType, sessionId));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(sessionId, Optional.ofNullable(durationStart), Optional.ofNullable(durationEnd), intervalType));
     }
 
 
@@ -130,5 +131,14 @@ public class AnalysisController {
             @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpenseForPreferece(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/income-expense")
+    public Response<?> searchIncomeExpense(
+            @RequestParam String sessionId,
+            @RequestParam(required = false) String durationStart,
+            @RequestParam(required = false) String durationEnd
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpense(sessionId, durationStart, durationEnd));
     }
 }

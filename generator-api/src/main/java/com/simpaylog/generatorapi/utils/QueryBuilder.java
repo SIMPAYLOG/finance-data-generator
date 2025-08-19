@@ -256,7 +256,8 @@ public class QueryBuilder {
             String sessionId,
             Map<Integer, List<Long>> ageGroupUserIds,
             String durationStart,
-            String durationEnd) {
+            String durationEnd
+    ) {
         String filtersJson = ageGroupUserIds.entrySet().stream()
                 .filter(entry -> !entry.getValue().isEmpty())
                 .map(entry -> {
@@ -307,5 +308,65 @@ public class QueryBuilder {
                           }
                         }
                         """, durationStart, durationEnd, sessionId, filtersJson);
+    }
+
+    public static String incomeExpenseQuery(
+            String sessionId,
+            String durationStart,
+            String durationEnd
+    ) {
+        return String.format(
+                """
+                                {
+                                  "size": 0,
+                                  "query": {
+                                    "bool": {
+                                      "must": [
+                                        {
+                                          "term": {
+                                            "sessionId": "%s"
+                                          }
+                                        },
+                                        {
+                                          "range": {
+                                            "timestamp": {
+                                              "from": "%s",
+                                              "to": "%s",
+                                              "time_zone": "Asia/Seoul"
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "aggs": {
+                                    "financial_summary": {
+                                      "filters": {
+                                        "filters": {
+                                          "income": {
+                                            "term": {
+                                              "transactionType": "DEPOSIT"
+                                            }
+                                          },
+                                          "expense": {
+                                            "term": {
+                                              "transactionType": "WITHDRAW"
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "aggs": {
+                                        "total_amount": {
+                                          "sum": {
+                                            "script": {
+                                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                        """, sessionId, durationStart, durationEnd);
     }
 }

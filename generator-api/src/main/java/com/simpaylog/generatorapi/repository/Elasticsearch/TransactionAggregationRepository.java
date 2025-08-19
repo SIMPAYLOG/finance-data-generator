@@ -5,6 +5,8 @@ import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
+import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -18,6 +20,7 @@ import com.simpaylog.generatorapi.dto.chart.ChartData;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
@@ -384,7 +387,7 @@ public class TransactionAggregationRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchTransactionInfo(String durationStart, String durationEnd, String intervalType, CalendarInterval interval, DateTimeFormatter formatter, String typeStr, String sessionId) throws IOException {
+    public List<ChartCategoryDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String intervalType, String typeStr, CalendarInterval interval, DateTimeFormatter formatter) throws IOException {
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                         .index("transaction-logs")
                         .size(0)
@@ -546,5 +549,38 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
 
         return root.path("aggregations").path("age_group_summary").path("buckets");
+    }
+
+    public IncomeExpenseDto saerchIncomeExpense(String sessionId, String durationStart, String durationEnd) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String query = QueryBuilder.incomeExpenseQuery(sessionId, durationStart == null? "0000-01-01" : durationStart, durationEnd == null? "9999-12-31" : durationEnd);
+        request.setJsonEntity(query);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult).get("aggregations").get("financial_summary").get("buckets");
+
+        long totalIncome = root.get("income").get("total_amount").get("value").longValue();
+        long totalExpense = root.get("expense").get("total_amount").get("value").longValue();
+
+        return new IncomeExpenseDto(totalIncome, totalExpense, totalIncome - totalExpense);
+    }
+
+    public MinMaxDayDto saerchMinMaxDay(String sessionId) throws IOException {
+        SearchResponse<Void> minMaxResponse = elasticsearchClient.search(s -> s
+                        .index("transaction-logs")
+                        .size(0)
+                        .query(q -> q.term(t -> t.field("sessionId.keyword").value(sessionId)))
+                        .aggregations("min_date", a -> a.min(m -> m.field("timestamp")))
+                        .aggregations("max_date", a -> a.max(m -> m.field("timestamp"))),
+                Void.class
+        );
+
+        MinAggregate minAgg = minMaxResponse.aggregations().get("min_date").min();
+        MaxAggregate maxAgg = minMaxResponse.aggregations().get("max_date").max();
+
+        return new MinMaxDayDto(minAgg.toString(), maxAgg.toString());
     }
 }
