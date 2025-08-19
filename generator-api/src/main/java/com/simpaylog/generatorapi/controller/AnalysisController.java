@@ -1,6 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
-import com.simpaylog.generatorapi.dto.analysis.AmountAvgTransaction;
+import com.simpaylog.generatorapi.dto.analysis.AmountTransaction;
 import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/analysis")
@@ -66,13 +67,13 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-transaction-type")
-    public Response<CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary>> searchTypeAmountAvgByPeriod(
+    public Response<CommonChart<AmountTransaction.AmountAvgTransactionSummary>> searchTypeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam Integer userId
+            @RequestParam Optional<Integer> userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId.orElse(null)));
     }
 
     @GetMapping("/all-category-info")

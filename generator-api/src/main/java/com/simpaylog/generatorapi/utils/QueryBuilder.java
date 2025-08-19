@@ -207,50 +207,91 @@ public class QueryBuilder {
                 """.formatted(gte, lte, sessionId);
     }
 
-    public static String userTradeAmountAvgQuery(String sessionId, LocalDate from, LocalDate to, int userId) {
+    public static String userTradeAmountQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
         String lte = end.format(formatter);
 
-        return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        { "terms": { "transactionType": ["WITHDRAW", "DEPOSIT"] }},
-                        { "term": { "userId": %d }},
-                        { "term": {"sessionId": "%s"} },
-                        {
-                          "range": {
-                            "timestamp": {
-                              "gte": "%s",
-                              "lte": "%s",
-                              "time_zone": "Asia/Seoul"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "aggs": {
-                    "by_type": {
-                      "terms": {
-                        "field": "transactionType"
-                      },
-                      "aggs": {
-                        "average_amount": {
-                          "avg": {
-                            "field": "amount"
-                          }
+        if (userId != null) {
+            // 특정 userId → transactionType별 총합
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": { "userId": %d }},
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
                         }
                       }
                     }
+                  ]
+                }
+              },
+              "aggs": {
+                "by_type": {
+                  "terms": { "field": "transactionType" },
+                  "aggs": {
+                    "total_amount": {
+                      "sum": { "field": "amount" }
+                    }
                   }
                 }
-                """.formatted(userId, sessionId, gte, lte);
+              }
+            }
+            """.formatted(userId, sessionId, gte, lte);
+
+        } else {
+            // 전체 user → transactionType별, 사용자별 합계 → 사용자 수만큼 나눈 평균
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "by_type": {
+                  "terms": { "field": "transactionType" },
+                  "aggs": {
+                    "by_user": {
+                      "terms": { "field": "userId", "size": 10000 },
+                      "aggs": {
+                        "user_total_amount": { "sum": { "field": "amount" } }
+                      }
+                    },
+                    "total_amount": {
+                      "avg_bucket": { "buckets_path": "by_user>user_total_amount" }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(sessionId, gte, lte);
+        }
     }
+
+
+
 
     public static String incomeExpenseByAgeGroupQuery(
             String sessionId,

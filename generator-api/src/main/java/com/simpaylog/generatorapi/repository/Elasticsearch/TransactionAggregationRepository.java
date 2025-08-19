@@ -145,9 +145,9 @@ public class TransactionAggregationRepository {
         return new HourlyTransaction(summaries);
     }
 
-    public AmountAvgTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, int userId) throws IOException {
+    public AmountTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.userTradeAmountAvgQuery(sessionId, from, to, userId);
+        String queryJson = QueryBuilder.userTradeAmountQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
 
         Response response = elasticsearchRestClient.performRequest(request);
@@ -157,14 +157,14 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
         JsonNode buckets = root.path("aggregations").path("by_type").path("buckets");
 
-        List<AmountAvgTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
+        List<AmountTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
         for (JsonNode bucket : buckets) {
             String transactionType = bucket.path("key").asText();
-            int avgAmount = bucket.path("average_amount").path("value").asInt(0);
-            summaries.add(new AmountAvgTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
+            int avgAmount = bucket.path("total_amount").path("value").asInt(0);
+            summaries.add(new AmountTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
         }
 
-        return new AmountAvgTransaction(summaries);
+        return new AmountTransaction(summaries);
     }
 
 

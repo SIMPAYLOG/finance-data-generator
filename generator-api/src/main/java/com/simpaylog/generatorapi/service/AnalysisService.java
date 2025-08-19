@@ -61,11 +61,11 @@ public class AnalysisService {
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
     }
 
-    public CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+    public CommonChart<AmountTransaction.AmountAvgTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        AmountAvgTransaction result = transactionAggregationRepository.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId);
-        return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "평균 금액", result.results());
+        AmountTransaction result = transactionAggregationRepository.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId);
+        return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "총 금액", result.results());
     }
 
     private void getSimulationSessionOrException(String sessionId) {
