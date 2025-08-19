@@ -165,63 +165,101 @@ public class TransactionService {
 
     private List<OneTimeEvent> prepareOneTimeEvents(TransactionUserDto user, LocalDate date) {
         List<OneTimeEvent> events = new ArrayList<>();
-
-        // 1. 급여 입금 + 저축 로직
-        int numberOfPaydays = redisPaydayRepository.numberOfPayDays(user.sessionId(), user.userId(), YearMonth.from(date));
-        if (redisPaydayRepository.isPayDay(user.sessionId(), user.userId(), YearMonth.from(date), date)) {
-            double averageSalary = user.incomeValue().doubleValue();
-            WageType userWageType = user.wageType();
-            BigDecimal wage = BigDecimal.valueOf(gaussianRandom(averageSalary / numberOfPaydays, averageSalary * userWageType.getVolatility() / numberOfPaydays));
-            BigDecimal finalWage = MoneyUtil.roundTo10(wage);
-            LocalDateTime payTime = date.atTime(ThreadLocalRandom.current().nextInt(7) + 8, ThreadLocalRandom.current().nextInt(60));
-            TimedEvent wageEvent = new TimedEvent(
-                    payTime,
-                    () -> {
-                        accountService.deposit(user.userId(), finalWage, payTime);
-                        generateMessage(TransactionLog.of(user.userId(), user.sessionId(), payTime, TransactionType.DEPOSIT, "급여 입금", finalWage));
-                    }
-            );
-            events.add(wageEvent);
-            LocalDateTime saveTime = date.atTime(LocalTime.from(payTime.plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1)));
-            TimedEvent saveEvent = new TimedEvent(
-                    saveTime,
-                    () -> accountService.transferToSavings(user.userId(), finalWage, user.savingRate(), saveTime)
-            );
-            events.add(saveEvent);
-        }
-
-        // 2. 이자 발생(월말 발생)
-        if (date.isEqual(YearMonth.of(date.getYear(), date.getMonth()).atEndOfMonth())) {
-            LocalDateTime interestTime = date.atTime(ThreadLocalRandom.current().nextInt(4) + 8, ThreadLocalRandom.current().nextInt(60));
-            TimedEvent interestEvent = new TimedEvent(
-                    interestTime,
-                    () -> accountService.applyMonthlyInterest(user.userId(), interestTime)
-            );
-            events.add(interestEvent);
-        }
-        // 3. 고정 지출/수입(Redis에서 가져오기)
-        List<FixedObligation> items = fixedObligationRepository.findAll(user.sessionId(), user.userId());
-        for (FixedObligation item : items) {
-            if (date.isBefore(LocalDate.parse(item.effectiveFrom()))) continue;
-            if (item.effectiveTo() != null && date.isAfter(LocalDate.parse(item.effectiveTo()))) continue;
-            if (item.recurrence().dayOfMonth() == date.getDayOfMonth()) {
-                LocalDateTime time = date.atTime(9, 30);
-                TimedEvent fixedEvent = new TimedEvent(
-                        time,
-                        () -> {
-                            if (item.transactionType() == TransactionType.DEPOSIT) {
-                                accountService.deposit(user.userId(), item.amount(), time);
-                            } else {
-                                accountService.withdraw(user.userId(), item.amount(), time);
-                                generateMessage(TransactionLog.of(user.userId(), user.sessionId(), time, TransactionType.WITHDRAW, item.description(), item.amount()));
-                            }
-                        }
-                );
-                events.add(fixedEvent);
-            }
-        }
+        events.addAll(preparePaydayEvents(user, date));
+        events.addAll(prepareInterestEvents(user, date));
+        events.addAll(prepareFixedObligationEvents(user, date));
         events.sort(Comparator.comparing(OneTimeEvent::time)); // 시간순 정렬
         return events;
+    }
+
+    // 1. 급여 입금 + 저축 로직
+    private List<OneTimeEvent> preparePaydayEvents(TransactionUserDto user, LocalDate date) {
+        List<OneTimeEvent> events = new ArrayList<>();
+        YearMonth ym = YearMonth.from(date);
+        int numberOfPaydays = redisPaydayRepository.numberOfPayDays(user.sessionId(), user.userId(), ym);
+        if (!redisPaydayRepository.isPayDay(user.sessionId(), user.userId(), ym, date)) return events;
+
+        double avg = user.incomeValue().doubleValue();
+        WageType type = user.wageType();
+        BigDecimal wage = BigDecimal.valueOf(
+                gaussianRandom(avg / numberOfPaydays, avg * type.getVolatility() / numberOfPaydays)
+        );
+        BigDecimal finalWage = MoneyUtil.roundTo10(wage);
+
+        LocalDateTime payTime = date.atTime(ThreadLocalRandom.current().nextInt(7) + 8,
+                ThreadLocalRandom.current().nextInt(60));
+        events.add(new TimedEvent(
+                payTime,
+                () -> {
+                    accountService.deposit(user.userId(), finalWage, payTime);
+                    generateMessage(TransactionLog.of(
+                            user.userId(), user.sessionId(), payTime, TransactionType.DEPOSIT, "급여 입금", finalWage
+                    ));
+                }
+        ));
+        LocalDateTime saveTime = payTime.plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1);
+        events.add(new TimedEvent(
+                saveTime,
+                () -> accountService.transferToSavings(user.userId(), finalWage, user.savingRate(), saveTime)
+        ));
+
+        return events;
+    }
+    // 2. 이자 발생(월말 발생)
+    private List<OneTimeEvent> prepareInterestEvents(TransactionUserDto user, LocalDate date) {
+        if (!date.equals(YearMonth.from(date).atEndOfMonth())) return List.of();
+
+        LocalDateTime interestTime = date.atTime(ThreadLocalRandom.current().nextInt(4) + 8,
+                ThreadLocalRandom.current().nextInt(60));
+        return List.of(new TimedEvent(
+                interestTime,
+                () -> accountService.applyMonthlyInterest(user.userId(), interestTime)
+        ));
+    }
+
+    // 3. 고정 지출/수입(Redis에서 가져오기)
+    private List<OneTimeEvent> prepareFixedObligationEvents(TransactionUserDto user, LocalDate date) {
+        List<FixedObligation> items = fixedObligationRepository.findAll(user.sessionId(), user.userId());
+        if (items.isEmpty()) return List.of();
+
+        List<OneTimeEvent> events = new ArrayList<>();
+        for (FixedObligation item : items) {
+            if (!isWithinEffective(item, date)) continue;
+            if (!isRecurrenceHit(item, date)) continue; // 현재는 dayOfMonth만 체크
+
+            LocalDateTime time = date.atTime(9, 30);
+            if (item.transactionType() == TransactionType.DEPOSIT) {
+                events.add(new TimedEvent(
+                        time, () -> accountService.deposit(user.userId(), item.amount(), time)
+                ));
+            } else {
+                events.add(new TimedEvent(
+                        time, () -> {
+                    accountService.withdraw(user.userId(), item.amount(), time);
+                    generateMessage(TransactionLog.of(
+                            user.userId(), user.sessionId(), time, TransactionType.WITHDRAW,
+                            item.description(), item.amount()
+                    ));
+                }
+                ));
+            }
+        }
+        return events;
+    }
+
+    private boolean isWithinEffective(FixedObligation item, LocalDate date) {
+        LocalDate from = LocalDate.parse(item.effectiveFrom());
+        if (date.isBefore(from)) return false;
+        if (item.effectiveTo() != null && !item.effectiveTo().isBlank()) {
+            LocalDate to = LocalDate.parse(item.effectiveTo());
+            if (date.isAfter(to)) return false;
+        }
+        return true;
+    }
+
+    private boolean isRecurrenceHit(FixedObligation item, LocalDate date) {
+        Integer dom = item.recurrence().dayOfMonth();
+        return dom != null && dom == date.getDayOfMonth();
     }
 
     private void generateMessage(TransactionLog transactionLog) {
