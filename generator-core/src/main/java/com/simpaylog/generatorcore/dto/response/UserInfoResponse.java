@@ -4,6 +4,7 @@ import com.simpaylog.generatorcore.entity.User;
 import com.simpaylog.generatorcore.enums.Gender;
 
 public record UserInfoResponse(
+        Long userId,
         String name,
         Gender gender,
         Integer age,
@@ -12,6 +13,7 @@ public record UserInfoResponse(
 
     public static UserInfoResponse userToUserInfoResponse(User user) {
         return new UserInfoResponse(
+                user.getId(),
                 user.getName(),
                 user.getGender(),
                 user.getAge(),
