@@ -85,6 +85,120 @@ public class QueryBuilder {
                 """.formatted(userIdQuery, sessionId, gte, lte, interval);
     }
 
+    public static String periodAmountQuery(String sessionId, LocalDate from, LocalDate to, String interval, Integer userId) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        if (userId != null) {
+            // 특정 userId
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": { "userId": %d } },
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "results": {
+                  "date_histogram": {
+                    "field": "timestamp",
+                    "calendar_interval": "%s",
+                    "time_zone": "Asia/Seoul",
+                    "format": "yyyy-MM-dd"
+                  },
+                  "aggs": {
+                    "total_spent": {
+                      "filter": { "term": { "transactionType": "WITHDRAW" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_income": {
+                      "filter": { "term": { "transactionType": "DEPOSIT" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(userId, sessionId, gte, lte, interval);
+
+        } else {
+            // 전체 사용자 → 합계 / 유저 수로 평균
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "results": {
+                  "date_histogram": {
+                    "field": "timestamp",
+                    "calendar_interval": "%s",
+                    "time_zone": "Asia/Seoul",
+                    "format": "yyyy-MM-dd"
+                  },
+                  "aggs": {
+                    "user_count": {
+                      "cardinality": { "field": "userId" }
+                    },
+                    "total_spent_sum": {
+                      "filter": { "term": { "transactionType": "WITHDRAW" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_spent": {
+                      "bucket_script": {
+                        "buckets_path": { "total": "total_spent_sum>amount_sum", "users": "user_count" },
+                        "script": "params.total / params.users"
+                      }
+                    },
+                    "total_income_sum": {
+                      "filter": { "term": { "transactionType": "DEPOSIT" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_income": {
+                      "bucket_script": {
+                        "buckets_path": { "total": "total_income_sum>amount_sum", "users": "user_count" },
+                        "script": "params.total / params.users"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(sessionId, gte, lte, interval);
+        }
+    }
+
+
+
     public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();

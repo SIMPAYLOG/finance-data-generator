@@ -35,10 +35,22 @@ public class AnalysisService {
     private final UserRepository userRepository;
 
     public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
-        getSimulationSessionOrException(sessionId);
+//        getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
         AggregationInterval aggregationInterval = AggregationInterval.from(interval);
         PeriodTransaction result = transactionAggregationRepository.searchByPeriod(sessionId, durationStart, durationEnd, aggregationInterval, userId);
+        return switch (aggregationInterval) {
+            case DAY -> new CommonChart<>("line", "일 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+            case WEEK -> new CommonChart<>("line", "주 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+            case MONTH -> new CommonChart<>("line", "월 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+        };
+    }
+
+    public CommonChart<PeriodTransaction.PTSummary> searchPeriodAmount(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        AggregationInterval aggregationInterval = AggregationInterval.from(interval);
+        PeriodTransaction result = transactionAggregationRepository.searchPeriodAmount(sessionId, durationStart, durationEnd, aggregationInterval, userId);
         return switch (aggregationInterval) {
             case DAY -> new CommonChart<>("line", "일 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
             case WEEK -> new CommonChart<>("line", "주 별 트랜잭션 발생 금액", "날짜", "금액", result.results());

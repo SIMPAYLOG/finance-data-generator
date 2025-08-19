@@ -29,20 +29,22 @@ public class AnalysisController {
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam String interval
+            @RequestParam String interval,
+            @RequestParam Optional<Integer> userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, null));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId.orElse(null)));
     }
 
-    @GetMapping("/search-by-period-and-id")
-    public Response<CommonChart<PeriodTransaction.PTSummary>> searchByPeriod(
+    //전체 - 개인 월별 수입/지출 금액 비교
+    @GetMapping("/search-period-amount")
+    public Response<CommonChart<PeriodTransaction.PTSummary>> searchPeriodAmount(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
             @RequestParam String interval,
-            @RequestParam Integer userId
+            @RequestParam Optional<Integer> userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchPeriodAmount(sessionId, durationStart, durationEnd, interval, userId.orElse(null)));
     }
 
     @GetMapping("/time-heatmap")
