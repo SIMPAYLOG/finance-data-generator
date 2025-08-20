@@ -1,5 +1,7 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorcore.cache.dto.DecileStat;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.FixedObligation;
@@ -12,19 +14,19 @@ import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
-import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
-import com.simpaylog.generatorcore.cache.dto.DecileStat;
+import com.simpaylog.generatorcore.utils.MoneyUtil;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
-import com.simpaylog.generatorcore.utils.MoneyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -66,7 +68,6 @@ public class TransactionService {
         }
     }
 
-    // TODO: 필요하면 성향 정보 추가
     // 유저의 평균 급여, segBudget
     public static Map<CategoryType, BigDecimal> readjustSegBudget(DecileStat decileStat, BigDecimal incomeValue) {
         Objects.requireNonNull(decileStat, "decileStat is required");
@@ -136,12 +137,16 @@ public class TransactionService {
 
                 // 3. 발생 가능한 소비인지 점검하기
                 Account checking = accountService.getAccountByType(dto.userId(), AccountType.CHECKING);
-                if (shouldSkipByOverdraft(checking)) continue;
+                if (shouldSkipByOverdraft(checking)) {
+                    continue;
+                }
 
                 // 4. 유저가 해당 카테고리에서 소비한 상품 및 금액 추출
                 Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked);
                 BigDecimal scaledAmount = scaler.scale(picked, userTrade.cost());
-                if (scaledAmount.signum() <= 0) continue; // 0원일 경우 건너뜀
+                if (scaledAmount.signum() <= 0) { // 0원일 경우 건너뜀
+                    continue;
+                }
                 // 5. 결제 요청
                 if (accountService.withdraw(dto.userId(), scaledAmount, curTime)) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
                     lastUsedMap.put(picked, curTime);
@@ -205,6 +210,7 @@ public class TransactionService {
 
         return events;
     }
+
     // 2. 이자 발생(월말 발생)
     private List<OneTimeEvent> prepareInterestEvents(TransactionUserDto user, LocalDate date) {
         if (!date.equals(YearMonth.from(date).atEndOfMonth())) return List.of();
@@ -228,11 +234,17 @@ public class TransactionService {
             if (!isRecurrenceHit(item, date)) continue; // 현재는 dayOfMonth만 체크
 
             LocalDateTime time = date.atTime(9, 30);
-            if (item.transactionType() == TransactionType.DEPOSIT) {
+            if (item.transactionType() == TransactionType.DEPOSIT) {  // 수입
                 events.add(new TimedEvent(
-                        time, () -> accountService.deposit(user.userId(), item.amount(), time)
+                        time, () -> {
+                    accountService.deposit(user.userId(), item.amount(), time);
+                    generateMessage(TransactionLog.of(
+                            user.userId(), user.sessionId(), time, TransactionType.DEPOSIT,
+                            item.description(), item.amount()
+                    ));
+                }
                 ));
-            } else {
+            } else { // 지출
                 events.add(new TimedEvent(
                         time, () -> {
                     accountService.withdraw(user.userId(), item.amount(), time);
@@ -265,9 +277,9 @@ public class TransactionService {
     private void generateMessage(TransactionLog transactionLog) {
         try {
             transactionLogProducer.send(transactionLog);
-            log.info("{}",transactionLog);
+            log.info("{}", transactionLog);
         } catch (Exception e) {
-            // TODO: 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
+            // 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
             log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
         }
     }

@@ -1,5 +1,8 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorcore.cache.dto.DecileStat;
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
@@ -7,13 +10,11 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
+import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.TestConfig;
-import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
-import com.simpaylog.generatorcore.cache.dto.DecileStat;
 import com.simpaylog.generatorsimulator.dto.Trade;
-import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import org.junit.jupiter.api.Test;
@@ -55,6 +56,8 @@ class TransactionServiceTest extends TestConfig {
     AccountService accountService;
     @MockitoBean
     RedisPaydayRepository redisPaydayRepository;
+    @MockitoBean
+    FixedObligationRepository fixedObligationRepository;
 
     // 0. 정상 케이스
     @Test

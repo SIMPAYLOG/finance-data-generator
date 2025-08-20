@@ -26,20 +26,19 @@ public final class SimpleEnvelopeScaler {
         this.lamdaMax = lamdaMax;
 
         this.remainingBudget.putAll(budget);
-        for(Map.Entry<CategoryType, Integer> entry : events.entrySet()) {
+        for (Map.Entry<CategoryType, Integer> entry : events.entrySet()) {
             this.remainingEvents.put(entry.getKey(), Math.max(1, entry.getValue()));
         }
     }
 
     public BigDecimal scale(CategoryType category, BigDecimal sampleAmount) {
-        if(sampleAmount == null || sampleAmount.signum() <= 0) {
+        if (sampleAmount == null || sampleAmount.signum() <= 0) {
             return BigDecimal.ZERO;
         }
-
         BigDecimal remainingAmount = remainingBudget.getOrDefault(category, BigDecimal.ZERO); // 남은 예산
-        int remainCnt = Math.max(1, remainingEvents.getOrDefault(category, 1));
+        int remainCnt = Math.max(1, remainingEvents.getOrDefault(category, 1));  // 예산이 남아있다면 발생 가능
 
-        if(remainingAmount.signum() <= 0) { // 남은 예산이 0원인 경우
+        if (remainingAmount.signum() <= 0) { // 남은 예산이 0원인 경우
             remainingEvents.put(category, Math.max(0, remainCnt - 1));
             return BigDecimal.ZERO;
         }
@@ -52,7 +51,7 @@ public final class SimpleEnvelopeScaler {
         BigDecimal cost = sampleAmount.multiply(BigDecimal.valueOf(lambda)).setScale(0, RoundingMode.HALF_UP);
         BigDecimal finalAmount = MoneyUtil.roundTo10(cost);
         BigDecimal nextAmount = remainingAmount.subtract(finalAmount);
-        if(nextAmount.signum() < 0) nextAmount = BigDecimal.ZERO;
+        if (nextAmount.signum() < 0) nextAmount = BigDecimal.ZERO;
         remainingBudget.put(category, nextAmount);
         remainingEvents.put(category, Math.max(0, remainCnt - 1));
 
