@@ -1,7 +1,10 @@
 package com.simpaylog.generatorapi.controller;
 
 import com.simpaylog.generatorapi.dto.analysis.*;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
+import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
+import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.service.AnalysisService;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/analysis")
@@ -50,18 +54,20 @@ public class AnalysisController {
     public Response<CommonChart<TimeHeatmapCell.TCSummary>> searchByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
-            @RequestParam LocalDate durationEnd
+            @RequestParam LocalDate durationEnd,
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/amount-avg/by-hour")
-    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
+    public Response<List<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
-            @RequestParam LocalDate durationEnd
+            @RequestParam LocalDate durationEnd,
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeAmountAvgByPeriod(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchHourAmountAvgByPeriod(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/amount-avg/by-transaction-type")
@@ -78,18 +84,20 @@ public class AnalysisController {
     public Response<?> searchAllCategoryInfo(
     @RequestParam String sessionId,
     @RequestParam String durationStart,
-    @RequestParam String durationEnd
+    @RequestParam String durationEnd,
+    @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-volume-top5")
     public Response<?> searchCategoryByVomlumeTop5(
             @RequestParam String sessionId,
             @RequestParam String durationStart,
-            @RequestParam String durationEnd
+            @RequestParam String durationEnd,
+            @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-userId")
@@ -108,18 +116,19 @@ public class AnalysisController {
             @RequestParam String durationStart,
             @RequestParam String durationEnd
     ) {
-        Map<String, List<ChartData>> response = analysisService.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, durationStart, durationEnd);
+        Map<String, List<ChartIncomeCountDto>> response = analysisService.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, durationStart, durationEnd);
         return Response.success(HttpStatus.OK.value(), response);
     }
 
     @GetMapping("/transactions/info")
     public Response<?> searchTransactionInfo(
-            @RequestParam String durationStart,
-            @RequestParam String durationEnd,
+            @RequestParam(required = false) String durationStart,
+            @RequestParam(required = false) String durationEnd,
             @RequestParam String intervalType,
-            @RequestParam String sessionId
+            @RequestParam String sessionId,
+            @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(durationStart, durationEnd, intervalType, sessionId));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(sessionId, Optional.ofNullable(durationStart), Optional.ofNullable(durationEnd), intervalType, userId));
     }
 
 
@@ -139,5 +148,15 @@ public class AnalysisController {
             @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpenseForPreferece(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/income-expense")
+    public Response<?> searchIncomeExpense(
+            @RequestParam String sessionId,
+            @RequestParam(required = false) String durationStart,
+            @RequestParam(required = false) String durationEnd,
+            @RequestParam(required = false) Integer userId
+    ) {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpense(sessionId, durationStart, durationEnd, userId));
     }
 }

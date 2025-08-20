@@ -76,4 +76,9 @@ public class UserController {
     public Response<PreferenceListResponse> getPreference() {
         return Response.success(HttpStatus.OK.value(), userService.getPreferenceList());
     }
+
+    @GetMapping("count")
+    public Response<UserCntResponse> getUserCnt(@RequestParam String sessionId) {
+        return Response.success(HttpStatus.OK.value(), userService.getUserCnt(sessionId));
+    }
 }

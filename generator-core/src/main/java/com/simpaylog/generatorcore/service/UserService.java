@@ -175,4 +175,8 @@ public class UserService {
         }
         return userIds;
     }
+
+    public UserCntResponse getUserCnt(String sessionId) {
+        return new UserCntResponse(userRepository.countUsersBySessionId(sessionId));
+    }
 }

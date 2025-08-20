@@ -199,126 +199,163 @@ public class QueryBuilder {
 
 
 
-    public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
+    public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
         String lte = end.format(formatter);
+
+        // userId 조건 문자열
+        String userIdTerm = userId != null ? ", { \"term\": { \"userId\": %d } }".formatted(userId) : "";
+
         return """
-                {
-                    "size": 0,
-                    "query": {
-                      "bool": {
-                        "must": [
-                          { "term": { "sessionId": "%s" }  },
-                          { "term": { "transactionType": "WITHDRAW" } },
-                          {
-                            "range": {
-                              "timestamp": {
-                                "gte": "%s",
-                                "lte": "%s",
-                                "time_zone": "Asia/Seoul"
-                              }
-                            }
+            {
+                "size": 0,
+                "query": {
+                  "bool": {
+                    "must": [
+                      { "term": { "sessionId": "%s" }  },
+                      { "term": { "transactionType": "WITHDRAW" } }%s,
+                      {
+                        "range": {
+                          "timestamp": {
+                            "gte": "%s",
+                            "lte": "%s",
+                            "time_zone": "Asia/Seoul"
                           }
-                        ]
+                        }
                       }
+                    ]
+                  }
+                },
+                "aggs": {
+                  "by_day": {
+                    "terms": {
+                      "script": {
+                        "lang": "painless",
+                        "source": "def dow = doc['timestamp'].value.getDayOfWeekEnum().getValue(); dow = dow + 1 > 7 ? dow + 1 - 7 : dow + 1; return dow;"
+                      },
+                      "size": 7,
+                      "order": { "_key": "asc" }
                     },
                     "aggs": {
-                      "by_day": {
+                      "by_hour": {
                         "terms": {
                           "script": {
-                                  "lang": "painless",
-                                  "source": "def dow = doc['timestamp'].value.getDayOfWeekEnum().getValue(); dow = dow + 1 > 7 ? dow + 1 - 7 : dow + 1; return dow;"
-                                },
-                          "size": 7,
-                          "order": { "_key": "asc" }
-                        },
-                        "aggs": {
-                          "by_hour": {
-                            "terms": {
-                              "script": {
-                                            "lang": "painless",
-                                            "source": "def hour = doc['timestamp'].value.getHour() + 9; return hour >= 24 ? hour - 24 : hour;"
-                                          },
-                              "size": 24,
-                              "order": { "_key": "asc" }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                """.formatted(sessionId, gte, lte);
-    }
-
-    public static String hourAggregationQuery(String sessionId, LocalDate from, LocalDate to) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        LocalDateTime start = from.atStartOfDay();
-        LocalDateTime end = to.atTime(23, 59, 59);
-        String gte = start.format(formatter);
-        String lte = end.format(formatter);
-
-        return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        {
-                          "range": {
-                            "timestamp": {
-                              "gte": "%s",
-                              "lte": "%s",
-                              "time_zone": "Asia/Seoul"
-                            }
-                          }
-                        },
-                        {
-                          "term": {
-                            "sessionId": "%s"
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "aggs": {
-                    "by_transaction_type": {
-                      "terms": {
-                        "field": "transactionType",
-                        "size": 10
-                      },
-                      "aggs": {
-                        "by_hour": {
-                          "terms": {
-                            "script": {
-                              "lang": "painless",
-                              "source": "ZonedDateTime kst = ZonedDateTime.ofInstant(doc['timestamp'].value.toInstant(), ZoneId.of('Asia/Seoul')); return kst.getHour();"
-                            },
-                            "size": 24,
-                            "order": {
-                              "_key": "asc"
-                            }
+                            "lang": "painless",
+                            "source": "def hour = doc['timestamp'].value.getHour() + 9; return hour >= 24 ? hour - 24 : hour;"
                           },
-                          "aggs": {
-                            "transaction_count": {
-                              "value_count": {
-                                "field": "uuid"
-                              }
-                            },
-                            "average_amount": {
-                              "avg": {
-                                "field": "amount"
-                              }
-                            }
-                          }
+                          "size": 24,
+                          "order": { "_key": "asc" }
                         }
                       }
                     }
                   }
                 }
-                """.formatted(gte, lte, sessionId);
+              }
+            """.formatted(sessionId, userIdTerm, gte, lte);
+    }
+
+
+    public static String hourAggregationQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        // userId 조건 추가
+        String userIdQuery = userId != null ? """
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
+        // bool must 내부 term 배열 구성
+        String mustQuery = userId != null ? """
+        [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": "%s",
+                  "lte": "%s",
+                  "time_zone": "Asia/Seoul"
+                }
+              }
+            },
+            {
+              "term": {
+                "sessionId": "%s"
+              }
+            },
+            %s
+        ]
+    """.formatted(gte, lte, sessionId, userIdQuery) : """
+        [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": "%s",
+                  "lte": "%s",
+                  "time_zone": "Asia/Seoul"
+                }
+              }
+            },
+            {
+              "term": {
+                "sessionId": "%s"
+              }
+            }
+        ]
+    """.formatted(gte, lte, sessionId);
+
+        return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": %s
+            }
+          },
+          "aggs": {
+            "by_transaction_type": {
+              "terms": {
+                "field": "transactionType",
+                "size": 10
+              },
+              "aggs": {
+                "by_hour": {
+                  "terms": {
+                    "script": {
+                      "lang": "painless",
+                      "source": "ZonedDateTime kst = ZonedDateTime.ofInstant(doc['timestamp'].value.toInstant(), ZoneId.of('Asia/Seoul')); return kst.getHour();"
+                    },
+                    "size": 24,
+                    "order": {
+                      "_key": "asc"
+                    }
+                  },
+                  "aggs": {
+                    "transaction_count": {
+                      "value_count": {
+                        "field": "uuid"
+                      }
+                    },
+                    "average_amount": {
+                      "avg": {
+                        "field": "amount"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+    """.formatted(mustQuery);
     }
 
     public static String userTradeAmountQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
@@ -411,7 +448,8 @@ public class QueryBuilder {
             String sessionId,
             Map<Integer, List<Long>> ageGroupUserIds,
             String durationStart,
-            String durationEnd) {
+            String durationEnd
+    ) {
         String filtersJson = ageGroupUserIds.entrySet().stream()
                 .filter(entry -> !entry.getValue().isEmpty())
                 .map(entry -> {
@@ -547,6 +585,168 @@ public class QueryBuilder {
         }
         """.formatted(sessionId, gte, lte);
         }
+    }
+
+
+    public static String incomeExpenseQuery(
+            String sessionId,
+            String durationStart,
+            String durationEnd,
+            Integer userId
+    ) {
+        // userId 조건 문자열
+        String userIdTerm = userId != null ? """
+        ,
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
+        return String.format(
+                """
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "term": {
+                            "sessionId": "%s"
+                          }
+                        }%s,
+                        {
+                          "range": {
+                            "timestamp": {
+                              "from": "%s",
+                              "to": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "financial_summary": {
+                      "filters": {
+                        "filters": {
+                          "income": {
+                            "term": {
+                              "transactionType": "DEPOSIT"
+                            }
+                          },
+                          "expense": {
+                            "term": {
+                              "transactionType": "WITHDRAW"
+                            }
+                          }
+                        }
+                      },
+                      "aggs": {
+                        "total_amount": {
+                          "sum": {
+                            "script": {
+                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """,
+                sessionId,
+                userIdTerm,
+                durationStart,
+                durationEnd
+        );
+    }
+
+
+    public static String transactionInfoQuery(
+            String durationStart,
+            String durationEnd,
+            String sessionId,
+            String interval,
+            String format,
+            Integer userId
+    ) {
+        // userId 조건 문자열
+        String userIdTerm = userId != null ? """
+        ,
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
+        return String.format(
+                """
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "range": {
+                            "timestamp": {
+                              "from": "%s",
+                              "to": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
+                          }
+                        },
+                        {
+                          "term": {
+                            "sessionId": {
+                              "value": "%s"
+                            }
+                          }
+                        }%s
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "summary": {
+                      "date_histogram": {
+                        "field": "timestamp",
+                        "calendar_interval": "%s",
+                        "time_zone": "Asia/Seoul",
+                        "format": "%s"
+                      },
+                      "aggs": {
+                        "transaction_summary": {
+                          "filters": {
+                            "filters": {
+                              "income": {
+                                "term": {
+                                  "transactionType": "DEPOSIT"
+                                }
+                              },
+                              "expense": {
+                                "term": {
+                                  "transactionType": "WITHDRAW"
+                                }
+                              }
+                            }
+                          },
+                          "aggs": {
+                            "total_amount": {
+                              "sum": {
+                                "field": "amount"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """, durationStart, durationEnd, sessionId, userIdTerm, interval, format
+        );
     }
 
 }
