@@ -72,6 +72,48 @@ public class TransactionAggregationRepository {
         return new PeriodTransaction(interval, results);
     }
 
+    public PeriodTransaction searchPeriodAmount(String sessionId, LocalDate from, LocalDate to, AggregationInterval interval, Integer userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.periodAmountQuery(sessionId, from, to, interval.getCalendarInterval(), userId);
+        request.setJsonEntity(queryJson);
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("results").path("buckets");
+
+        List<PeriodTransaction.PTSummary> results = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String date = bucket.path("key_as_string").asText();
+
+            int totalSpentCount;
+            double spentAmountSum;
+            int totalIncomeCount;
+            double incomeAmountSum;
+
+            if (userId != null) {
+                // userId가 있는 경우: 기존 방식
+                totalSpentCount = bucket.path("total_spent").path("doc_count").asInt(0);
+                spentAmountSum = bucket.path("total_spent").path("amount_sum").path("value").asDouble(0.0);
+
+                totalIncomeCount = bucket.path("total_income").path("doc_count").asInt(0);
+                incomeAmountSum = bucket.path("total_income").path("amount_sum").path("value").asDouble(0.0);
+            } else {
+                // userId 없는 경우: avg_bucket 기준
+                totalSpentCount = bucket.path("total_spent_sum").path("doc_count").asInt(0);
+                spentAmountSum = bucket.path("total_spent").path("value").asDouble(0.0);
+
+                totalIncomeCount = bucket.path("total_income_sum").path("doc_count").asInt(0);
+                incomeAmountSum = bucket.path("total_income").path("value").asDouble(0.0);
+            }
+
+            results.add(new PeriodTransaction.PTSummary(date, totalSpentCount, spentAmountSum, totalIncomeCount, incomeAmountSum));
+        }
+
+        return new PeriodTransaction(interval, results);
+    }
+
     public TimeHeatmapCell searchTimeHeatmap(String sessionId, LocalDate from, LocalDate to) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
         String queryJson = QueryBuilder.timeHeatmapQuery(sessionId, from, to);
@@ -145,9 +187,9 @@ public class TransactionAggregationRepository {
         return new HourlyTransaction(summaries);
     }
 
-    public AmountAvgTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, int userId) throws IOException {
+    public AmountTransaction searchUserTradeAmountByUserId(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.userTradeAmountAvgQuery(sessionId, from, to, userId);
+        String queryJson = QueryBuilder.userTradeAmountQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
 
         Response response = elasticsearchRestClient.performRequest(request);
@@ -157,14 +199,14 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
         JsonNode buckets = root.path("aggregations").path("by_type").path("buckets");
 
-        List<AmountAvgTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
+        List<AmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
         for (JsonNode bucket : buckets) {
             String transactionType = bucket.path("key").asText();
-            int avgAmount = bucket.path("average_amount").path("value").asInt(0);
-            summaries.add(new AmountAvgTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
+            int avgAmount = bucket.path("total_amount").path("value").asInt(0);
+            summaries.add(new AmountTransaction.AmountTransactionSummary(transactionType, avgAmount));
         }
 
-        return new AmountAvgTransaction(summaries);
+        return new AmountTransaction(summaries);
     }
 
 
@@ -546,5 +588,30 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
 
         return root.path("aggregations").path("age_group_summary").path("buckets");
+    }
+
+    public CategoryAmountTransaction searchUserCategoryTradeAmount(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.userCategoryAmountQuery(sessionId, from, to, userId);
+        request.setJsonEntity(queryJson);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("by_category").path("buckets");
+
+        List<CategoryAmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String category = bucket.path("key").asText();
+
+            int amount;
+            amount = bucket.path("total_amount").path("value").asInt(0);
+
+            summaries.add(new CategoryAmountTransaction.AmountTransactionSummary(category, amount));
+        }
+
+        return new CategoryAmountTransaction(summaries);
     }
 }

@@ -85,6 +85,120 @@ public class QueryBuilder {
                 """.formatted(userIdQuery, sessionId, gte, lte, interval);
     }
 
+    public static String periodAmountQuery(String sessionId, LocalDate from, LocalDate to, String interval, Integer userId) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        if (userId != null) {
+            // 특정 userId
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": { "userId": %d } },
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "results": {
+                  "date_histogram": {
+                    "field": "timestamp",
+                    "calendar_interval": "%s",
+                    "time_zone": "Asia/Seoul",
+                    "format": "yyyy-MM-dd"
+                  },
+                  "aggs": {
+                    "total_spent": {
+                      "filter": { "term": { "transactionType": "WITHDRAW" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_income": {
+                      "filter": { "term": { "transactionType": "DEPOSIT" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(userId, sessionId, gte, lte, interval);
+
+        } else {
+            // 전체 사용자 → 합계 / 유저 수로 평균
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "results": {
+                  "date_histogram": {
+                    "field": "timestamp",
+                    "calendar_interval": "%s",
+                    "time_zone": "Asia/Seoul",
+                    "format": "yyyy-MM-dd"
+                  },
+                  "aggs": {
+                    "user_count": {
+                      "cardinality": { "field": "userId" }
+                    },
+                    "total_spent_sum": {
+                      "filter": { "term": { "transactionType": "WITHDRAW" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_spent": {
+                      "bucket_script": {
+                        "buckets_path": { "total": "total_spent_sum>amount_sum", "users": "user_count" },
+                        "script": "params.total / params.users"
+                      }
+                    },
+                    "total_income_sum": {
+                      "filter": { "term": { "transactionType": "DEPOSIT" }},
+                      "aggs": { "amount_sum": { "sum": { "field": "amount" } } }
+                    },
+                    "total_income": {
+                      "bucket_script": {
+                        "buckets_path": { "total": "total_income_sum>amount_sum", "users": "user_count" },
+                        "script": "params.total / params.users"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(sessionId, gte, lte, interval);
+        }
+    }
+
+
+
     public static String timeHeatmapQuery(String sessionId, LocalDate from, LocalDate to) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();
@@ -207,50 +321,91 @@ public class QueryBuilder {
                 """.formatted(gte, lte, sessionId);
     }
 
-    public static String userTradeAmountAvgQuery(String sessionId, LocalDate from, LocalDate to, int userId) {
+    public static String userTradeAmountQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
         String lte = end.format(formatter);
 
-        return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        { "terms": { "transactionType": ["WITHDRAW", "DEPOSIT"] }},
-                        { "term": { "userId": %d }},
-                        { "term": {"sessionId": "%s"} },
-                        {
-                          "range": {
-                            "timestamp": {
-                              "gte": "%s",
-                              "lte": "%s",
-                              "time_zone": "Asia/Seoul"
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "aggs": {
-                    "by_type": {
-                      "terms": {
-                        "field": "transactionType"
-                      },
-                      "aggs": {
-                        "average_amount": {
-                          "avg": {
-                            "field": "amount"
-                          }
+        if (userId != null) {
+            // 특정 userId → transactionType별 총합
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": { "userId": %d }},
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
                         }
                       }
                     }
+                  ]
+                }
+              },
+              "aggs": {
+                "by_type": {
+                  "terms": { "field": "transactionType" },
+                  "aggs": {
+                    "total_amount": {
+                      "sum": { "field": "amount" }
+                    }
                   }
                 }
-                """.formatted(userId, sessionId, gte, lte);
+              }
+            }
+            """.formatted(userId, sessionId, gte, lte);
+
+        } else {
+            // 전체 user → transactionType별, 사용자별 합계 → 사용자 수만큼 나눈 평균
+            return """
+            {
+              "size": 0,
+              "query": {
+                "bool": {
+                  "must": [
+                    { "term": {"sessionId": "%s"} },
+                    {
+                      "range": {
+                        "timestamp": {
+                          "gte": "%s",
+                          "lte": "%s",
+                          "time_zone": "Asia/Seoul"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "by_type": {
+                  "terms": { "field": "transactionType" },
+                  "aggs": {
+                    "by_user": {
+                      "terms": { "field": "userId", "size": 10000 },
+                      "aggs": {
+                        "user_total_amount": { "sum": { "field": "amount" } }
+                      }
+                    },
+                    "total_amount": {
+                      "avg_bucket": { "buckets_path": "by_user>user_total_amount" }
+                    }
+                  }
+                }
+              }
+            }
+            """.formatted(sessionId, gte, lte);
+        }
     }
+
+
+
 
     public static String incomeExpenseByAgeGroupQuery(
             String sessionId,
@@ -308,4 +463,90 @@ public class QueryBuilder {
                         }
                         """, durationStart, durationEnd, sessionId, filtersJson);
     }
+
+    public static String userCategoryAmountQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
+        LocalDateTime start = from.atStartOfDay();
+        LocalDateTime end = to.atTime(23, 59, 59);
+        String gte = start.format(formatter);
+        String lte = end.format(formatter);
+
+        if (userId != null) {
+            // 특정 userId → 카테고리별 총합 (지출만 WITHDRAW 고정)
+            return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                { "term": { "userId": %d }},
+                { "term": {"sessionId": "%s"} },
+                { "term": { "transactionType": "WITHDRAW" }},
+                {
+                  "range": {
+                    "timestamp": {
+                      "gte": "%s",
+                      "lte": "%s",
+                      "time_zone": "Asia/Seoul"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "by_category": {
+              "terms": { "field": "category", "size": 1000 },
+              "aggs": {
+                "total_amount": {
+                  "sum": { "field": "amount" }
+                }
+              }
+            }
+          }
+        }
+        """.formatted(userId, sessionId, gte, lte);
+
+        } else {
+            // 전체 user → 카테고리별 합계 → 사용자 수만큼 나눈 평균
+            return """
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                { "term": {"sessionId": "%s"} },
+                { "term": { "transactionType": "WITHDRAW" }},
+                {
+                  "range": {
+                    "timestamp": {
+                      "gte": "%s",
+                      "lte": "%s",
+                      "time_zone": "Asia/Seoul"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "by_category": {
+              "terms": { "field": "category", "size": 1000 },
+              "aggs": {
+                "by_user": {
+                  "terms": { "field": "userId", "size": 10000 },
+                  "aggs": {
+                    "user_total_amount": { "sum": { "field": "amount" } }
+                  }
+                },
+                "total_amount": {
+                  "avg_bucket": { "buckets_path": "by_user>user_total_amount" }
+                }
+              }
+            }
+          }
+        }
+        """.formatted(sessionId, gte, lte);
+        }
+    }
+
 }
