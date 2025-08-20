@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/analysis")
@@ -30,9 +29,9 @@ public class AnalysisController {
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
             @RequestParam String interval,
-            @RequestParam Optional<Integer> userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId.orElse(null)));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId));
     }
 
     //전체 - 개인 월별 수입/지출 금액 비교
@@ -42,9 +41,9 @@ public class AnalysisController {
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
             @RequestParam String interval,
-            @RequestParam Optional<Integer> userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchPeriodAmount(sessionId, durationStart, durationEnd, interval, userId.orElse(null)));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchPeriodAmount(sessionId, durationStart, durationEnd, interval, userId));
     }
 
     @GetMapping("/time-heatmap")
@@ -70,9 +69,9 @@ public class AnalysisController {
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam Optional<Integer> userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId.orElse(null)));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/all-category-info")
@@ -98,9 +97,9 @@ public class AnalysisController {
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam Optional<Integer> userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId.orElse(null)));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-age-group")
