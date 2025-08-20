@@ -154,10 +154,10 @@ public class AnalysisService {
         return finalResults;
     }
 
-    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) {
+    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd, Integer userID) {
         List<ChartIncomeCountDto> dataList;
         try {
-            dataList = transactionAggregationRepository.searchAllCategoryInfo(sessionId, durationStart, durationEnd);
+            dataList = transactionAggregationRepository.searchAllCategoryInfo(sessionId, durationStart, durationEnd, userID);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

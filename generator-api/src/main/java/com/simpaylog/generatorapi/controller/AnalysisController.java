@@ -83,9 +83,10 @@ public class AnalysisController {
     public Response<?> searchAllCategoryInfo(
     @RequestParam String sessionId,
     @RequestParam String durationStart,
-    @RequestParam String durationEnd
+    @RequestParam String durationEnd,
+    @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-volume-top5")

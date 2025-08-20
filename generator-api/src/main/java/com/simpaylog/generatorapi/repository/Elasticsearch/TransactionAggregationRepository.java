@@ -322,46 +322,41 @@ public class TransactionAggregationRepository {
         }
     }
 
-    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchAllCategoryInfo(
+            String sessionId,
+            String durationStart,
+            String durationEnd,
+            Integer userId
+    ) throws IOException {
         return elasticsearchClient.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
                                 .query(q -> q
-                                        .bool(b -> b
-                                                .must(m -> m
-                                                        .term(t -> t
-                                                                .field("sessionId")
-                                                                .value(sessionId)
-                                                        )
-                                                )
-                                                .must(m -> m
-                                                        .range(r -> r
-                                                                .date(d -> d
-                                                                        .field("timestamp")
-                                                                        .from(durationStart)
-                                                                        .to(durationEnd)
-                                                                        .timeZone("Asia/Seoul")
-                                                                )
-                                                        )
-                                                )
-                                                .must(m -> m
-                                                        .term(t -> t
-                                                                .field("transactionType")
-                                                                .value("WITHDRAW")
-                                                        )
-                                                )
-                                        )
+                                        .bool(b -> {
+                                            // 필수 조건: sessionId
+                                            b.must(m -> m.term(t -> t.field("sessionId").value(sessionId)));
+                                            // 필수 조건: timestamp 범위
+                                            b.must(m -> m.range(r -> r.date(d -> d.field("timestamp")
+                                                    .from(durationStart)
+                                                    .to(durationEnd)
+                                                    .timeZone("Asia/Seoul")
+                                            )));
+                                            // 필수 조건: WITHDRAW
+                                            b.must(m -> m.term(t -> t.field("transactionType").value("WITHDRAW")));
+
+                                            // 선택 조건: userId
+                                            if (userId != null) {
+                                                b.must(m -> m.term(t -> t.field("userId").value(userId)));
+                                            }
+                                            return b;
+                                        })
                                 )
                                 .aggregations("category_count", a -> a
-                                        .terms(t -> t
-                                                .field("category")
-                                        )
+                                        .terms(t -> t.field("category"))
                                         .aggregations("total_amount", sa -> sa
-                                                .sum(v -> v
-                                                        .script(sc -> sc
-                                                                .source("doc.containsKey('amount') ? doc['amount'].value : 0")
-                                                        )
-                                                )
+                                                .sum(v -> v.script(sc -> sc
+                                                        .source("doc.containsKey('amount') ? doc['amount'].value : 0")
+                                                ))
                                         )
                                 ),
                         Void.class
@@ -374,6 +369,7 @@ public class TransactionAggregationRepository {
                 .sorted(Comparator.comparing(ChartIncomeCountDto::income).reversed())
                 .collect(Collectors.toList());
     }
+
 
     public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(
             String sessionId,
