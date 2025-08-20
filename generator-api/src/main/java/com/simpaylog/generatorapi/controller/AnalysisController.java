@@ -1,6 +1,6 @@
 package com.simpaylog.generatorapi.controller;
 
-import com.simpaylog.generatorapi.dto.analysis.AmountAvgTransaction;
+import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
@@ -32,20 +32,22 @@ public class AnalysisController {
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam String interval
+            @RequestParam String interval,
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, null));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId));
     }
 
-    @GetMapping("/search-by-period-and-id")
-    public Response<CommonChart<PeriodTransaction.PTSummary>> searchByPeriod(
+    //전체 - 개인 월별 수입/지출 금액 비교
+    @GetMapping("/search-period-amount")
+    public Response<CommonChart<PeriodTransaction.PTSummary>> searchPeriodAmount(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
             @RequestParam String interval,
-            @RequestParam Integer userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchByPeriod(sessionId, durationStart, durationEnd, interval, userId));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchPeriodAmount(sessionId, durationStart, durationEnd, interval, userId));
     }
 
     @GetMapping("/time-heatmap")
@@ -67,20 +69,20 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-transaction-type")
-    public Response<CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary>> searchTypeAmountAvgByPeriod(
+    public Response<CommonChart<AmountTransaction.AmountTransactionSummary>> searchTypeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,
-            @RequestParam Integer userId
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
         return Response.success(HttpStatus.OK.value(), analysisService.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/all-category-info")
     public Response<?> searchAllCategoryInfo(
-            @RequestParam String sessionId,
-            @RequestParam String durationStart,
-            @RequestParam String durationEnd
+    @RequestParam String sessionId,
+    @RequestParam String durationStart,
+    @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchAllCategoryInfo(sessionId, durationStart, durationEnd));
     }
@@ -92,6 +94,16 @@ public class AnalysisController {
             @RequestParam String durationEnd
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd));
+    }
+
+    @GetMapping("/category/by-userId")
+    public Response<CommonChart<CategoryAmountTransaction.AmountTransactionSummary>> searchUserCategoryTradeAmount(
+            @RequestParam String sessionId,
+            @RequestParam LocalDate durationStart,
+            @RequestParam LocalDate durationEnd,
+            @RequestParam(required = false) Integer userId
+    ) throws IOException {
+        return Response.success(HttpStatus.OK.value(), analysisService.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-age-group")

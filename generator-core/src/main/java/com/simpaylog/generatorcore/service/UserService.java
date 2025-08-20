@@ -1,7 +1,9 @@
 package com.simpaylog.generatorcore.service;
 
 import com.simpaylog.generatorcore.cache.OccupationLocalCache;
+import com.simpaylog.generatorcore.dto.FixedObligation;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
+import com.simpaylog.generatorcore.dto.UserProfile;
 import com.simpaylog.generatorcore.dto.analyze.OccupationNameStat;
 import com.simpaylog.generatorcore.dto.response.*;
 import com.simpaylog.generatorcore.entity.User;
@@ -9,6 +11,7 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserRepository;
+import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisSessionRepository;
 import com.simpaylog.generatorcore.session.SimulationSession;
@@ -19,11 +22,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,8 +39,10 @@ public class UserService {
     private final OccupationLocalCache occupationLocalCache;
     private final UserRepository userRepository;
     private final UserGenerator userGenerator;
+    private final FixedObligationPresetProvider fixedObligationPresetProvider;
     private final RedisPaydayRepository redisPaydayRepository;
     private final RedisSessionRepository redisSessionRepository;
+    private final FixedObligationRepository fixedObligationRepository;
 
     @Transactional
     public String createUser(List<UserGenerationCondition> userGenerationConditions) {
@@ -81,6 +88,14 @@ public class UserService {
             for (LocalDate cur = LocalDate.of(from.getYear(), from.getMonth(), 1); !cur.isAfter(to); cur = cur.plusMonths(1)) {
                 redisPaydayRepository.register(sessionId, user.userId(), YearMonth.from(cur), user.wageType().getStrategy().getPayOutDates(cur));
             }
+        }
+    }
+
+    public void initFixedObligation(String sessionId, LocalDate from, LocalDate to) {
+        List<TransactionUserDto> users = findAllTransactionUserBySessionId(sessionId);
+        for (TransactionUserDto user : users) {
+            List<FixedObligation> fixedObligations = fixedObligationPresetProvider.generate(new UserProfile(user.userId(), user.decile(), user.preferenceType(), user.age()), from);
+            fixedObligationRepository.saveAll(sessionId, user.userId(), fixedObligations);
         }
     }
 

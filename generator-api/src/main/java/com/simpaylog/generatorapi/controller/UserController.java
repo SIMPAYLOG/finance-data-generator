@@ -45,7 +45,7 @@ public class UserController {
         }
         String sessionId = userService.createUser(list);
         userService.initPaydayCache(sessionId, req.durationStart(), req.durationEnd());
-
+        userService.initFixedObligation(sessionId, req.durationStart(), req.durationEnd());
         return Response.success(HttpStatus.OK.value(), sessionId);
     }
 

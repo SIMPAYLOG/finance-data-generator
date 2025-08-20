@@ -1,4 +1,4 @@
-package com.simpaylog.generatorsimulator.utils;
+package com.simpaylog.generatorcore.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

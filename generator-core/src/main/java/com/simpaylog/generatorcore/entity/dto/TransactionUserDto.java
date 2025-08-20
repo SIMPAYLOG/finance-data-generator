@@ -10,9 +10,9 @@ public record TransactionUserDto(
     Long userId,
     String sessionId,
     Integer decile,
+    Integer age,
     PreferenceType preferenceType,
     WageType wageType,
-    Integer autoTransferDayOfMonth,
     String activeHour,
     BigDecimal incomeValue,
     BigDecimal savingRate
@@ -23,9 +23,9 @@ public record TransactionUserDto(
                 entity.getId(),
                 entity.getSessionId(),
                 entity.getDecile(),
+                entity.getAge(),
                 entity.getUserBehaviorProfile().getPreferenceType(),
                 entity.getUserBehaviorProfile().getWageType(),
-                entity.getUserBehaviorProfile().getAutoTransferDayOfMonth(),
                 entity.getUserBehaviorProfile().getActiveHours(),
                 entity.getUserBehaviorProfile().getIncomeValue(),
                 entity.getUserBehaviorProfile().getSavingRate()

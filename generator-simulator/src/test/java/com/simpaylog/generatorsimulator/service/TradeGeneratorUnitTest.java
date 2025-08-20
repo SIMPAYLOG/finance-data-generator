@@ -1,8 +1,8 @@
 package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorsimulator.TestConfig;
-import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
-import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorcore.cache.TradeInfoLocalCache;
+import com.simpaylog.generatorcore.cache.dto.TradeInfo;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
