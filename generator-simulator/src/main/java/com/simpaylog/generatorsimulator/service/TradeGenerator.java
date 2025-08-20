@@ -1,7 +1,7 @@
 package com.simpaylog.generatorsimulator.service;
 
-import com.simpaylog.generatorsimulator.cache.TradeInfoLocalCache;
-import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorcore.cache.TradeInfoLocalCache;
+import com.simpaylog.generatorcore.cache.dto.TradeInfo;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.exception.SimulatorException;
@@ -73,6 +73,7 @@ public class TradeGenerator {
                 case HOUSING_UTILITIES_FUEL, EDUCATION, COMMUNICATION -> Math.max(1, Math.min(N, 3));
                 case GROCERIES_NON_ALCOHOLIC_BEVERAGES -> Math.max(10, Math.min(N, 80));
                 case FOOD_ACCOMMODATION -> Math.max(4, Math.min(N, 40));
+                case HEALTH -> Math.max(2, Math.min(N, 10));
                 default -> Math.max(2, Math.min(N, 30));
             };
             out.put(category, clamp);

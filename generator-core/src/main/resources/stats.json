@@ -1,6 +1,7 @@
 [
   {
     "decile": 1,
+    "averageDisposableIncome": 559072,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 276203,
       "alcoholicBeveragesTobacco": 23852,
@@ -18,6 +19,7 @@
   },
   {
     "decile": 2,
+    "averageDisposableIncome": 1365683,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 338813,
       "alcoholicBeveragesTobacco": 28991,
@@ -35,6 +37,7 @@
   },
   {
     "decile": 3,
+    "averageDisposableIncome": 2049257,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 335361,
       "alcoholicBeveragesTobacco": 29263,
@@ -52,6 +55,7 @@
   },
   {
     "decile": 4,
+    "averageDisposableIncome": 2685044,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 348893,
       "alcoholicBeveragesTobacco": 35925,
@@ -69,6 +73,7 @@
   },
   {
     "decile": 5,
+    "averageDisposableIncome": 3195089,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 409535,
       "alcoholicBeveragesTobacco": 40998,
@@ -86,6 +91,7 @@
   },
   {
     "decile": 6,
+    "averageDisposableIncome": 3853319,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 460518,
       "alcoholicBeveragesTobacco": 41915,
@@ -103,6 +109,7 @@
   },
   {
     "decile": 7,
+    "averageDisposableIncome": 4625031,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 489286,
       "alcoholicBeveragesTobacco": 39287,
@@ -120,6 +127,7 @@
   },
   {
     "decile": 8,
+    "averageDisposableIncome": 5576601,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 560710,
       "alcoholicBeveragesTobacco": 43048,
@@ -137,6 +145,7 @@
   },
   {
     "decile": 9,
+    "averageDisposableIncome": 6889259,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 606831,
       "alcoholicBeveragesTobacco": 42677,
@@ -154,6 +163,7 @@
   },
   {
     "decile": 10,
+    "averageDisposableIncome": 11071310,
     "byCategory": {
       "groceriesNonAlcoholicBeverages": 678786,
       "alcoholicBeveragesTobacco": 44302,
