@@ -123,9 +123,10 @@ public class AnalysisController {
             @RequestParam(required = false) String durationStart,
             @RequestParam(required = false) String durationEnd,
             @RequestParam String intervalType,
-            @RequestParam String sessionId
+            @RequestParam String sessionId,
+            @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(sessionId, Optional.ofNullable(durationStart), Optional.ofNullable(durationEnd), intervalType));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTransactionInfo(sessionId, Optional.ofNullable(durationStart), Optional.ofNullable(durationEnd), intervalType, userId));
     }
 
 

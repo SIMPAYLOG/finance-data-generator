@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -93,7 +92,7 @@ public class AnalysisService {
         redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, Optional<String> durationStartOpt, Optional<String> durationEndOpt, String type) {
+    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, Optional<String> durationStartOpt, Optional<String> durationEndOpt, String type, Integer userId) {
         String durationStart = null;
         String durationEnd = null;
         String format;
@@ -124,7 +123,7 @@ public class AnalysisService {
                 durationStart = durationStartOpt.get();
                 durationEnd = durationEndOpt.get();
             }
-            return transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, interval, format);
+            return transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, interval, format, userId);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

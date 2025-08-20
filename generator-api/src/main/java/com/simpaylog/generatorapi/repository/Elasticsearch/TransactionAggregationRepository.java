@@ -429,9 +429,9 @@ public class TransactionAggregationRepository {
     }
 
 
-    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
+    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String query = QueryBuilder.transactionInfoQuery(durationStart, durationEnd, sessionId, interval, format);
+        String query = QueryBuilder.transactionInfoQuery(durationStart, durationEnd, sessionId, interval, format, userId);
         request.setJsonEntity(query);
 
         Response response = elasticsearchRestClient.performRequest(request);

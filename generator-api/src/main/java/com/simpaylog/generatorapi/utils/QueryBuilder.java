@@ -665,70 +665,83 @@ public class QueryBuilder {
             String durationEnd,
             String sessionId,
             String interval,
-            String format
+            String format,
+            Integer userId
     ) {
+        // userId 조건 문자열
+        String userIdTerm = userId != null ? """
+        ,
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
         return String.format(
-                        """
-                                {
-                                  "size": 0,
-                                  "query": {
-                                    "bool": {
-                                      "must": [
-                                        {
-                                          "range": {
-                                            "timestamp": {
-                                              "from": "%s",
-                                              "to": "%s",
-                                              "time_zone": "Asia/Seoul"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "term": {
-                                            "sessionId": {
-                                              "value": "%s"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "aggs": {
-                                    "summary": {
-                                      "date_histogram": {
-                                        "field": "timestamp",
-                                        "calendar_interval": "%s",
-                                        "time_zone": "Asia/Seoul",
-                                        "format": "%s"
-                                      },
-                                      "aggs": {
-                                        "transaction_summary": {
-                                          "filters": {
-                                            "filters": {
-                                              "income": {
-                                                "term": {
-                                                  "transactionType": "WITHDRAW"
-                                                }
-                                              },
-                                              "expense": {
-                                                "term": {
-                                                  "transactionType": "DEPOSIT"
-                                                }
-                                              }
-                                            }
-                                          },
-                                          "aggs": {
-                                            "total_amount": {
-                                              "sum": {
-                                                "field": "amount"
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
+                """
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "range": {
+                            "timestamp": {
+                              "from": "%s",
+                              "to": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
+                          }
+                        },
+                        {
+                          "term": {
+                            "sessionId": {
+                              "value": "%s"
+                            }
+                          }
+                        }%s
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "summary": {
+                      "date_histogram": {
+                        "field": "timestamp",
+                        "calendar_interval": "%s",
+                        "time_zone": "Asia/Seoul",
+                        "format": "%s"
+                      },
+                      "aggs": {
+                        "transaction_summary": {
+                          "filters": {
+                            "filters": {
+                              "income": {
+                                "term": {
+                                  "transactionType": "WITHDRAW"
                                 }
-                        """, durationStart, durationEnd, sessionId, interval, format);
+                              },
+                              "expense": {
+                                "term": {
+                                  "transactionType": "DEPOSIT"
+                                }
+                              }
+                            }
+                          },
+                          "aggs": {
+                            "total_amount": {
+                              "sum": {
+                                "field": "amount"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """, durationStart, durationEnd, sessionId, userIdTerm, interval, format
+        );
     }
+
 }
