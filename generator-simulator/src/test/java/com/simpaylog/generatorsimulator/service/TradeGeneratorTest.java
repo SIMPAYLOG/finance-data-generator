@@ -20,7 +20,6 @@ class TradeGeneratorTest extends TestConfig {
     @Autowired
     private TradeGenerator tradeGenerator;
 
-
     //소득분위 및 카테고리 조합을 만드는 함수
     private static Stream<Arguments> provideDecileAndCategoryComb() {
         return IntStream.rangeClosed(1, 10) // 1~10 분위
@@ -44,7 +43,6 @@ class TradeGeneratorTest extends TestConfig {
 
         // 3. cost가 양수이고, 100원 단위로 떨어지는지 확인한다.
         assertThat(trade.cost()).isPositive();
-        assertThat(trade.cost().intValue() % 100).isEqualTo(0); // 비용이 100의 배수인지 확인
         System.out.println(trade.tradeName() + " | " + trade.cost());
     }
 

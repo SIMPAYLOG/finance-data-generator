@@ -3,14 +3,14 @@ package com.simpaylog.generatorapi.service;
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
-import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
-import com.simpaylog.generatorapi.dto.response.ChartResponse;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
 import com.simpaylog.generatorapi.utils.DateValidator;
+import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
 import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
@@ -35,10 +35,22 @@ public class AnalysisService {
     private final UserRepository userRepository;
 
     public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
-        getSimulationSessionOrException(sessionId);
+//        getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
         AggregationInterval aggregationInterval = AggregationInterval.from(interval);
         PeriodTransaction result = transactionAggregationRepository.searchByPeriod(sessionId, durationStart, durationEnd, aggregationInterval, userId);
+        return switch (aggregationInterval) {
+            case DAY -> new CommonChart<>("line", "일 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+            case WEEK -> new CommonChart<>("line", "주 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+            case MONTH -> new CommonChart<>("line", "월 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
+        };
+    }
+
+    public CommonChart<PeriodTransaction.PTSummary> searchPeriodAmount(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        AggregationInterval aggregationInterval = AggregationInterval.from(interval);
+        PeriodTransaction result = transactionAggregationRepository.searchPeriodAmount(sessionId, durationStart, durationEnd, aggregationInterval, userId);
         return switch (aggregationInterval) {
             case DAY -> new CommonChart<>("line", "일 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
             case WEEK -> new CommonChart<>("line", "주 별 트랜잭션 발생 금액", "날짜", "금액", result.results());
@@ -59,64 +71,75 @@ public class AnalysisService {
         DateValidator.validateDateRange(durationStart, durationEnd);
         HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd, userId);
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
+        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd);
+        return result.results();
     }
 
-    public CommonChart<AmountAvgTransaction.AmountAvgTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+    public CommonChart<AmountTransaction.AmountTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        AmountAvgTransaction result = transactionAggregationRepository.searchUserTradeAmountAvgByUserId(sessionId, durationStart, durationEnd, userId);
-        return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "평균 금액", result.results());
+        AmountTransaction result = transactionAggregationRepository.searchUserTradeAmountByUserId(sessionId, durationStart, durationEnd, userId);
+        return new CommonChart<>("line", "수입/지출 금액 평균", "거래 종류", "총 금액", result.results());
+    }
+
+    public CommonChart<CategoryAmountTransaction.AmountTransactionSummary> searchUserCategoryTradeAmount(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
+        getSimulationSessionOrException(sessionId);
+        DateValidator.validateDateRange(durationStart, durationEnd);
+        CategoryAmountTransaction result = transactionAggregationRepository.searchUserCategoryTradeAmount(sessionId, durationStart, durationEnd, userId);
+        return new CommonChart<>("line", "카테고리별 수입/지출", "카테고리 종류", "총 금액", result.results());
     }
 
     private void getSimulationSessionOrException(String sessionId) {
         redisSessionRepository.find(sessionId).orElseThrow(() -> new CoreException(String.format("해당 sessionId를 찾을 수 없습니다. sessionId: %s", sessionId)));
     }
 
-    public ChartResponse searchTransactionInfo(String durationStart, String durationEnd, String type, String sessionId) {
-        final String title;
-        final CalendarInterval interval;
-        final DateTimeFormatter formatter;
-        final String typeStr;
+    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, Optional<String> durationStartOpt, Optional<String> durationEndOpt, String type) {
+        String durationStart = null;
+        String durationEnd = null;
+        String format;
+        String interval;
 
         switch (type.toLowerCase()) {
             case "monthly":
-                title = "월별 거래 요약";
-                interval = CalendarInterval.Month;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-                typeStr = "yyyy-MM";
+                interval = CalendarInterval.Month.aliases()[0];
+                format = "yyyy-MM";
                 break;
             case "weekly":
-                title = "주간 거래 요약";
-                interval = CalendarInterval.Week;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                typeStr = "yyyy-MM-dd";
+                interval = CalendarInterval.Week.aliases()[0];
+                format = "yyyy-MM-dd";
                 break;
             case "daily":
             default:
-                title = "일별 거래 요약";
-                interval = CalendarInterval.Day;
-                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                typeStr = "yyyy-MM-dd";
+                interval = CalendarInterval.Day.aliases()[0];
+                format = "yyyy-MM-dd";
                 break;
         }
 
         try {
-            return new ChartResponse("line", title, "날짜", "거래금액", transactionAggregationRepository.searchTransactionInfo(durationStart, durationEnd, type, interval, formatter, typeStr, sessionId));
+            if (durationStartOpt.isEmpty() || durationEndOpt.isEmpty()) {
+                MinMaxDayDto days = transactionAggregationRepository.saerchMinMaxDay(sessionId);
+                durationStart = days.minDay();
+                durationEnd = days.maxDay();
+            } else {
+                durationStart = durationStartOpt.get();
+                durationEnd = durationEndOpt.get();
+            }
+            return transactionAggregationRepository.searchTransactionInfo(sessionId, durationStart, durationEnd, interval, format);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
     }
 
-    public Map<String, List<ChartData>> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, String durationStart, String durationEnd) {
+    public Map<String, List<ChartIncomeCountDto>> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, String durationStart, String durationEnd) {
         // 분석할 연령대 목록 정의
         List<Integer> ageGroups = List.of(10, 20, 30, 40, 50, 60, 70);
-        Map<String, List<ChartData>> finalResults = new LinkedHashMap<>();
+        Map<String, List<ChartIncomeCountDto>> finalResults = new LinkedHashMap<>();
 
         for (Integer ageGroup : ageGroups) {
             List<Long> userIds = userRepository.findUserIdsByAgeGroup(ageGroup, sessionId);
 
-            List<ChartData> categoryDataForAgeGroup = new ArrayList<>();
+            List<ChartIncomeCountDto> categoryDataForAgeGroup = new ArrayList<>();
             if (userIds != null && !userIds.isEmpty()) {
                 try {
                     categoryDataForAgeGroup = transactionAggregationRepository.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, userIds, durationStart, durationEnd);
@@ -132,8 +155,8 @@ public class AnalysisService {
         return finalResults;
     }
 
-    public ChartResponse searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) {
-        List<ChartCategoryDto> dataList;
+    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) {
+        List<ChartIncomeCountDto> dataList;
         try {
             dataList = transactionAggregationRepository.searchAllCategoryInfo(sessionId, durationStart, durationEnd);
         } catch (IOException e) {
@@ -141,19 +164,17 @@ public class AnalysisService {
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
 
-        return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
+        return dataList;
     }
 
-    public ChartResponse searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) {
-        List<ChartCategoryDto> dataList;
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) {
+        List<ChartIncomeCountDto> dataList;
         try {
-            dataList = transactionAggregationRepository.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd);
+            return transactionAggregationRepository.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
         }
-
-        return new ChartResponse("bar", "카테고리별 거래량", "카테고리", "거래건수", dataList);
     }
 
     public Map<String, AgeGroupIncomeExpenseAverageDto> searchIncomeExpenseForAgeGroup(String sessionId, String durationStart, String durationEnd) {
@@ -188,6 +209,15 @@ public class AnalysisService {
 
         try {
             return transactionAggregationRepository.getFinancialsByPrefereceForGroup(sessionId, idMap, durationStart, durationEnd);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    public IncomeExpenseDto searchIncomeExpense(String sessionId, String durationStart, String durationEnd) {
+        try {
+            return transactionAggregationRepository.saerchIncomeExpense(sessionId, durationStart, durationEnd);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);

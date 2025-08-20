@@ -1,0 +1,202 @@
+{
+  "assignment": {
+    "DEFAULT": {
+      "1":  { "probability": 0.35 },
+      "2":  { "probability": 0.30 },
+      "3":  { "probability": 0.25 },
+      "4":  { "probability": 0.20 },
+      "5":  { "probability": 0.18 },
+      "6":  { "probability": 0.15 },
+      "7":  { "probability": 0.12 },
+      "8":  { "probability": 0.10 },
+      "9":  { "probability": 0.08 },
+      "10": { "probability": 0.08 }
+    },
+    "CONSUMPTION_ORIENTED": {
+      "1":  { "probability": 0.45 },
+      "2":  { "probability": 0.40 },
+      "3":  { "probability": 0.38 },
+      "4":  { "probability": 0.35 },
+      "5":  { "probability": 0.30 },
+      "6":  { "probability": 0.28 },
+      "7":  { "probability": 0.25 },
+      "8":  { "probability": 0.20 },
+      "9":  { "probability": 0.18 },
+      "10": { "probability": 0.15 }
+    },
+    "SAVING_ORIENTED": {
+      "1":  { "probability": 0.25 },
+      "2":  { "probability": 0.35 },
+      "3":  { "probability": 0.38 },
+      "4":  { "probability": 0.40 },
+      "5":  { "probability": 0.42 },
+      "6":  { "probability": 0.45 },
+      "7":  { "probability": 0.48 },
+      "8":  { "probability": 0.50 },
+      "9":  { "probability": 0.52 },
+      "10": { "probability": 0.55 }
+    },
+    "UNPLANNED": {
+      "1":  { "probability": 0.60 },
+      "2":  { "probability": 0.50 },
+      "3":  { "probability": 0.45 },
+      "4":  { "probability": 0.35 },
+      "5":  { "probability": 0.30 },
+      "6":  { "probability": 0.25 },
+      "7":  { "probability": 0.22 },
+      "8":  { "probability": 0.20 },
+      "9":  { "probability": 0.18 },
+      "10": { "probability": 0.15 }
+    },
+    "INVESTMENT_ORIENTED": {
+      "1":  { "probability": 0.35 },
+      "2":  { "probability": 0.40 },
+      "3":  { "probability": 0.45 },
+      "4":  { "probability": 0.50 },
+      "5":  { "probability": 0.55 },
+      "6":  { "probability": 0.60 },
+      "7":  { "probability": 0.65 },
+      "8":  { "probability": 0.70 },
+      "9":  { "probability": 0.75 },
+      "10": { "probability": 0.80 }
+    },
+    "STABLE": {
+      "1":  { "probability": 0.25 },
+      "2":  { "probability": 0.28 },
+      "3":  { "probability": 0.30 },
+      "4":  { "probability": 0.32 },
+      "5":  { "probability": 0.35 },
+      "6":  { "probability": 0.38 },
+      "7":  { "probability": 0.42 },
+      "8":  { "probability": 0.45 },
+      "9":  { "probability": 0.50 },
+      "10": { "probability": 0.60 }
+    }
+  },
+  "sources": [
+    {
+      "category": "government_support",
+      "type": "housing_subsidy",
+      "name": "주거급여",
+      "schedule": { "unit": "MONTHS", "dayOfMonth": 10 },
+      "amountRange": [100000, 220000],
+      "occurrenceProbability": 1.0,
+      "conditions": { "decileMax": 6, "ageMin": 20 }
+    },
+    {
+      "category": "government_support",
+      "type": "basic_living",
+      "name": "기초생활보장(간단화)",
+      "schedule": { "unit": "MONTHS", "dayOfMonth": 20 },
+      "amountRange": [90000, 150000],
+      "occurrenceProbability": 1.0,
+      "conditions": { "decileMax": 3, "ageMin": 18 }
+    },
+    {
+      "category": "pension",
+      "type": "national_pension",
+      "name": "국민연금(노령연금)",
+      "schedule": { "unit": "MONTHS", "dayOfMonth": 25 },
+      "amountRange": [200000, 500000],
+      "occurrenceProbability": 1.0,
+      "conditions": { "ageMin": 63, "decileMax": 9 }
+    },
+    {
+      "category": "pension",
+      "type": "private_pension",
+      "name": "개인연금",
+      "schedule": { "unit": "MONTHS", "dayOfMonth": 15 },
+      "amountRange": [150000, 400000],
+      "occurrenceProbability": 0.95,
+      "conditions": { "ageMin": 50, "decileMin": 5 }
+    },
+    {
+      "category": "rental_income",
+      "type": "residential_rent",
+      "name": "주택 임대소득(월세)",
+      "schedule": { "unit": "MONTHS", "dayOfMonth": 5 },
+      "amountRange": [300000, 1200000],
+      "occurrenceProbability": 0.7,
+      "conditions": { "decileMin": 7, "ageMin": 28 }
+    }
+  ],
+  "mapping": {
+    "DEFAULT": {
+      "1":  ["basic_living", "housing_subsidy"],
+      "2":  ["basic_living", "housing_subsidy"],
+      "3":  ["housing_subsidy"],
+      "4":  ["housing_subsidy"],
+      "5":  ["housing_subsidy", "private_pension"],
+      "6":  ["private_pension"],
+      "7":  ["private_pension"],
+      "8":  ["private_pension", "residential_rent"],
+      "9":  ["private_pension", "residential_rent", "national_pension"],
+      "10": ["private_pension", "residential_rent", "national_pension"]
+    },
+
+    "CONSUMPTION_ORIENTED": {
+      "1":  ["basic_living", "housing_subsidy"],
+      "2":  ["basic_living", "housing_subsidy"],
+      "3":  ["housing_subsidy"],
+      "4":  ["housing_subsidy"],
+      "5":  ["housing_subsidy", "private_pension"],
+      "6":  ["private_pension"],
+      "7":  ["private_pension", "residential_rent"],
+      "8":  ["private_pension", "residential_rent"],
+      "9":  ["residential_rent", "private_pension"],
+      "10": ["residential_rent", "private_pension", "national_pension"]
+    },
+
+    "SAVING_ORIENTED": {
+      "1":  ["housing_subsidy"],
+      "2":  ["housing_subsidy"],
+      "3":  ["housing_subsidy"],
+      "4":  ["housing_subsidy", "private_pension"],
+      "5":  ["private_pension"],
+      "6":  ["private_pension"],
+      "7":  ["private_pension", "residential_rent"],
+      "8":  ["private_pension", "residential_rent"],
+      "9":  ["private_pension", "residential_rent", "national_pension"],
+      "10": ["private_pension", "residential_rent", "national_pension"]
+    },
+
+    "UNPLANNED": {
+      "1":  ["basic_living", "housing_subsidy"],
+      "2":  ["basic_living", "housing_subsidy"],
+      "3":  ["housing_subsidy"],
+      "4":  ["housing_subsidy"],
+      "5":  ["housing_subsidy"],
+      "6":  ["housing_subsidy", "private_pension"],
+      "7":  ["private_pension"],
+      "8":  ["private_pension"],
+      "9":  ["private_pension", "national_pension"],
+      "10": ["private_pension", "national_pension"]
+    },
+
+    "INVESTMENT_ORIENTED": {
+      "1":  ["housing_subsidy"],
+      "2":  ["housing_subsidy"],
+      "3":  ["housing_subsidy", "private_pension"],
+      "4":  ["private_pension"],
+      "5":  ["private_pension"],
+      "6":  ["private_pension"],
+      "7":  ["private_pension", "residential_rent"],
+      "8":  ["private_pension", "residential_rent"],
+      "9":  ["residential_rent", "private_pension"],
+      "10": ["residential_rent", "private_pension", "national_pension"]
+    },
+
+    "STABLE": {
+      "1":  ["housing_subsidy"],
+      "2":  ["housing_subsidy"],
+      "3":  ["basic_living", "housing_subsidy"],
+      "4":  ["housing_subsidy"],
+      "5":  ["private_pension"],
+      "6":  ["private_pension"],
+      "7":  ["private_pension"],
+      "8":  ["private_pension", "national_pension"],
+      "9":  ["private_pension", "national_pension", "residential_rent"],
+      "10": ["private_pension", "national_pension", "residential_rent"]
+    }
+  }
+}

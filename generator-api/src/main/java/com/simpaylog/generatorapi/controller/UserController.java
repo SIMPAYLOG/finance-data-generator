@@ -45,7 +45,7 @@ public class UserController {
         }
         String sessionId = userService.createUser(list);
         userService.initPaydayCache(sessionId, req.durationStart(), req.durationEnd());
-
+        userService.initFixedObligation(sessionId, req.durationStart(), req.durationEnd());
         return Response.success(HttpStatus.OK.value(), sessionId);
     }
 
@@ -75,5 +75,10 @@ public class UserController {
     @GetMapping("preference-list")
     public Response<PreferenceListResponse> getPreference() {
         return Response.success(HttpStatus.OK.value(), userService.getPreferenceList());
+    }
+
+    @GetMapping("count")
+    public Response<UserCntResponse> getUserCnt(@RequestParam String sessionId) {
+        return Response.success(HttpStatus.OK.value(), userService.getUserCnt(sessionId));
     }
 }

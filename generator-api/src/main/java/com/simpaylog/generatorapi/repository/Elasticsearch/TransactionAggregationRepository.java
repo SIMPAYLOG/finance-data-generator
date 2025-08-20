@@ -3,8 +3,8 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
+import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -13,11 +13,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
-import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
+import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,14 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Repository
@@ -69,6 +73,48 @@ public class TransactionAggregationRepository {
 
             results.add(new PeriodTransaction.PTSummary(date, spentCount, spentAmount, incomeCount, incomeAmount));
         }
+        return new PeriodTransaction(interval, results);
+    }
+
+    public PeriodTransaction searchPeriodAmount(String sessionId, LocalDate from, LocalDate to, AggregationInterval interval, Integer userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.periodAmountQuery(sessionId, from, to, interval.getCalendarInterval(), userId);
+        request.setJsonEntity(queryJson);
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("results").path("buckets");
+
+        List<PeriodTransaction.PTSummary> results = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String date = bucket.path("key_as_string").asText();
+
+            int totalSpentCount;
+            double spentAmountSum;
+            int totalIncomeCount;
+            double incomeAmountSum;
+
+            if (userId != null) {
+                // userId가 있는 경우: 기존 방식
+                totalSpentCount = bucket.path("total_spent").path("doc_count").asInt(0);
+                spentAmountSum = bucket.path("total_spent").path("amount_sum").path("value").asDouble(0.0);
+
+                totalIncomeCount = bucket.path("total_income").path("doc_count").asInt(0);
+                incomeAmountSum = bucket.path("total_income").path("amount_sum").path("value").asDouble(0.0);
+            } else {
+                // userId 없는 경우: avg_bucket 기준
+                totalSpentCount = bucket.path("total_spent_sum").path("doc_count").asInt(0);
+                spentAmountSum = bucket.path("total_spent").path("value").asDouble(0.0);
+
+                totalIncomeCount = bucket.path("total_income_sum").path("doc_count").asInt(0);
+                incomeAmountSum = bucket.path("total_income").path("value").asDouble(0.0);
+            }
+
+            results.add(new PeriodTransaction.PTSummary(date, totalSpentCount, spentAmountSum, totalIncomeCount, incomeAmountSum));
+        }
+
         return new PeriodTransaction(interval, results);
     }
 
@@ -138,16 +184,16 @@ public class TransactionAggregationRepository {
         // 0~23시간까지 빠진 시간도 포함해서 정렬
         List<HourlyTransaction.HourlySummary> summaries = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
-            HourlyTransaction.HourlySummary hourlySummary = hourlyMap.getOrDefault(i, new HourlyTransaction.HourlySummary(0, 0, 0, 0, 0));
+            HourlyTransaction.HourlySummary hourlySummary = hourlyMap.getOrDefault(i, new HourlyTransaction.HourlySummary(i, 0, 0, 0, 0));
             summaries.add(hourlySummary);
         }
 
         return new HourlyTransaction(summaries);
     }
 
-    public AmountAvgTransaction searchUserTradeAmountAvgByUserId(String sessionId, LocalDate from, LocalDate to, int userId) throws IOException {
+    public AmountTransaction searchUserTradeAmountByUserId(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.userTradeAmountAvgQuery(sessionId, from, to, userId);
+        String queryJson = QueryBuilder.userTradeAmountQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
 
         Response response = elasticsearchRestClient.performRequest(request);
@@ -157,14 +203,14 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
         JsonNode buckets = root.path("aggregations").path("by_type").path("buckets");
 
-        List<AmountAvgTransaction.AmountAvgTransactionSummary> summaries = new ArrayList<>();
+        List<AmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
         for (JsonNode bucket : buckets) {
             String transactionType = bucket.path("key").asText();
-            int avgAmount = bucket.path("average_amount").path("value").asInt(0);
-            summaries.add(new AmountAvgTransaction.AmountAvgTransactionSummary(transactionType, avgAmount));
+            int avgAmount = bucket.path("total_amount").path("value").asInt(0);
+            summaries.add(new AmountTransaction.AmountTransactionSummary(transactionType, avgAmount));
         }
 
-        return new AmountAvgTransaction(summaries);
+        return new AmountTransaction(summaries);
     }
 
 
@@ -262,7 +308,7 @@ public class TransactionAggregationRepository {
                 }
 
                 List<FieldValue> lastSort = hits.get(hits.size() - 1).sort();
-                if (lastSort.equals(searchAfter)) {  // 이전과 같으면 무한루프 방지
+                if (lastSort.equals(searchAfter)) {
                     break;
                 }
                 searchAfter = lastSort;
@@ -276,7 +322,7 @@ public class TransactionAggregationRepository {
         }
     }
 
-    public List<ChartCategoryDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) throws IOException {
         return elasticsearchClient.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
@@ -320,15 +366,16 @@ public class TransactionAggregationRepository {
                                 ),
                         Void.class
                 ).aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartCategoryDto(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
                 ))
+                .sorted(Comparator.comparing(ChartIncomeCountDto::income).reversed())
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) throws IOException {
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                         .index("transaction-logs")
                         .size(0)
@@ -376,7 +423,7 @@ public class TransactionAggregationRepository {
         );
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartCategoryDto(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
@@ -384,67 +431,52 @@ public class TransactionAggregationRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchTransactionInfo(String durationStart, String durationEnd, String intervalType, CalendarInterval interval, DateTimeFormatter formatter, String typeStr, String sessionId) throws IOException {
-        SearchResponse<Void> response = elasticsearchClient.search(s -> s
-                        .index("transaction-logs")
-                        .size(0)
-                        .query(q -> q
-                                .bool(b -> b
-                                        .must(m -> m
-                                                .range(r -> r
-                                                        .date(d -> d
-                                                                .field("timestamp")
-                                                                .from(durationStart)
-                                                                .to(durationEnd)
-                                                                .timeZone("Asia/Seoul")
-                                                        )
-                                                )
-                                        )
-                                        .must(m -> m
-                                                .term(t -> t
-                                                        .field("sessionId")
-                                                        .value(sessionId)
-                                                )
-                                        )
-                                )
-                        )
-                        .aggregations("summary", aggBuilder -> aggBuilder
-                                .dateHistogram(histBuilder -> histBuilder
-                                        .field("timestamp")
-                                        .calendarInterval(interval)
-                                        .timeZone("Asia/Seoul")
-                                        .format(typeStr)
-                                )
-                                .aggregations("total_amount", subAggBuilder -> subAggBuilder
-                                        .sum(sumBuilder -> sumBuilder
-                                                .field("amount")
-                                        )
-                                )
-                        ),
-                Void.class
-        );
+    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String query = QueryBuilder.transactionInfoQuery(durationStart, durationEnd, sessionId, interval, format);
+        request.setJsonEntity(query);
 
-        Map<String, ChartCategoryDto> resultsMap = response.aggregations().get("summary").dateHistogram().buckets().array().stream()
-                .collect(Collectors.toMap(
-                        DateHistogramBucket::keyAsString,
-                        b -> new ChartCategoryDto(
-                                b.keyAsString(),
-                                (long) b.aggregations().get("total_amount").sum().value(),
-                                b.docCount()
-                        )
-                ));
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
 
-        List<ChartCategoryDto> completeData = new ArrayList<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+
+
+        Map<String, ChartIncomeIncomeExpenseDto> resultsMap = StreamSupport.stream(
+                root.path("aggregations").path("summary").path("buckets").spliterator(), false)
+                .map(dateBucket -> {
+                    String dateKey = dateBucket.path("key_as_string").asText();
+                    JsonNode transactionBuckets = dateBucket.path("transaction_summary").path("buckets");
+
+                    // 4. income 버킷에서 합계(total_amount) 추출
+                    // path()는 노드가 없으면 MissingNode를 반환하므로 .asDouble(0.0)으로 기본값 처리
+                    double incomeSum = transactionBuckets.path("income").path("total_amount").path("value").asDouble(0.0);
+
+                    // 5. expense 버킷에서 합계(total_amount) 추출
+                    double expenseSum = transactionBuckets.path("expense").path("total_amount").path("value").asDouble(0.0);
+
+                    // 6. 추출한 정보로 ChartCategoryDto 객체 생성
+                    return new ChartIncomeIncomeExpenseDto(
+                            dateKey,
+                            (long) incomeSum,
+                            (long) expenseSum
+                    );
+                })
+                // 7. 날짜(dateKey)를 키로, 생성된 DTO를 값으로 하는 Map으로 수집
+                .collect(Collectors.toMap(ChartIncomeIncomeExpenseDto::name, dto -> dto));
+
+        List<ChartIncomeIncomeExpenseDto> completeData = new ArrayList<>();
         LocalDate startDate = LocalDate.parse(durationStart, DateTimeFormatter.ISO_LOCAL_DATE);
         LocalDate endDate = LocalDate.parse(durationEnd, DateTimeFormatter.ISO_LOCAL_DATE);
 
         LocalDate currentDate;
         // 시작 날짜를 각 interval의 시작점으로 정렬
-        switch (intervalType.toLowerCase()) {
-            case "monthly":
+        switch (interval) {
+            case "1M":
                 currentDate = startDate.withDayOfMonth(1);
                 break;
-            case "weekly":
+            case "1W":
                 currentDate = startDate.with(java.time.DayOfWeek.MONDAY);
                 break;
             default: // daily
@@ -453,15 +485,15 @@ public class TransactionAggregationRepository {
         }
 
         while (!currentDate.isAfter(endDate)) {
-            String dateKey = currentDate.format(formatter);
-            ChartCategoryDto chartData = resultsMap.getOrDefault(dateKey, new ChartCategoryDto(dateKey, 0L, 0L));
+            String dateKey = currentDate.format(DateTimeFormatter.ofPattern(format));
+            ChartIncomeIncomeExpenseDto chartData = resultsMap.getOrDefault(dateKey, new ChartIncomeIncomeExpenseDto(dateKey, 0L, 0L));
             completeData.add(chartData);
 
-            switch (intervalType.toLowerCase()) {
-                case "monthly":
+            switch (interval) {
+                case "1M":
                     currentDate = currentDate.plusMonths(1);
                     break;
-                case "weekly":
+                case "1W":
                     currentDate = currentDate.plusWeeks(1);
                     break;
                 default: // daily
@@ -472,7 +504,7 @@ public class TransactionAggregationRepository {
         return completeData;
     }
 
-    public List<ChartData> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, List<Long> userIds, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, List<Long> userIds, String durationStart, String durationEnd) throws IOException {
         List<FieldValue> userIdFieldValues = userIds.stream()
                 .map(FieldValue::of)
                 .collect(Collectors.toList());
@@ -526,7 +558,7 @@ public class TransactionAggregationRepository {
         );
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartData(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
@@ -546,5 +578,66 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
 
         return root.path("aggregations").path("age_group_summary").path("buckets");
+    }
+
+    public IncomeExpenseDto saerchIncomeExpense(String sessionId, String durationStart, String durationEnd) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String query = QueryBuilder.incomeExpenseQuery(sessionId, durationStart == null? "0000-01-01" : durationStart, durationEnd == null? "9999-12-31" : durationEnd);
+        request.setJsonEntity(query);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult).get("aggregations").get("financial_summary").get("buckets");
+
+        long totalIncome = root.get("income").get("total_amount").get("value").longValue();
+        long totalExpense = root.get("expense").get("total_amount").get("value").longValue();
+
+        return new IncomeExpenseDto(totalIncome, totalExpense, totalIncome - totalExpense);
+    }
+
+    public MinMaxDayDto saerchMinMaxDay(String sessionId) throws IOException {
+        SearchResponse<Void> minMaxResponse = elasticsearchClient.search(s -> s
+                        .index("transaction-logs")
+                        .size(0)
+                        .query(q -> q.term(t -> t.field("sessionId").value(sessionId)))
+                        .aggregations("min_date", a -> a.min(m -> m.field("timestamp")))
+                        .aggregations("max_date", a -> a.max(m -> m.field("timestamp"))),
+                Void.class
+        );
+
+        MinAggregate minAgg = minMaxResponse.aggregations().get("min_date").min();
+        MaxAggregate maxAgg = minMaxResponse.aggregations().get("max_date").max();
+
+        String durationStart = Instant.ofEpochMilli((long)minAgg.value()).atZone(ZoneId.of("Asia/Seoul")).toLocalDate().toString();
+        String durationEnd = Instant.ofEpochMilli((long)maxAgg.value()).atZone(ZoneId.of("Asia/Seoul")).toLocalDate().toString();
+
+        return new MinMaxDayDto(durationStart, durationEnd);
+    }
+
+    public CategoryAmountTransaction searchUserCategoryTradeAmount(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
+        Request request = new Request("GET", ES_END_POINT);
+        String queryJson = QueryBuilder.userCategoryAmountQuery(sessionId, from, to, userId);
+        request.setJsonEntity(queryJson);
+
+        Response response = elasticsearchRestClient.performRequest(request);
+        String jsonResult = EntityUtils.toString(response.getEntity());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode root = objectMapper.readTree(jsonResult);
+        JsonNode buckets = root.path("aggregations").path("by_category").path("buckets");
+
+        List<CategoryAmountTransaction.AmountTransactionSummary> summaries = new ArrayList<>();
+        for (JsonNode bucket : buckets) {
+            String category = bucket.path("key").asText();
+
+            int amount;
+            amount = bucket.path("total_amount").path("value").asInt(0);
+
+            summaries.add(new CategoryAmountTransaction.AmountTransactionSummary(category, amount));
+        }
+
+        return new CategoryAmountTransaction(summaries);
     }
 }

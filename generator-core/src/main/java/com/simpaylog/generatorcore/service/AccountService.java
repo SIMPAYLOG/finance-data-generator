@@ -54,11 +54,6 @@ public class AccountService {
         return false;
     }
 
-    public BigDecimal getBalance(Long userId) {
-        Account checking = getAccountByType(userId, AccountType.CHECKING);
-        return checking.getBalance();
-    }
-
     public void deposit(Long userId, BigDecimal amount, LocalDateTime dateTime) {
         if (amount == null || amount.signum() < 0) {
             throw new CoreException("금액이 잘못되었습니다.");
@@ -75,7 +70,7 @@ public class AccountService {
         BigDecimal savingAmount = salary.multiply(savingRate).setScale(0, RoundingMode.DOWN); // 1. 이체 금액 계산
 
         if (checking.getBalance().compareTo(savingAmount) < 0) {
-            log.warn("잔액이 부족하여 이체할 수 없습니다.");
+            log.warn("잔액이 부족하여 이체할 수 없습니다. 저축할 금액: {}, 현재 잔액: {}", savingAmount, checking.getBalance());
             return;
         }
         checking.setBalance(checking.getBalance().subtract(savingAmount)); // 2. 입출금 통장에서 출금

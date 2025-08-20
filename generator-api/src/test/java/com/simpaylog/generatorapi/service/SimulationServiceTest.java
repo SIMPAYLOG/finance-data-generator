@@ -94,9 +94,9 @@ class SimulationServiceTest extends TestConfig {
                 1L,
                 "test-sessionId",
                 1,
+                10,
                 PreferenceType.DEFAULT,
                 WageType.REGULAR,
-                10,
                 "TEST-active-hour",
                 BigDecimal.valueOf(3000000),
                 BigDecimal.ZERO
