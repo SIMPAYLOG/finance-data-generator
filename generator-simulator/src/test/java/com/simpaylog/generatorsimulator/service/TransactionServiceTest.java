@@ -1,5 +1,8 @@
 package com.simpaylog.generatorsimulator.service;
 
+import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
+import com.simpaylog.generatorcore.cache.dto.DecileStat;
+import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
@@ -7,12 +10,11 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
+import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorsimulator.TestConfig;
-import com.simpaylog.generatorsimulator.cache.DecileStatsLocalCache;
 import com.simpaylog.generatorsimulator.dto.Trade;
-import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,8 @@ class TransactionServiceTest extends TestConfig {
     AccountService accountService;
     @MockitoBean
     RedisPaydayRepository redisPaydayRepository;
+    @MockitoBean
+    FixedObligationRepository fixedObligationRepository;
 
     // 0. 정상 케이스
     @Test
@@ -68,7 +72,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
@@ -127,7 +132,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
@@ -164,7 +170,8 @@ class TransactionServiceTest extends TestConfig {
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
-        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(monthlyStats);
+        var decileStat = new DecileStat(1, BigDecimal.valueOf(100000), monthlyStats);
+        when(decileStatsLocalCache.getDecileStat(anyInt())).thenReturn(decileStat);
 
         // 2. 소비 횟수 설정
         when(tradeGenerator.estimateCounts(anyInt(), anyMap()))
@@ -201,9 +208,9 @@ class TransactionServiceTest extends TestConfig {
                 1L,
                 "test-sessionId",
                 decile,
+                10,
                 PreferenceType.DEFAULT,
                 wageType,
-                10,
                 "TEST-active-hour",
                 BigDecimal.valueOf(3000000),
                 BigDecimal.ZERO

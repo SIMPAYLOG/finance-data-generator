@@ -100,7 +100,7 @@ class WageStrategyExecutorTest extends TestConfig {
     }
 
     public static UserBehaviorProfile profileFixture(BigDecimal wage, WageType wageType) {
-        return UserBehaviorProfile.of(PreferenceType.DEFAULT, wageType, 1, wage, BigDecimal.ZERO, BigDecimal.ZERO);
+        return UserBehaviorProfile.of(PreferenceType.DEFAULT, wageType, wage, BigDecimal.ZERO, BigDecimal.ZERO);
     }
 
     public static User userFixture(UserBehaviorProfile profile) {

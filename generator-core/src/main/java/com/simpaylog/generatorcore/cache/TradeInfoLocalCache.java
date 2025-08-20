@@ -1,8 +1,8 @@
-package com.simpaylog.generatorsimulator.cache;
+package com.simpaylog.generatorcore.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.simpaylog.generatorsimulator.cache.dto.TradeInfo;
+import com.simpaylog.generatorcore.cache.dto.TradeInfo;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
