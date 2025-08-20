@@ -54,10 +54,10 @@ public class AnalysisService {
 
     }
 
-    public CommonChart<HourlyTransaction.HourlySummary> searchTimeAmountAvgByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd) throws IOException {
+    public CommonChart<HourlyTransaction.HourlySummary> searchHourAmountAvgByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd);
+        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd, userId);
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
     }
 

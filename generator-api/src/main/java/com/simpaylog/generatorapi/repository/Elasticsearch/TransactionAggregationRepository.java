@@ -98,9 +98,9 @@ public class TransactionAggregationRepository {
         return new TimeHeatmapCell(results);
     }
 
-    public HourlyTransaction searchHourAmountAvg(String sessionId, LocalDate from, LocalDate to) throws IOException {
+    public HourlyTransaction searchHourAmountAvg(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.hourAggregationQuery(sessionId, from, to);
+        String queryJson = QueryBuilder.hourAggregationQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
 
         Response response = elasticsearchRestClient.performRequest(request);

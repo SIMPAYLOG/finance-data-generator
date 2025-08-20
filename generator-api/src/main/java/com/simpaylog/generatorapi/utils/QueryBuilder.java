@@ -139,73 +139,106 @@ public class QueryBuilder {
                 """.formatted(sessionId, gte, lte);
     }
 
-    public static String hourAggregationQuery(String sessionId, LocalDate from, LocalDate to) {
+    public static String hourAggregationQuery(String sessionId, LocalDate from, LocalDate to, Integer userId) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         LocalDateTime start = from.atStartOfDay();
         LocalDateTime end = to.atTime(23, 59, 59);
         String gte = start.format(formatter);
         String lte = end.format(formatter);
 
+        // userId 조건 추가
+        String userIdQuery = userId != null ? """
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
+        // bool must 내부 term 배열 구성
+        String mustQuery = userId != null ? """
+        [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": "%s",
+                  "lte": "%s",
+                  "time_zone": "Asia/Seoul"
+                }
+              }
+            },
+            {
+              "term": {
+                "sessionId": "%s"
+              }
+            },
+            %s
+        ]
+    """.formatted(gte, lte, sessionId, userIdQuery) : """
+        [
+            {
+              "range": {
+                "timestamp": {
+                  "gte": "%s",
+                  "lte": "%s",
+                  "time_zone": "Asia/Seoul"
+                }
+              }
+            },
+            {
+              "term": {
+                "sessionId": "%s"
+              }
+            }
+        ]
+    """.formatted(gte, lte, sessionId);
+
         return """
-                {
-                  "size": 0,
-                  "query": {
-                    "bool": {
-                      "must": [
-                        {
-                          "range": {
-                            "timestamp": {
-                              "gte": "%s",
-                              "lte": "%s",
-                              "time_zone": "Asia/Seoul"
-                            }
-                          }
-                        },
-                        {
-                          "term": {
-                            "sessionId": "%s"
-                          }
-                        }
-                      ]
+        {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": %s
+            }
+          },
+          "aggs": {
+            "by_transaction_type": {
+              "terms": {
+                "field": "transactionType",
+                "size": 10
+              },
+              "aggs": {
+                "by_hour": {
+                  "terms": {
+                    "script": {
+                      "lang": "painless",
+                      "source": "ZonedDateTime kst = ZonedDateTime.ofInstant(doc['timestamp'].value.toInstant(), ZoneId.of('Asia/Seoul')); return kst.getHour();"
+                    },
+                    "size": 24,
+                    "order": {
+                      "_key": "asc"
                     }
                   },
                   "aggs": {
-                    "by_transaction_type": {
-                      "terms": {
-                        "field": "transactionType",
-                        "size": 10
-                      },
-                      "aggs": {
-                        "by_hour": {
-                          "terms": {
-                            "script": {
-                              "lang": "painless",
-                              "source": "ZonedDateTime kst = ZonedDateTime.ofInstant(doc['timestamp'].value.toInstant(), ZoneId.of('Asia/Seoul')); return kst.getHour();"
-                            },
-                            "size": 24,
-                            "order": {
-                              "_key": "asc"
-                            }
-                          },
-                          "aggs": {
-                            "transaction_count": {
-                              "value_count": {
-                                "field": "uuid"
-                              }
-                            },
-                            "average_amount": {
-                              "avg": {
-                                "field": "amount"
-                              }
-                            }
-                          }
-                        }
+                    "transaction_count": {
+                      "value_count": {
+                        "field": "uuid"
+                      }
+                    },
+                    "average_amount": {
+                      "avg": {
+                        "field": "amount"
                       }
                     }
                   }
                 }
-                """.formatted(gte, lte, sessionId);
+              }
+            }
+          }
+        }
+    """.formatted(mustQuery);
     }
+
 
     public static String userTradeAmountAvgQuery(String sessionId, LocalDate from, LocalDate to, int userId) {
         LocalDateTime start = from.atStartOfDay();

@@ -57,12 +57,13 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-hour")
-    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
+    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchHourAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
-            @RequestParam LocalDate durationEnd
+            @RequestParam LocalDate durationEnd,
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeAmountAvgByPeriod(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchHourAmountAvgByPeriod(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/amount-avg/by-transaction-type")
