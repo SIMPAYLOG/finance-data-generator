@@ -19,7 +19,7 @@ public record FixedObligation(
 
     public FixedObligation {
         if (userId == null) throw new IllegalArgumentException("userId");
-        if (categoryType == null) throw new IllegalArgumentException("categoryType");
+//        if (categoryType == null) throw new IllegalArgumentException("categoryType");
         if (transactionType == null) throw new IllegalArgumentException("transactionType");
         if (amount == null || amount.signum() < 0) throw new IllegalArgumentException("amount >= 0");
         if (recurrence == null) throw new IllegalArgumentException("recurrence");
@@ -45,7 +45,5 @@ public record FixedObligation(
         OWNER_FULL // 자가(완납)
     }
 
-    public enum TimeUnit {
-        DAYS, WEEKS, MONTHS, QUARTERS, YEARS
-    }
+
 }
