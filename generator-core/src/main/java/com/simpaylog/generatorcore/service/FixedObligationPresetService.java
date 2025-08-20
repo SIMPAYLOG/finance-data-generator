@@ -41,6 +41,8 @@ public class FixedObligationPresetService implements FixedObligationPresetProvid
         out.addAll(generateTelecom(profile, effectiveFrom));
         // TODO: 3. 보험, 구독, 교통, 저축, 자동 이체
 
+        // 4. 고정 소득
+        out.addAll(generateFixedIncome(profile, effectiveFrom));
         return out;
     }
 
@@ -208,6 +210,58 @@ public class FixedObligationPresetService implements FixedObligationPresetProvid
         }
     }
 
+    private List<FixedObligation> generateFixedIncome(UserProfile profile, String effectiveFrom) {
+        List<FixedObligation> out = new ArrayList<>();
+
+        // 1) 성향 X 분위 그룹 보유 확률 판단
+        double groupProb = fixedIncomeLocalCache.getProbabilityOfAssignmentRule(profile.preferenceType(), profile.decile());
+        if (!shouldAdd(groupProb)) {
+            return List.of();
+        }
+
+        // 2) 가능한 타입 찾기
+        List<String> possibleType = fixedIncomeLocalCache.getMappingTypeByPreferenceTypeAndDecile(profile.preferenceType(), profile.decile());
+        if (possibleType.isEmpty()) {
+            return List.of();
+        }
+
+        // 3) 조건 체크
+        List<FixedIncomePolicy.SourceTemplate> eligible = new ArrayList<>();
+        for (String type : possibleType) {
+            fixedIncomeLocalCache.getSourceByType(type).ifPresent(t -> {
+                if (matches(t.conditions(), profile.decile(), profile.ageGroup())) {
+                    eligible.add(t);
+                }
+            });
+        }
+        if (eligible.isEmpty()) {
+            return List.of();
+        }
+        for (FixedIncomePolicy.SourceTemplate template : eligible) {
+            if (shouldAdd(template.occurrenceProbability())) {
+                BigDecimal amount = MoneyUtil.roundTo100(sampleAmount(template.amountRange()));
+                out.add(monthlyIncome(profile.userId(), amount, template.schedule().dayOfMonth(), template.name(), effectiveFrom));
+            }
+        }
+        return out;
+    }
+
+    private boolean matches(FixedIncomePolicy.Conditions conditions, int decile, int ageGroup) {
+        if (conditions == null) return true;
+        if (conditions.decileMin() != null && decile < conditions.decileMin()) return false;
+        if (conditions.decileMax() != null && decile > conditions.decileMax()) return false;
+        if (conditions.ageMin() != null && ageGroup < conditions.ageMin()) return false;
+        if (conditions.ageMax() != null && ageGroup > conditions.ageMax()) return false;
+        return true;
+    }
+
+    private BigDecimal sampleAmount(List<Long> range) {
+        long min = range.get(0);
+        long max = range.get(1);
+        long v = min + (long) Math.floor(ThreadLocalRandom.current().nextDouble() * (max - min + 1));
+        return BigDecimal.valueOf(v);
+    }
+
     private FixedObligation monthlyWithdraw(long userId,
                                             CategoryType category,
                                             BigDecimal amount,
@@ -236,6 +290,34 @@ public class FixedObligationPresetService implements FixedObligationPresetProvid
                 null
         );
     }
+
+    private FixedObligation monthlyIncome(long userId,
+                                          BigDecimal amount,
+                                          Integer dayOfMonth,     // null이면 말일
+                                          String desc,
+                                          String effectiveFrom) {
+
+        var rec = new FixedObligation.IntervalRecurrence(
+                TimeUnit.MONTHS,
+                1,
+                null,                 // dayOfWeek (주간만 씀)
+                dayOfMonth,           // dayOfMonth (null이면 말일)
+                (dayOfMonth == null)  // lastDayOfMonth (dayOfMonth 없으면 true)
+        );
+
+        return new FixedObligation(
+                userId,
+                null,
+                TransactionType.DEPOSIT,
+                amount,
+                rec,
+                null,
+                desc,
+                effectiveFrom,
+                null
+        );
+    }
+
 
     private boolean shouldAdd(double probability) {
         return ThreadLocalRandom.current().nextDouble() < clamp(probability);
