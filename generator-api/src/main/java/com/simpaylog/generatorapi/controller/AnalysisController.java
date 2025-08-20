@@ -150,8 +150,9 @@ public class AnalysisController {
     public Response<?> searchIncomeExpense(
             @RequestParam String sessionId,
             @RequestParam(required = false) String durationStart,
-            @RequestParam(required = false) String durationEnd
+            @RequestParam(required = false) String durationEnd,
+            @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpense(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpense(sessionId, durationStart, durationEnd, userId));
     }
 }

@@ -586,62 +586,79 @@ public class QueryBuilder {
     public static String incomeExpenseQuery(
             String sessionId,
             String durationStart,
-            String durationEnd
+            String durationEnd,
+            Integer userId
     ) {
+        // userId 조건 문자열
+        String userIdTerm = userId != null ? """
+        ,
+        {
+          "term": {
+            "userId": %d
+          }
+        }
+    """.formatted(userId) : "";
+
         return String.format(
                 """
-                                {
-                                  "size": 0,
-                                  "query": {
-                                    "bool": {
-                                      "must": [
-                                        {
-                                          "term": {
-                                            "sessionId": "%s"
-                                          }
-                                        },
-                                        {
-                                          "range": {
-                                            "timestamp": {
-                                              "from": "%s",
-                                              "to": "%s",
-                                              "time_zone": "Asia/Seoul"
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  "aggs": {
-                                    "financial_summary": {
-                                      "filters": {
-                                        "filters": {
-                                          "income": {
-                                            "term": {
-                                              "transactionType": "DEPOSIT"
-                                            }
-                                          },
-                                          "expense": {
-                                            "term": {
-                                              "transactionType": "WITHDRAW"
-                                            }
-                                          }
-                                        }
-                                      },
-                                      "aggs": {
-                                        "total_amount": {
-                                          "sum": {
-                                            "script": {
-                                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                        """, sessionId, durationStart, durationEnd);
+                {
+                  "size": 0,
+                  "query": {
+                    "bool": {
+                      "must": [
+                        {
+                          "term": {
+                            "sessionId": "%s"
+                          }
+                        }%s,
+                        {
+                          "range": {
+                            "timestamp": {
+                              "from": "%s",
+                              "to": "%s",
+                              "time_zone": "Asia/Seoul"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "aggs": {
+                    "financial_summary": {
+                      "filters": {
+                        "filters": {
+                          "income": {
+                            "term": {
+                              "transactionType": "DEPOSIT"
+                            }
+                          },
+                          "expense": {
+                            "term": {
+                              "transactionType": "WITHDRAW"
+                            }
+                          }
+                        }
+                      },
+                      "aggs": {
+                        "total_amount": {
+                          "sum": {
+                            "script": {
+                              "source": "doc.containsKey('amount') ? doc['amount'].value : 0"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                """,
+                sessionId,
+                userIdTerm,
+                durationStart,
+                durationEnd
+        );
     }
+
 
     public static String transactionInfoQuery(
             String durationStart,

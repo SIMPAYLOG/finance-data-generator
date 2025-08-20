@@ -580,9 +580,9 @@ public class TransactionAggregationRepository {
         return root.path("aggregations").path("age_group_summary").path("buckets");
     }
 
-    public IncomeExpenseDto saerchIncomeExpense(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public IncomeExpenseDto saerchIncomeExpense(String sessionId, String durationStart, String durationEnd, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String query = QueryBuilder.incomeExpenseQuery(sessionId, durationStart == null? "0000-01-01" : durationStart, durationEnd == null? "9999-12-31" : durationEnd);
+        String query = QueryBuilder.incomeExpenseQuery(sessionId, durationStart == null? "0000-01-01" : durationStart, durationEnd == null? "9999-12-31" : durationEnd, userId);
         request.setJsonEntity(query);
 
         Response response = elasticsearchRestClient.performRequest(request);

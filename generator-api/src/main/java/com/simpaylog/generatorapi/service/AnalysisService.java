@@ -35,7 +35,7 @@ public class AnalysisService {
     private final UserRepository userRepository;
 
     public CommonChart<PeriodTransaction.PTSummary> searchByPeriod(String sessionId, LocalDate durationStart, LocalDate durationEnd, String interval, Integer userId) throws IOException {
-//        getSimulationSessionOrException(sessionId);
+        getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
         AggregationInterval aggregationInterval = AggregationInterval.from(interval);
         PeriodTransaction result = transactionAggregationRepository.searchByPeriod(sessionId, durationStart, durationEnd, aggregationInterval, userId);
@@ -71,8 +71,8 @@ public class AnalysisService {
         DateValidator.validateDateRange(durationStart, durationEnd);
         HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd, userId);
         return new CommonChart<>("line", "시간 별 트랜잭션 발생 금액 평균", "시간", "평균 금액", result.results());
-        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd);
-        return result.results();
+//        HourlyTransaction result = transactionAggregationRepository.searchHourAmountAvg(sessionId, durationStart, durationEnd, userId);
+//        return result.results();
     }
 
     public CommonChart<AmountTransaction.AmountTransactionSummary> searchUserTradeAmountAvgByUserId(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
@@ -215,9 +215,9 @@ public class AnalysisService {
         }
     }
 
-    public IncomeExpenseDto searchIncomeExpense(String sessionId, String durationStart, String durationEnd) {
+    public IncomeExpenseDto searchIncomeExpense(String sessionId, String durationStart, String durationEnd, Integer userId) {
         try {
-            return transactionAggregationRepository.saerchIncomeExpense(sessionId, durationStart, durationEnd);
+            return transactionAggregationRepository.saerchIncomeExpense(sessionId, durationStart, durationEnd, userId);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
