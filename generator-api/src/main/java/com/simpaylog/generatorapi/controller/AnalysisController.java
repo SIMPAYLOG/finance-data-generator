@@ -92,9 +92,10 @@ public class AnalysisController {
     public Response<?> searchCategoryByVomlumeTop5(
             @RequestParam String sessionId,
             @RequestParam String durationStart,
-            @RequestParam String durationEnd
+            @RequestParam String durationEnd,
+            @RequestParam(required = false) Integer userId
     ) {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/category/by-userId")

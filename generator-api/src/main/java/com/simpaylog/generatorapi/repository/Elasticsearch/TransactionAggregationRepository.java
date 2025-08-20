@@ -375,35 +375,34 @@ public class TransactionAggregationRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(
+            String sessionId,
+            String durationStart,
+            String durationEnd,
+            Integer userId
+    ) throws IOException {
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                         .index("transaction-logs")
                         .size(0)
                         .query(q -> q
-                                .bool(b -> b
-                                        .must(m -> m
-                                                .term(t -> t
-                                                        .field("sessionId")
-                                                        .value(sessionId)
-                                                )
-                                        )
-                                        .must(m -> m
-                                                .range(r -> r
-                                                        .date(d -> d
-                                                                .field("timestamp")
-                                                                .from(durationStart)
-                                                                .to(durationEnd)
-                                                                .timeZone("Asia/Seoul")
-                                                        )
-                                                )
-                                        )
-                                        .must(m -> m
-                                                .term(t -> t
-                                                        .field("transactionType")
-                                                        .value("WITHDRAW")
-                                                )
-                                        )
-                                )
+                                .bool(b -> {
+                                    // 필수 조건: sessionId
+                                    b.must(m -> m.term(t -> t.field("sessionId").value(sessionId)));
+                                    // 필수 조건: timestamp 범위
+                                    b.must(m -> m.range(r -> r.date(d -> d.field("timestamp")
+                                            .from(durationStart)
+                                            .to(durationEnd)
+                                            .timeZone("Asia/Seoul")
+                                    )));
+                                    // 필수 조건: WITHDRAW
+                                    b.must(m -> m.term(t -> t.field("transactionType").value("WITHDRAW")));
+
+                                    // 선택 조건: userId
+                                    if (userId != null) {
+                                        b.must(m -> m.term(t -> t.field("userId").value(userId)));
+                                    }
+                                    return b;
+                                })
                         )
                         .aggregations("category_count", a -> a
                                 .terms(t -> t
@@ -413,9 +412,7 @@ public class TransactionAggregationRepository {
                                 )
                                 .aggregations("total_amount", sa -> sa
                                         .sum(v -> v
-                                                .script(sc -> sc
-                                                        .source("doc.containsKey('amount') ? doc['amount'].value : 0")
-                                                )
+                                                .script(sc -> sc.source("doc.containsKey('amount') ? doc['amount'].value : 0"))
                                         )
                                 )
                         ),
@@ -430,6 +427,7 @@ public class TransactionAggregationRepository {
                 ))
                 .collect(Collectors.toList());
     }
+
 
     public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
         Request request = new Request("GET", ES_END_POINT);

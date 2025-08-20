@@ -167,10 +167,10 @@ public class AnalysisService {
         return dataList;
     }
 
-    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd, Integer userId) {
         List<ChartIncomeCountDto> dataList;
         try {
-            return transactionAggregationRepository.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd);
+            return transactionAggregationRepository.searchCategoryByVomlumeTop5(sessionId, durationStart, durationEnd, userId);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
