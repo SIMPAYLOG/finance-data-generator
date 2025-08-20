@@ -3,11 +3,8 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
-import co.elastic.clients.elasticsearch._types.aggregations.DateHistogramBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -16,8 +13,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
-import com.simpaylog.generatorapi.dto.chart.ChartCategoryDto;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
@@ -145,7 +142,7 @@ public class TransactionAggregationRepository {
         // 0~23시간까지 빠진 시간도 포함해서 정렬
         List<HourlyTransaction.HourlySummary> summaries = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
-            HourlyTransaction.HourlySummary hourlySummary = hourlyMap.getOrDefault(i, new HourlyTransaction.HourlySummary(0, 0, 0, 0, 0));
+            HourlyTransaction.HourlySummary hourlySummary = hourlyMap.getOrDefault(i, new HourlyTransaction.HourlySummary(i, 0, 0, 0, 0));
             summaries.add(hourlySummary);
         }
 
@@ -269,7 +266,7 @@ public class TransactionAggregationRepository {
                 }
 
                 List<FieldValue> lastSort = hits.get(hits.size() - 1).sort();
-                if (lastSort.equals(searchAfter)) {  // 이전과 같으면 무한루프 방지
+                if (lastSort.equals(searchAfter)) {
                     break;
                 }
                 searchAfter = lastSort;
@@ -283,7 +280,7 @@ public class TransactionAggregationRepository {
         }
     }
 
-    public List<ChartCategoryDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchAllCategoryInfo(String sessionId, String durationStart, String durationEnd) throws IOException {
         return elasticsearchClient.search(s -> s
                                 .index("transaction-logs")
                                 .size(0)
@@ -327,15 +324,16 @@ public class TransactionAggregationRepository {
                                 ),
                         Void.class
                 ).aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartCategoryDto(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
                 ))
+                .sorted(Comparator.comparing(ChartIncomeCountDto::income).reversed())
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5(String sessionId, String durationStart, String durationEnd) throws IOException {
         SearchResponse<Void> response = elasticsearchClient.search(s -> s
                         .index("transaction-logs")
                         .size(0)
@@ -383,7 +381,7 @@ public class TransactionAggregationRepository {
         );
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartCategoryDto(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()
@@ -391,7 +389,7 @@ public class TransactionAggregationRepository {
                 .collect(Collectors.toList());
     }
 
-    public List<ChartCategoryDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
+    public List<ChartIncomeIncomeExpenseDto> searchTransactionInfo(String sessionId, String durationStart, String durationEnd, String interval, String format) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
         String query = QueryBuilder.transactionInfoQuery(durationStart, durationEnd, sessionId, interval, format);
         request.setJsonEntity(query);
@@ -403,7 +401,7 @@ public class TransactionAggregationRepository {
         JsonNode root = objectMapper.readTree(jsonResult);
 
 
-        Map<String, ChartCategoryDto> resultsMap = StreamSupport.stream(
+        Map<String, ChartIncomeIncomeExpenseDto> resultsMap = StreamSupport.stream(
                 root.path("aggregations").path("summary").path("buckets").spliterator(), false)
                 .map(dateBucket -> {
                     String dateKey = dateBucket.path("key_as_string").asText();
@@ -417,16 +415,16 @@ public class TransactionAggregationRepository {
                     double expenseSum = transactionBuckets.path("expense").path("total_amount").path("value").asDouble(0.0);
 
                     // 6. 추출한 정보로 ChartCategoryDto 객체 생성
-                    return new ChartCategoryDto(
+                    return new ChartIncomeIncomeExpenseDto(
                             dateKey,
                             (long) incomeSum,
                             (long) expenseSum
                     );
                 })
                 // 7. 날짜(dateKey)를 키로, 생성된 DTO를 값으로 하는 Map으로 수집
-                .collect(Collectors.toMap(ChartCategoryDto::name, dto -> dto));
+                .collect(Collectors.toMap(ChartIncomeIncomeExpenseDto::name, dto -> dto));
 
-        List<ChartCategoryDto> completeData = new ArrayList<>();
+        List<ChartIncomeIncomeExpenseDto> completeData = new ArrayList<>();
         LocalDate startDate = LocalDate.parse(durationStart, DateTimeFormatter.ISO_LOCAL_DATE);
         LocalDate endDate = LocalDate.parse(durationEnd, DateTimeFormatter.ISO_LOCAL_DATE);
 
@@ -446,7 +444,7 @@ public class TransactionAggregationRepository {
 
         while (!currentDate.isAfter(endDate)) {
             String dateKey = currentDate.format(DateTimeFormatter.ofPattern(format));
-            ChartCategoryDto chartData = resultsMap.getOrDefault(dateKey, new ChartCategoryDto(dateKey, 0L, 0L));
+            ChartIncomeIncomeExpenseDto chartData = resultsMap.getOrDefault(dateKey, new ChartIncomeIncomeExpenseDto(dateKey, 0L, 0L));
             completeData.add(chartData);
 
             switch (interval) {
@@ -464,7 +462,7 @@ public class TransactionAggregationRepository {
         return completeData;
     }
 
-    public List<ChartData> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, List<Long> userIds, String durationStart, String durationEnd) throws IOException {
+    public List<ChartIncomeCountDto> searchCategoryByVomlumeTop5EachAgeGroup(String sessionId, List<Long> userIds, String durationStart, String durationEnd) throws IOException {
         List<FieldValue> userIdFieldValues = userIds.stream()
                 .map(FieldValue::of)
                 .collect(Collectors.toList());
@@ -518,7 +516,7 @@ public class TransactionAggregationRepository {
         );
 
         return response.aggregations().get("category_count").sterms().buckets().array().stream()
-                .map(b -> new ChartData(
+                .map(b -> new ChartIncomeCountDto(
                         CategoryType.fromKey(b.key().stringValue()).getLabel(),
                         (long) b.aggregations().get("total_amount").sum().value(),
                         b.docCount()

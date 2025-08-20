@@ -4,7 +4,7 @@ import com.simpaylog.generatorapi.dto.analysis.AmountAvgTransaction;
 import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
-import com.simpaylog.generatorapi.dto.chart.ChartData;
+import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.service.AnalysisService;
@@ -58,7 +58,7 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-hour")
-    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
+    public Response<List<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd
@@ -100,7 +100,7 @@ public class AnalysisController {
             @RequestParam String durationStart,
             @RequestParam String durationEnd
     ) {
-        Map<String, List<ChartData>> response = analysisService.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, durationStart, durationEnd);
+        Map<String, List<ChartIncomeCountDto>> response = analysisService.searchCategoryByVomlumeTop5EachAgeGroup(sessionId, durationStart, durationEnd);
         return Response.success(HttpStatus.OK.value(), response);
     }
 
