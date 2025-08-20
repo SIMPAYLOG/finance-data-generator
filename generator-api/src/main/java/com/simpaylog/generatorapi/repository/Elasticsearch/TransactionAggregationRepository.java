@@ -118,9 +118,9 @@ public class TransactionAggregationRepository {
         return new PeriodTransaction(interval, results);
     }
 
-    public TimeHeatmapCell searchTimeHeatmap(String sessionId, LocalDate from, LocalDate to) throws IOException {
+    public TimeHeatmapCell searchTimeHeatmap(String sessionId, LocalDate from, LocalDate to, Integer userId) throws IOException {
         Request request = new Request("GET", ES_END_POINT);
-        String queryJson = QueryBuilder.timeHeatmapQuery(sessionId, from, to);
+        String queryJson = QueryBuilder.timeHeatmapQuery(sessionId, from, to, userId);
         request.setJsonEntity(queryJson);
         Response response = elasticsearchRestClient.performRequest(request);
         String jsonResult = EntityUtils.toString(response.getEntity());

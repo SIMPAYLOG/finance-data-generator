@@ -54,9 +54,10 @@ public class AnalysisController {
     public Response<CommonChart<TimeHeatmapCell.TCSummary>> searchByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
-            @RequestParam LocalDate durationEnd
+            @RequestParam LocalDate durationEnd,
+            @RequestParam(required = false) Integer userId
     ) throws IOException {
-        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd));
+        return Response.success(HttpStatus.OK.value(), analysisService.searchTimeHeatmap(sessionId, durationStart, durationEnd, userId));
     }
 
     @GetMapping("/amount-avg/by-hour")

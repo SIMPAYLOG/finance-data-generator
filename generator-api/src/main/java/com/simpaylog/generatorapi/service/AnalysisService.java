@@ -57,10 +57,10 @@ public class AnalysisService {
         };
     }
 
-    public CommonChart<TimeHeatmapCell.TCSummary> searchTimeHeatmap(String sessionId, LocalDate durationStart, LocalDate durationEnd) throws IOException {
+    public CommonChart<TimeHeatmapCell.TCSummary> searchTimeHeatmap(String sessionId, LocalDate durationStart, LocalDate durationEnd, Integer userId) throws IOException {
         getSimulationSessionOrException(sessionId);
         DateValidator.validateDateRange(durationStart, durationEnd);
-        TimeHeatmapCell result = transactionAggregationRepository.searchTimeHeatmap(sessionId, durationStart, durationEnd);
+        TimeHeatmapCell result = transactionAggregationRepository.searchTimeHeatmap(sessionId, durationStart, durationEnd, userId);
         return new CommonChart<>("heatmap", "요일-시간대별 소비 건수", "시간대", "요일", result.results());
 
     }
