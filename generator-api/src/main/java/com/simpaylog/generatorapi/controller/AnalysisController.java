@@ -61,7 +61,7 @@ public class AnalysisController {
     }
 
     @GetMapping("/amount-avg/by-hour")
-    public Response<CommonChart<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
+    public Response<List<HourlyTransaction.HourlySummary>> searchTimeAmountAvgByPeriod(
             @RequestParam String sessionId,
             @RequestParam LocalDate durationStart,
             @RequestParam LocalDate durationEnd,

@@ -723,12 +723,12 @@ public class QueryBuilder {
                             "filters": {
                               "income": {
                                 "term": {
-                                  "transactionType": "WITHDRAW"
+                                  "transactionType": "DEPOSIT"
                                 }
                               },
                               "expense": {
                                 "term": {
-                                  "transactionType": "DEPOSIT"
+                                  "transactionType": "WITHDRAW"
                                 }
                               }
                             }

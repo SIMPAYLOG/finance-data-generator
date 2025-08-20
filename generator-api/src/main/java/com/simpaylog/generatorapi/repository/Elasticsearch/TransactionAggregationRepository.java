@@ -443,21 +443,16 @@ public class TransactionAggregationRepository {
                     String dateKey = dateBucket.path("key_as_string").asText();
                     JsonNode transactionBuckets = dateBucket.path("transaction_summary").path("buckets");
 
-                    // 4. income 버킷에서 합계(total_amount) 추출
-                    // path()는 노드가 없으면 MissingNode를 반환하므로 .asDouble(0.0)으로 기본값 처리
                     double incomeSum = transactionBuckets.path("income").path("total_amount").path("value").asDouble(0.0);
 
-                    // 5. expense 버킷에서 합계(total_amount) 추출
                     double expenseSum = transactionBuckets.path("expense").path("total_amount").path("value").asDouble(0.0);
 
-                    // 6. 추출한 정보로 ChartCategoryDto 객체 생성
                     return new ChartIncomeIncomeExpenseDto(
                             dateKey,
                             (long) incomeSum,
                             (long) expenseSum
                     );
                 })
-                // 7. 날짜(dateKey)를 키로, 생성된 DTO를 값으로 하는 Map으로 수집
                 .collect(Collectors.toMap(ChartIncomeIncomeExpenseDto::name, dto -> dto));
 
         List<ChartIncomeIncomeExpenseDto> completeData = new ArrayList<>();
