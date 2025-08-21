@@ -159,7 +159,7 @@ public class AnalysisController {
     }
 
     @PostMapping("/transaction-history")
-    public Response<TransactionHistoryResponseDto> getUserCnt(@RequestBody TransactionHistoryRequest request) {
+    public Response<TransactionHistoryResponseDto> getTransactionHistory(@RequestBody TransactionHistoryRequest request) {
         return Response.success(HttpStatus.OK.value(), analysisService.getTransactionHistory(request));
     }
 }
