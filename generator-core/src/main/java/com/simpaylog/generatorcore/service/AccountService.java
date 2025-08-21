@@ -30,23 +30,23 @@ public class AccountService {
         Account savings = getAccountByType(userId, AccountType.SAVINGS);
         if (checking.getBalance().compareTo(amount) >= 0) {
             checking.setBalance(checking.getBalance().subtract(amount));
-            log.info("userId={} [출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
+//            log.info("userId={} [출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
             return true;
         }
         // 음수 허용
         if (checking.getBalance().subtract(amount).compareTo(checking.getOverdraftLimit().negate()) >= 0) {
             checking.setBalance(checking.getBalance().subtract(amount));
-            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
+//            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
             return true;
         }
         // 예금 인출 시도
         BigDecimal additionalWithdraw = amount.subtract(checking.getBalance().add(checking.getOverdraftLimit())); // 추가로 필요한 출금액
         if (savings != null && savings.getBalance().compareTo(additionalWithdraw) >= 0) {
             savings.setBalance(savings.getBalance().subtract(additionalWithdraw));
-            log.info("userId={} [송금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, savings.getType().getName(), dateTime, amount, savings.getBalance());
+//            log.info("userId={} [송금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, savings.getType().getName(), dateTime, amount, savings.getBalance());
             deposit(userId, additionalWithdraw, dateTime); // 입출금 통장으로 송금
             checking.setBalance(checking.getOverdraftLimit().negate()); // 지출 발생
-            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
+//            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
             return true;
         }
         // 실패
@@ -60,7 +60,7 @@ public class AccountService {
         }
         Account checking = getAccountByType(userId, AccountType.CHECKING);
         checking.setBalance(checking.getBalance().add(amount));
-        log.info("userId={} [입금][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
+//        log.info("userId={} [입금][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
     }
 
     public void transferToSavings(Long userId, BigDecimal salary, BigDecimal savingRate, LocalDateTime dateTime) {
@@ -74,9 +74,9 @@ public class AccountService {
             return;
         }
         checking.setBalance(checking.getBalance().subtract(savingAmount)); // 2. 입출금 통장에서 출금
-        log.info("userId={} [예금 통장으로 이체][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, savingAmount, checking.getBalance());
+//        log.info("userId={} [예금 통장으로 이체][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, savingAmount, checking.getBalance());
         saving.setBalance(saving.getBalance().add(savingAmount)); // 3. 예금 통장에 입금
-        log.info("userId={} [저축][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, saving.getType().getName(), dateTime, savingAmount, saving.getBalance());
+//        log.info("userId={} [저축][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, saving.getType().getName(), dateTime, savingAmount, saving.getBalance());
     }
 
     public void applyMonthlyInterest(Long userId, LocalDateTime dateTime) {
@@ -91,7 +91,7 @@ public class AccountService {
                 .divide(BigDecimal.valueOf(100), 0, RoundingMode.DOWN); // 퍼센트로 계산
 
         account.setBalance(principal.add(interest));
-        log.info("userId={} [입금-이자발생][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, account.getType().getName(), dateTime, interest, account.getBalance());
+//        log.info("userId={} [입금-이자발생][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, account.getType().getName(), dateTime, interest, account.getBalance());
     }
 
     public Account getAccountByType(Long userId, AccountType type) {

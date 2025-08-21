@@ -6,15 +6,22 @@ import co.elastic.clients.transport.rest_client.RestClientTransport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ElasticsearchConfig {
 
+    @Value("${elasticsearch.host}")
+    private String host;
+
+    @Value("${elasticsearch.port}")
+    private int port;
+
     @Bean
     public ElasticsearchClient elasticsearchClient(ObjectMapper objectMapper) {
-        RestClient restClient = RestClient.builder(new HttpHost("localhost", 9200)).build();
+        RestClient restClient = RestClient.builder(new HttpHost(host, port)).build();
         JacksonJsonpMapper jsonpMapper = new JacksonJsonpMapper(objectMapper);
         RestClientTransport transport = new RestClientTransport(restClient, jsonpMapper);
         return new ElasticsearchClient(transport);

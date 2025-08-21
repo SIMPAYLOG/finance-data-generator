@@ -47,8 +47,12 @@ subprojects {
 	}
 }
 
-tasks.bootJar {
+tasks.named('bootJar') {  // 실행 가능한 JAR 파일 생성 방지
 	enabled = false
+}
+
+tasks.named('jar') { // 각 모듈의 라이브러리 JAR 파일 생성 | 다른 프로젝트에서 라이브러리 용도로 사용할 때
+	enabled = true
 }
 
 tasks.named('test') {
