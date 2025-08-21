@@ -42,7 +42,7 @@ public class TransactionExportServiceTest extends TestConfig {
         TransactionLogDocument doc = new TransactionLogDocument(
                 "uuid1", 1001L, LocalDateTime.now(),
                 TransactionLogDocument.TransactionType.DEPOSIT, "급여",
-                new BigDecimal("10000"), new BigDecimal("0"), new BigDecimal("10000")
+                new BigDecimal("10000")
         );
 
         doAnswer(invocation -> {
@@ -68,7 +68,7 @@ public class TransactionExportServiceTest extends TestConfig {
         TransactionLogDocument doc = new TransactionLogDocument(
                 "uuid2", 2002L, LocalDateTime.of(2025, 7, 2, 9, 0),
                 TransactionLogDocument.TransactionType.WITHDRAW, "현금 인출",
-                new BigDecimal("5000"), new BigDecimal("10000"), new BigDecimal("5000")
+                new BigDecimal("5000")
         );
 
         doAnswer(invocation -> {
@@ -126,7 +126,7 @@ public class TransactionExportServiceTest extends TestConfig {
         TransactionLogDocument invalidDoc = new TransactionLogDocument(
                 "uuid3", 3003L, LocalDateTime.now(),
                 TransactionLogDocument.TransactionType.DEPOSIT, null,
-                new BigDecimal("5000"), new BigDecimal("1000"), new BigDecimal("6000")
+                new BigDecimal("5000")
         );
 
         doAnswer(invocation -> {
