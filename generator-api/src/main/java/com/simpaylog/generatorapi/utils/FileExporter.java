@@ -71,9 +71,7 @@ public class FileExporter {
                         t.timestamp().format(CSV_DATE_FORMATTER),
                         t.transactionType().name(),
                         t.description(),
-                        t.amount().toPlainString(),
-                        t.balanceBefore().toPlainString(),
-                        t.balanceAfter().toPlainString()
+                        t.amount().toPlainString()
                 );
                 counter[0]++;
                 if (counter[0] % 1000 == 0) {
@@ -119,9 +117,7 @@ public class FileExporter {
                 t.timestamp() == null ||
                 t.transactionType() == null ||
                 t.description() == null ||
-                t.amount() == null ||
-                t.balanceBefore() == null ||
-                t.balanceAfter() == null) {
+                t.amount() == null) {
             throw new CoreException("TransactionLogDocument 필드 중 null 값이 존재합니다");
         }
     }

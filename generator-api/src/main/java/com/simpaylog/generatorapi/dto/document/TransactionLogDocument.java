@@ -25,27 +25,21 @@ public record TransactionLogDocument(
         @Field(type = FieldType.Text) // 전문 검색용 text 타입
         String description,
         @Field(type = FieldType.Double) // 금액은 실수 타입으로
-        BigDecimal amount,
-        @Field(type = FieldType.Double)
-        BigDecimal balanceBefore,
-        @Field(type = FieldType.Double)
-        BigDecimal balanceAfter
+        BigDecimal amount
 ) {
     public enum TransactionType {
         WITHDRAW,
         DEPOSIT
     }
 
-    public static TransactionLogDocument of(Long userId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount, BigDecimal balanceBefore, BigDecimal balanceAfter) {
+    public static TransactionLogDocument of(Long userId, LocalDateTime timestamp, TransactionType transactionType,String description, BigDecimal amount) {
         return new TransactionLogDocument(
                 UUID.randomUUID().toString(),
                 userId,
                 timestamp,
                 transactionType,
                 description,
-                amount,
-                balanceBefore,
-                balanceAfter
+                amount
         );
     }
 
