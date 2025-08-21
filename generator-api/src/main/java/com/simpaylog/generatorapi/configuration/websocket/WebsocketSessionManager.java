@@ -24,7 +24,6 @@ public class WebsocketSessionManager {
     }
 
     public void sendProgressUpdate(String message) {
-        log.info("Sending progress update: {}", message);
         sessions.forEach(session -> {
             try {
                 if (session.isOpen()) {

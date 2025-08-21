@@ -56,15 +56,15 @@ public class TransactionService {
 
             Map<CategoryType, Integer> eventsCnt = tradeGenerator.estimateCounts(dto.decile(), segBudget);
             SimpleEnvelopeScaler scaler = new SimpleEnvelopeScaler(segBudget, eventsCnt);
-            for (CategoryType ct : CategoryType.values()) {
-                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
-            }
+//            for (CategoryType ct : CategoryType.values()) {
+//                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
+//            }
             for (LocalDate date = seg.start(); !date.isAfter(seg.end()); date = date.plusDays(1)) {
                 generateTransaction(dto, date, scaler);
             }
-            for (CategoryType ct : CategoryType.values()) {
-                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
-            }
+//            for (CategoryType ct : CategoryType.values()) {
+//                log.info("{}: 예산={}, 횟수={}", ct.getLabel(), scaler.getRemainingBudget(ct), scaler.getRemainingEvents(ct));
+//            }
         }
     }
 
@@ -277,7 +277,7 @@ public class TransactionService {
     private void generateMessage(TransactionLog transactionLog) {
         try {
             transactionLogProducer.send(transactionLog);
-            log.info("{}", transactionLog);
+//            log.info("{}", transactionLog);
         } catch (Exception e) {
             // 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
             log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
