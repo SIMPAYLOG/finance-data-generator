@@ -5,6 +5,7 @@ import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
+import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
@@ -12,6 +13,7 @@ import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregatio
 import com.simpaylog.generatorapi.utils.DateValidator;
 import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
 import com.simpaylog.generatorcore.dto.analyze.UserAgeInfo;
+import com.simpaylog.generatorcore.dto.response.UserCntResponse;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.UserRepository;
@@ -214,6 +216,15 @@ public class AnalysisService {
     public IncomeExpenseDto searchIncomeExpense(String sessionId, String durationStart, String durationEnd, Integer userId) {
         try {
             return transactionAggregationRepository.saerchIncomeExpense(sessionId, durationStart, durationEnd, userId);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
+        }
+    }
+
+    public TransactionHistoryResponseDto getTransactionHistory(TransactionHistoryRequest request) {
+        try {
+            return transactionAggregationRepository.getTransactionHistory(request);
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new ApiException(ErrorCode.ELASTICSEARCH_CONNECTION_ERROR);
