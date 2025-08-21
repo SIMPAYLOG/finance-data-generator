@@ -38,11 +38,21 @@ subprojects {
 		runtimeOnly("com.h2database:h2")
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+		implementation 'com.fasterxml.jackson.core:jackson-databind'
+		implementation 'org.springframework.kafka:spring-kafka'                    // Kafka 기본 (블로킹) 프로듀서/컨슈머 - 필요시 사용
+		implementation 'io.projectreactor.kafka:reactor-kafka'                      // WebFlux용 논블로킹 Kafka 클라이언트 (반드시 추가)
+		implementation 'org.apache.commons:commons-csv:1.11.0'
+		implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	}
 }
 
-tasks.bootJar {
+tasks.named('bootJar') {  // 실행 가능한 JAR 파일 생성 방지
 	enabled = false
+}
+
+tasks.named('jar') { // 각 모듈의 라이브러리 JAR 파일 생성 | 다른 프로젝트에서 라이브러리 용도로 사용할 때
+	enabled = true
 }
 
 tasks.named('test') {

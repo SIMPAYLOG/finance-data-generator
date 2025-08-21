@@ -1,42 +1,163 @@
 spring:
   profiles:
     active: local
+    group:
+      local:
+        - common
+      test:
+        - common
+      demo:
+---
+spring:
+  config:
+    activate:
+      on-profile: common
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+  kafka:
+    bootstrap-servers: localhost:9092, localhost:9093, localhost:9094
+    consumer:
+      properties:
+        spring.json.trusted.packages: "com.simpaylog.*"
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: simulator
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      transaction: topic-transaction
+      tx:
+        request: topic-transaction-request
+        response: topic-transaction-response
+
+
 ---
 spring:
   config:
     activate:
       on-profile: local
+
   datasource:
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: 30
       max-lifetime: 30000
-      connection-timeout: 3000
+      connection-timeout: 3000 # 커넥션을 얻기 위한 최대 대기 시간
+      validation-timeout: 3000 # 커넥션 유효성 검사를 위한 제한 시간
+      minimum-idle: 5 # 최소 유휴 커넥션 수
     url: jdbc:postgresql://localhost:5432/finance-data
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     database: postgresql
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
+        jdbc:
+          batch_size: 100
+        order_inserts: true
         format_sql: true
+    show-sql: false
+    open-in-view: false
 
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
+
+logging:
+  level:
+    root: info
 ---
 spring:
   config:
     activate:
       on-profile: test
+
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;
     driver-class-name: org.h2.Driver
     username: sa
     password:
-    jpa:
+
+elasticsearch:
+  host: localhost
+  port: 9200
+  scheme: http
+
+  sql:
+    init:
+      mode: always
+
+---
+spring:
+  config:
+    activate:
+      on-profile: demo
+
+  # 컨테이너 네트워크 기준 기본값 (환경변수로 쉽게 덮어쓰기 가능)
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:kafka-1:9092,kafka-2:9093,kafka-3:9094}
+    consumer:
+      properties:
+        spring.json.trusted.packages: "com.simpaylog.*"
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: ${KAFKA_CONSUMER_GROUP:simulator}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    topic:
+      transaction: ${KAFKA_TOPIC_TRANSACTION:topic-transaction}
+      tx:
+        request: ${KAFKA_TOPIC_TX_REQUEST:topic-transaction-request}
+        response: ${KAFKA_TOPIC_TX_RESPONSE:topic-transaction-response}
+
+  # API 런타임에서 DB가 필요하다면 (simulator는 JPA 의존 없으면 무시됨)
+  datasource:
+    url: jdbc:postgresql://fdg-database:5432/finance-data
+    username: ${SPRING_DATASOURCE_USERNAME:demo}
+    password: ${SPRING_DATASOURCE_PASSWORD:demo}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:30}
+      max-lifetime: ${HIKARI_MAX_LIFETIME:30000}
+      connection-timeout: ${HIKARI_CONN_TIMEOUT:3000}
+      validation-timeout: ${HIKARI_VALIDATION_TIMEOUT:3000}
+      minimum-idle: ${HIKARI_MIN_IDLE:5}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:create}
+    properties:
       hibernate:
-        ddl-auto: create-drop
-      show-sql: true
-    sql:
-      init:
-        mode: always
+        jdbc:
+          batch_size: ${HIBERNATE_JDBC_BATCH_SIZE:100}
+        order_inserts: ${HIBERNATE_ORDER_INSERTS:true}
+        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+    show-sql: ${JPA_SHOW_SQL:false}
+    open-in-view: ${JPA_OPEN_IN_VIEW:false}
+
+elasticsearch:
+  host: elasticsearch
+  port: 9200
+  scheme: http
+
+logging:
+  level:
+    root: info

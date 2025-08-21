@@ -1,6 +1,9 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: generator-api
-
-server:
-  port: 8080
+  mvc:
+    async:
+      request-timeout: 500000

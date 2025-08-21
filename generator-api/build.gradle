@@ -2,7 +2,10 @@ dependencies {
     implementation project(':generator-core') // generator-core 모듈 의존성
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch' //ES 구문을 JPA와 비슷하게 사용 가능하도록 해줌
 }
 tasks.named('test') {
     useJUnitPlatform()

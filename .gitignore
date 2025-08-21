@@ -39,3 +39,5 @@ out/
 ### custom ###
 .env
 database/data/**
+/monitoring/grafana/**
+/monitoring/prometheus/volume/**
