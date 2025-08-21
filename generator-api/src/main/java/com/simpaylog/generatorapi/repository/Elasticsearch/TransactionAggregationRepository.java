@@ -2,6 +2,7 @@ package com.simpaylog.generatorapi.repository.Elasticsearch;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
@@ -16,6 +17,7 @@ import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.analyze.MinMaxDayDto;
@@ -628,5 +630,74 @@ public class TransactionAggregationRepository {
         }
 
         return new CategoryAmountTransaction(summaries);
+    }
+
+    public TransactionHistoryResponseDto getTransactionHistory(TransactionHistoryRequest request) throws IOException {
+        SortOptions sortTimestamp = new SortOptions.Builder()
+                .field(f -> f
+                        .field("timestamp")
+                        .order(SortOrder.Asc)
+                        .format("strict_date_optional_time_nanos")
+                )
+                .build();
+        SortOptions sortDoc = new SortOptions.Builder()
+                .doc(d -> d.order(SortOrder.Asc)) // .field() 대신 .doc() 사용
+                .build();
+
+        // 2. SearchRequest.Builder 생성
+        SearchRequest.Builder requestBuilder = new SearchRequest.Builder()
+                .index("transaction-logs")
+                .size(50)
+                .query(q -> q
+                        .bool(b -> b
+                                .must(m -> m.term(t -> t.field("userId").value(request.userId())))
+                                .must(m -> m.term(t -> t.field("sessionId").value(request.sessionId())))
+                                .must(m -> m.range(r -> r
+                                        .date(d -> d
+                                                .field("timestamp")
+                                                .from(request.durationStart().atStartOfDay().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
+                                                .to(request.durationEnd().atTime(23, 59, 59).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))
+                                                .timeZone("Asia/Seoul")
+                                        )
+                                ))
+                        )
+                )
+                .sort(sortTimestamp, sortDoc)
+                .source(s -> s
+                        .filter(f -> f
+                                .includes("timestamp", "category", "description", "amount", "transactionType")
+                        )
+                );
+
+        if (request.searchAfter() != null && !request.searchAfter().isEmpty()) {
+            requestBuilder.searchAfter(
+                    request.searchAfter()
+                            .stream()
+                            .map(FieldValue::of)
+                            .collect(Collectors.toList())
+            );
+        }
+        SearchResponse<TransactionHistoryDataDto> response = elasticsearchClient.search(requestBuilder.build(), TransactionHistoryDataDto.class);
+
+        List<Hit<TransactionHistoryDataDto>> hits = response.hits().hits();
+
+        // 6. 결과 DTO로 변환
+        List<TransactionHistoryDataDto> transactions = hits.stream()
+                .map(Hit::source)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        // 7. 다음 페이지를 위한 nextSearchAfter 값 추출
+        List<String> nextSearchAfter = null;
+        if (!hits.isEmpty()) {
+            List<FieldValue> sortValues = hits.get(hits.size() - 1).sort();
+
+            // 2. stream을 사용해 List<FieldValue>를 List<String>으로 변환합니다.
+            nextSearchAfter = sortValues.stream()
+                    .map(value -> value._get().toString()) // 각 FieldValue의 내부 값을 문자열로 변환
+                    .collect(Collectors.toList());
+        }
+
+        return new TransactionHistoryResponseDto(transactions, nextSearchAfter);
     }
 }
