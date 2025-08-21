@@ -1,4 +1,4 @@
-# 🏦 [SIMPAYLOG]Transaction Data Generator
+# 🏦 [SIMPAYLOG]finance-data-generator
 
 ## 📌 프로젝트 개요 (Overview)
 Transaction Data Generator는 **현실성 있는 금융 트랜잭션 데이터를 자동으로 생성**하는 서비스입니다.  
