@@ -5,15 +5,13 @@ import com.simpaylog.generatorapi.dto.analysis.HourlyTransaction;
 import com.simpaylog.generatorapi.dto.analysis.PeriodTransaction;
 import com.simpaylog.generatorapi.dto.analysis.TimeHeatmapCell;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
+import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
 import com.simpaylog.generatorapi.dto.response.CommonChart;
 import com.simpaylog.generatorapi.dto.response.Response;
 import com.simpaylog.generatorapi.service.AnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -158,5 +156,10 @@ public class AnalysisController {
             @RequestParam(required = false) Integer userId
     ) {
         return Response.success(HttpStatus.OK.value(), analysisService.searchIncomeExpense(sessionId, durationStart, durationEnd, userId));
+    }
+
+    @PostMapping("/transaction-history")
+    public Response<TransactionHistoryResponseDto> getUserCnt(@RequestBody TransactionHistoryRequest request) {
+        return Response.success(HttpStatus.OK.value(), analysisService.getTransactionHistory(request));
     }
 }
