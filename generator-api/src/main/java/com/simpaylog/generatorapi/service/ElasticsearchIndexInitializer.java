@@ -6,19 +6,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Slf4j
+@Profile("!test")
 @Component
 @RequiredArgsConstructor
 public class ElasticsearchIndexInitializer {
     private final RestClient elasticsearchRestClient;
     private static final String ES_END_POINT = "/transaction-logs";
 
+
     @PostConstruct
-    public void init() throws IOException, InterruptedException {
+    public void init() throws InterruptedException {
         int retry = 0;
         int maxRetry = 10;
         while (retry < maxRetry) {
