@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "location": "서울",
+    "neighbors": [
+      { "name": "서울", "weight": 0.8 },
+      { "name": "인천", "weight": 0.05 },
+      { "name": "수원", "weight": 0.04 },
+      { "name": "성남", "weight": 0.04 },
+      { "name": "의정부", "weight": 0.04 },
+      { "name": "춘천", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 2,
+    "location": "인천",
+    "neighbors": [
+      { "name": "인천", "weight": 0.8 },
+      { "name": "서울", "weight": 0.05 },
+      { "name": "수원", "weight": 0.04 },
+      { "name": "안산", "weight": 0.04 },
+      { "name": "평택", "weight": 0.04 },
+      { "name": "강화", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 3,
+    "location": "수원",
+    "neighbors": [
+      { "name": "수원", "weight": 0.8 },
+      { "name": "서울", "weight": 0.05 },
+      { "name": "인천", "weight": 0.04 },
+      { "name": "안산", "weight": 0.04 },
+      { "name": "용인", "weight": 0.04 },
+      { "name": "평택", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 4,
+    "location": "대전",
+    "neighbors": [
+      { "name": "대전", "weight": 0.8 },
+      { "name": "천안", "weight": 0.05 },
+      { "name": "공주", "weight": 0.04 },
+      { "name": "청주", "weight": 0.04 },
+      { "name": "세종", "weight": 0.04 },
+      { "name": "논산", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 5,
+    "location": "천안",
+    "neighbors": [
+      { "name": "천안", "weight": 0.8 },
+      { "name": "대전", "weight": 0.05 },
+      { "name": "공주", "weight": 0.04 },
+      { "name": "아산", "weight": 0.04 },
+      { "name": "평택", "weight": 0.04 },
+      { "name": "청주", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 6,
+    "location": "청주",
+    "neighbors": [
+      { "name": "청주", "weight": 0.8 },
+      { "name": "대전", "weight": 0.05 },
+      { "name": "천안", "weight": 0.04 },
+      { "name": "공주", "weight": 0.04 },
+      { "name": "세종", "weight": 0.04 },
+      { "name": "충주", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 7,
+    "location": "전주",
+    "neighbors": [
+      { "name": "전주", "weight": 0.8 },
+      { "name": "익산", "weight": 0.05 },
+      { "name": "정읍", "weight": 0.04 },
+      { "name": "군산", "weight": 0.04 },
+      { "name": "남원", "weight": 0.04 },
+      { "name": "광주", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 8,
+    "location": "광주",
+    "neighbors": [
+      { "name": "광주", "weight": 0.8 },
+      { "name": "나주", "weight": 0.05 },
+      { "name": "순천", "weight": 0.04 },
+      { "name": "목포", "weight": 0.04 },
+      { "name": "전주", "weight": 0.04 },
+      { "name": "여수", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 9,
+    "location": "부산",
+    "neighbors": [
+      { "name": "부산", "weight": 0.8 },
+      { "name": "울산", "weight": 0.05 },
+      { "name": "양산", "weight": 0.04 },
+      { "name": "김해", "weight": 0.04 },
+      { "name": "창원", "weight": 0.04 },
+      { "name": "거제", "weight": 0.03 }
+    ]
+  },
+  {
+    "id": 10,
+    "location": "대구",
+    "neighbors": [
+      { "name": "대구", "weight": 0.8 },
+      { "name": "구미", "weight": 0.05 },
+      { "name": "경산", "weight": 0.04 },
+      { "name": "포항", "weight": 0.04 },
+      { "name": "안동", "weight": 0.04 },
+      { "name": "창원", "weight": 0.03 }
+    ]
+  }
+]
