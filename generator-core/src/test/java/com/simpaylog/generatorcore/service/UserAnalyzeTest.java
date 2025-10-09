@@ -96,7 +96,7 @@ public class UserAnalyzeTest extends TestConfig {
             int occupationCode,
             PreferenceType preferenceType
     ) {
-        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, WageType.DAILY, getIncomeValue(), getAssetValue(), SavingRateCalculator.calculateSavingRate(8, age, preferenceType));
+        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, WageType.DAILY, getIncomeValue(), getAssetValue(), SavingRateCalculator.calculateSavingRate(8, age, preferenceType), 1);
         User mockUser = User.of(name, profile, 8, age, gender, occupationCode, "TEST-OCCUPATION", 1, accountFactory.generateAccountsFor(getIncomeValue(), getAssetValue()));
         mockUser.setSessionId("TEST-sessionId");
         return mockUser;

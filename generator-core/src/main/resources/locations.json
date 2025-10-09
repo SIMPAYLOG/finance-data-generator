@@ -4,119 +4,134 @@
     "location": "서울",
     "neighbors": [
       { "location": "서울", "weight": 0.8 },
-      { "location": "인천", "weight": 0.05 },
-      { "location": "수원", "weight": 0.04 },
-      { "location": "성남", "weight": 0.04 },
-      { "location": "의정부", "weight": 0.04 },
-      { "location": "춘천", "weight": 0.03 }
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 2,
-    "location": "인천",
+    "location": "부산",
     "neighbors": [
-      { "location": "인천", "weight": 0.8 },
-      { "location": "서울", "weight": 0.05 },
-      { "location": "수원", "weight": 0.04 },
-      { "location": "안산", "weight": 0.04 },
-      { "location": "평택", "weight": 0.04 },
-      { "location": "강화", "weight": 0.03 }
+      { "location": "부산", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 3,
-    "location": "수원",
+    "location": "인천",
     "neighbors": [
-      { "location": "수원", "weight": 0.8 },
-      { "location": "서울", "weight": 0.05 },
-      { "location": "인천", "weight": 0.04 },
-      { "location": "안산", "weight": 0.04 },
-      { "location": "용인", "weight": 0.04 },
-      { "location": "평택", "weight": 0.03 }
+      { "location": "인천", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 4,
-    "location": "대전",
+    "location": "대구",
     "neighbors": [
-      { "location": "대전", "weight": 0.8 },
-      { "location": "천안", "weight": 0.05 },
-      { "location": "공주", "weight": 0.04 },
-      { "location": "청주", "weight": 0.04 },
-      { "location": "세종", "weight": 0.04 },
-      { "location": "논산", "weight": 0.03 }
+      { "location": "대구", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 5,
-    "location": "천안",
+    "location": "대전",
     "neighbors": [
-      { "location": "천안", "weight": 0.8 },
-      { "location": "대전", "weight": 0.05 },
-      { "location": "공주", "weight": 0.04 },
-      { "location": "아산", "weight": 0.04 },
-      { "location": "평택", "weight": 0.04 },
-      { "location": "청주", "weight": 0.03 }
+      { "location": "대전", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 6,
-    "location": "청주",
+    "location": "광주",
     "neighbors": [
-      { "location": "청주", "weight": 0.8 },
-      { "location": "대전", "weight": 0.05 },
-      { "location": "천안", "weight": 0.04 },
-      { "location": "공주", "weight": 0.04 },
-      { "location": "세종", "weight": 0.04 },
-      { "location": "충주", "weight": 0.03 }
+      { "location": "광주", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 7,
-    "location": "전주",
+    "location": "울산",
     "neighbors": [
-      { "location": "전주", "weight": 0.8 },
-      { "location": "익산", "weight": 0.05 },
-      { "location": "정읍", "weight": 0.04 },
-      { "location": "군산", "weight": 0.04 },
-      { "location": "남원", "weight": 0.04 },
-      { "location": "광주", "weight": 0.03 }
+      { "location": "울산", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 8,
-    "location": "광주",
+    "location": "세종",
     "neighbors": [
-      { "location": "광주", "weight": 0.8 },
-      { "location": "나주", "weight": 0.05 },
-      { "location": "순천", "weight": 0.04 },
-      { "location": "목포", "weight": 0.04 },
-      { "location": "전주", "weight": 0.04 },
-      { "location": "여수", "weight": 0.03 }
+      { "location": "세종", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "제주도", "weight": 0.025 }
     ]
   },
   {
     "id": 9,
-    "location": "부산",
+    "location": "제주도",
     "neighbors": [
-      { "location": "부산", "weight": 0.8 },
-      { "location": "울산", "weight": 0.05 },
-      { "location": "양산", "weight": 0.04 },
-      { "location": "김해", "weight": 0.04 },
-      { "location": "창원", "weight": 0.04 },
-      { "location": "거제", "weight": 0.03 }
-    ]
-  },
-  {
-    "id": 10,
-    "location": "대구",
-    "neighbors": [
-      { "location": "대구", "weight": 0.8 },
-      { "location": "구미", "weight": 0.05 },
-      { "location": "경산", "weight": 0.04 },
-      { "location": "포항", "weight": 0.04 },
-      { "location": "안동", "weight": 0.04 },
-      { "location": "창원", "weight": 0.03 }
+      { "location": "제주도", "weight": 0.8 },
+      { "location": "서울", "weight": 0.025 },
+      { "location": "부산", "weight": 0.025 },
+      { "location": "인천", "weight": 0.025 },
+      { "location": "대구", "weight": 0.025 },
+      { "location": "대전", "weight": 0.025 },
+      { "location": "광주", "weight": 0.025 },
+      { "location": "울산", "weight": 0.025 },
+      { "location": "세종", "weight": 0.025 }
     ]
   }
 ]
