@@ -8,9 +8,11 @@ import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
+import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
+import com.simpaylog.generatorcore.utils.LocationAllocator;
 import com.simpaylog.generatorcore.utils.MoneyUtil;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
@@ -42,6 +44,9 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final FixedObligationRepository fixedObligationRepository;
     private final TradeGenerator tradeGenerator;
+    private final UserBehaviorProfileRepository userBehaviorProfileRepository;
+    private final StoreNameGenerator storeNameGenerator;
+    private final LocationAllocator locationAllocator;
 
     public void generate(TransactionUserDto dto, LocalDate from, LocalDate to) {
         for (MonthSegment seg : splitByMonth(from, to)) {
@@ -91,8 +96,11 @@ public class TransactionService {
                 if(shouldSkipThin(dto.userId(), userTrade.cost())) { // 발생 가능한 소비인지 체크
                     continue;
                 }
+
+                int locationId = userBehaviorProfileRepository.findLocationIdById(dto.userId());
+                String vendorName = storeNameGenerator.getVendor(dto.userId(), userTrade.tradeName(), locationAllocator.getRandomLocation(locationId));
                 // 4. 결제 요청
-                TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, "가맹점명", userTrade.tradeName());
+                TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, vendorName, userTrade.tradeName());
                 if (result.success()) {
                     scaler.applySpend(picked, scaledAmount);
                     lastUsedMap.put(picked, curTime);

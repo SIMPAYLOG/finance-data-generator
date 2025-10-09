@@ -28,7 +28,7 @@ public record TransactionLog(
 
         BigDecimal amount,                   // 거래 금액
         BigDecimal balanceBefore,            // 거래 전 잔액
-        BigDecimal balanceAfter              // 거래 후 잔액
+        BigDecimal balanceAfter             // 거래 후 잔액
 ) {
 
     // ---- 정적 생성 메서드 ----
@@ -68,4 +68,5 @@ public record TransactionLog(
                 balanceAfter
         );
     }
+
 }
