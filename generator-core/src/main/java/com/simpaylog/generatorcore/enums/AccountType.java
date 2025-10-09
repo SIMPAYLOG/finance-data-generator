@@ -7,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum AccountType {
     CHECKING("입출금 통장"),
-    SAVINGS("예금 통장");
+    SAVINGS("저축 통장");
 
     private final String name;
 }

@@ -5,6 +5,7 @@ import com.simpaylog.generatorcore.cache.dto.DecileStat;
 import com.simpaylog.generatorcore.dto.CategoryType;
 import com.simpaylog.generatorcore.dto.DailyTransactionResult;
 import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.TransactionResult;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
@@ -28,6 +29,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,6 +71,7 @@ class TransactionServiceTest extends TestConfig {
         LocalDate from = LocalDate.of(2025, 7, 1);
         LocalDate to = LocalDate.of(2025, 7, 3);
         int days = Math.toIntExact(ChronoUnit.DAYS.between(from, to) + 1);
+        TransactionResult result = new TransactionResult(true, "", new ArrayList<>());
         // 1. 월 예산 설정
         var monthlyStats = new EnumMap<CategoryType, BigDecimal>(CategoryType.class);
         monthlyStats.put(CategoryType.GROCERIES_NON_ALCOHOLIC_BEVERAGES, BigDecimal.valueOf(budget));
@@ -96,17 +99,19 @@ class TransactionServiceTest extends TestConfig {
                 .thenReturn(new Trade("과일세트", BigDecimal.valueOf(20000)));
         // 5. 금액 체크
         when(accountService.getAccountByType(anyLong(), eq(AccountType.CHECKING)))
-                .thenReturn(createCheckingAccount(BigDecimal.valueOf(100000), BigDecimal.ZERO));
+                .thenReturn(createCheckingAccount(BigDecimal.valueOf(100000)));
+        when(accountService.getAccountByType(anyLong(), eq(AccountType.SAVINGS)))
+                .thenReturn(createSavingAccount(BigDecimal.valueOf(100000)));
         // 6. 결제 성공
-        when(accountService.withdraw(anyLong(), any(BigDecimal.class), any(LocalDateTime.class)))
-                .thenReturn(true);
+        when(accountService.spendCard(anyLong(), anyString(), any(LocalDateTime.class), any(BigDecimal.class), anyString(), anyString()))
+                .thenReturn(result);
         // When
         transactionService.generate(mockUser, from, to);
         // Then
 
         // 출금된 금액 체크
         ArgumentCaptor<BigDecimal> captor = ArgumentCaptor.forClass(BigDecimal.class);
-        verify(accountService, atLeastOnce()).withdraw(any(), captor.capture(), any());
+        verify(accountService, atLeastOnce()).spendCard(any(), any(), any(), captor.capture(), any(), any());
         BigDecimal spent = captor.getAllValues().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 세그먼트 예산 = 월예산 × (3 / 31) -> 5%이내의 오차
@@ -160,7 +165,7 @@ class TransactionServiceTest extends TestConfig {
     }
 
     @Test
-    void 실패케이스_출금_실패시_롤백한다() {
+    void 실패케이스_출금_실패시_로그가_생성되지_않는다() {
         // Given
         int userDecile = 1;
         int budget = 310000;
@@ -194,7 +199,9 @@ class TransactionServiceTest extends TestConfig {
                 .thenReturn(new Trade("과일세트", BigDecimal.valueOf(20000)));
         // 5. 금액 체크
         when(accountService.getAccountByType(anyLong(), eq(AccountType.CHECKING)))
-                .thenReturn(createCheckingAccount(BigDecimal.valueOf(10000), BigDecimal.ZERO));
+                .thenReturn(createCheckingAccount(BigDecimal.valueOf(10000)));
+        when(accountService.getAccountByType(anyLong(), eq(AccountType.SAVINGS)))
+                .thenReturn(createSavingAccount(BigDecimal.ZERO));
         // When
         transactionService.generate(mockUser, from, to);
 
@@ -217,8 +224,12 @@ class TransactionServiceTest extends TestConfig {
         );
     }
 
-    private Account createCheckingAccount(BigDecimal balance, BigDecimal overDraftLimit) {
-        return Account.ofChecking(balance, overDraftLimit);
+    private Account createCheckingAccount(BigDecimal balance) {
+        return Account.ofChecking(balance);
+    }
+
+    private Account createSavingAccount(BigDecimal balance) {
+        return Account.ofSavings(balance, BigDecimal.ZERO);
     }
 
 

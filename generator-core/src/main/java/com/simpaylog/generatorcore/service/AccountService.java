@@ -1,7 +1,10 @@
 package com.simpaylog.generatorcore.service;
 
+import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.TransactionResult;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.TransactionDetailType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,86 +15,105 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class AccountService {
 
+    private final AccountDomainService accountDomainService;
     private final AccountRepository accountRepository;
 
-    // TODO: 거래 로그 생성
-    @Transactional
-    public boolean withdraw(Long userId, BigDecimal amount, LocalDateTime dateTime) {
-        if (amount == null || amount.signum() < 0) {
-            throw new CoreException("금액이 잘못되었습니다.");
+    /* 결제 */
+    // [거래]입출금 통장 -> 결제 요청
+    public TransactionResult spendCard(Long userId, String sessionId, LocalDateTime localDateTime,
+                                       BigDecimal amount, String merchant, String memo) {
+        var logs = new ArrayList<TransactionLog>();
+
+        try {
+            // 1) 바로 출금 시도 (CHECKING)
+            var out = accountDomainService.debit(userId, sessionId, localDateTime, amount, AccountType.CHECKING,
+                    TransactionDetailType.CARD_PAYMENT, "체크카드 결제 - " + merchant, merchant, memo);
+            logs.add(out);
+            return TransactionResult.ok(logs);
+
+        } catch (CoreException e) {
+            if (!"INSUFFICIENT_FUNDS".equals(e.getMessage())) return TransactionResult.fail(e.getMessage());
+
+            // 2) 부족하면 SAVINGS → CHECKING 내부이체로 보충 후 다시 결제
+            BigDecimal checkingBalance = getBalance(userId, AccountType.CHECKING);
+            BigDecimal deficit = amount.subtract(checkingBalance);
+            if (getBalance(userId, AccountType.SAVINGS).compareTo(deficit) < 0) {
+                return TransactionResult.fail("INSUFFICIENT_FUNDS");
+            }
+
+            logs.addAll(accountDomainService.transfer(userId, sessionId, localDateTime, deficit,
+                    AccountType.SAVINGS, AccountType.CHECKING, "세이빙 스윕(부족분 충당)", "자동 충당"));
+
+            var out = accountDomainService.debit(userId, sessionId, localDateTime, amount, AccountType.CHECKING,
+                     TransactionDetailType.CARD_PAYMENT, "체크카드 결제 - " + merchant, merchant, memo);
+            logs.add(out);
+
+            return TransactionResult.ok(logs);
         }
-        Account checking = getAccountByType(userId, AccountType.CHECKING);
+    }
+    // [자동이체]
+    public TransactionResult paySubscription(Long userId, String sessionId, LocalDateTime ts,
+                                             BigDecimal amount, String biller, String memo) {
+        try {
+            var out = accountDomainService.debit(userId, sessionId, ts, amount, AccountType.CHECKING,
+                    TransactionDetailType.AUTO_PAYMENT, "자동이체 - " + biller, biller, memo);
+            return TransactionResult.ok(out);
+        } catch (CoreException e) {
+            return TransactionResult.fail(e.getMessage());
+        }
+    }
+    // 이자
+    private BigDecimal getBalance(Long userId, AccountType accountType) {
+        return getAccountByType(userId, accountType).getBalance();
+    }
+
+    public TransactionResult receiveDeposit(Long userId, String sessionId, LocalDateTime localDateTime,
+                                            BigDecimal amount, String sender, String memo) {
+        var in = accountDomainService.credit(
+                userId, sessionId, localDateTime, amount, AccountType.CHECKING
+                , TransactionDetailType.DEPOSIT,"계좌이체입금 - " + sender, sender, memo
+        );
+        return TransactionResult.ok(in);
+    }
+
+    public TransactionResult receivePayroll(Long userId, String sessionId, LocalDateTime localDateTime,
+                                            BigDecimal amount, String counterparty, String memo) {
+        var in = accountDomainService.credit(
+                userId, sessionId, localDateTime, amount, AccountType.CHECKING,
+                TransactionDetailType.DEPOSIT,"급여이체" ,counterparty, memo
+        );
+        return TransactionResult.ok(in);
+    }
+
+    public TransactionResult applyMonthlyInterest(Long userId, String sessionId, LocalDateTime localDateTime) {
         Account savings = getAccountByType(userId, AccountType.SAVINGS);
-        if (checking.getBalance().compareTo(amount) >= 0) {
-            checking.setBalance(checking.getBalance().subtract(amount));
-//            log.info("userId={} [출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
-            return true;
-        }
-        // 음수 허용
-        if (checking.getBalance().subtract(amount).compareTo(checking.getOverdraftLimit().negate()) >= 0) {
-            checking.setBalance(checking.getBalance().subtract(amount));
-//            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
-            return true;
-        }
-        // 예금 인출 시도
-        BigDecimal additionalWithdraw = amount.subtract(checking.getBalance().add(checking.getOverdraftLimit())); // 추가로 필요한 출금액
-        if (savings != null && savings.getBalance().compareTo(additionalWithdraw) >= 0) {
-            savings.setBalance(savings.getBalance().subtract(additionalWithdraw));
-//            log.info("userId={} [송금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, savings.getType().getName(), dateTime, amount, savings.getBalance());
-            deposit(userId, additionalWithdraw, dateTime); // 입출금 통장으로 송금
-            checking.setBalance(checking.getOverdraftLimit().negate()); // 지출 발생
-//            log.info("userId={} [마이너스 출금][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
-            return true;
-        }
-        // 실패
-        log.warn("userId={} 잔액 부족: {}원", userId, amount);
-        return false;
-    }
-
-    public void deposit(Long userId, BigDecimal amount, LocalDateTime dateTime) {
-        if (amount == null || amount.signum() < 0) {
-            throw new CoreException("금액이 잘못되었습니다.");
-        }
-        Account checking = getAccountByType(userId, AccountType.CHECKING);
-        checking.setBalance(checking.getBalance().add(amount));
-//        log.info("userId={} [입금][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, amount, checking.getBalance());
-    }
-
-    public void transferToSavings(Long userId, BigDecimal salary, BigDecimal savingRate, LocalDateTime dateTime) {
-        Account checking = getAccountByType(userId, AccountType.CHECKING);
-        Account saving = getAccountByType(userId, AccountType.SAVINGS);
-
-        BigDecimal savingAmount = salary.multiply(savingRate).setScale(0, RoundingMode.DOWN); // 1. 이체 금액 계산
-
-        if (checking.getBalance().compareTo(savingAmount) < 0) {
-            log.warn("잔액이 부족하여 이체할 수 없습니다. 저축할 금액: {}, 현재 잔액: {}", savingAmount, checking.getBalance());
-            return;
-        }
-        checking.setBalance(checking.getBalance().subtract(savingAmount)); // 2. 입출금 통장에서 출금
-//        log.info("userId={} [예금 통장으로 이체][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, checking.getType().getName(), dateTime, savingAmount, checking.getBalance());
-        saving.setBalance(saving.getBalance().add(savingAmount)); // 3. 예금 통장에 입금
-//        log.info("userId={} [저축][{}][{}] 입금 금액: {}, 현재 잔액: {}", userId, saving.getType().getName(), dateTime, savingAmount, saving.getBalance());
-    }
-
-    public void applyMonthlyInterest(Long userId, LocalDateTime dateTime) {
-        Account account = getAccountByType(userId, AccountType.SAVINGS);
-        BigDecimal principal = account.getBalance();
-
-        BigDecimal monthlyRate = account.getInterestRate()
-                .divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP);
-
+        BigDecimal principal = savings.getBalance();
+        BigDecimal monthlyRate = savings.getInterestRate().divide(BigDecimal.valueOf(12), 10, RoundingMode.HALF_UP);
         BigDecimal interest = principal
                 .multiply(monthlyRate)
                 .divide(BigDecimal.valueOf(100), 0, RoundingMode.DOWN); // 퍼센트로 계산
+        var in = accountDomainService.credit(userId, sessionId, localDateTime, interest, AccountType.SAVINGS,
+                TransactionDetailType.INTEREST, "월 이자지급(세전)", null, null);
+        return TransactionResult.ok(in);
+    }
 
-        account.setBalance(principal.add(interest));
-//        log.info("userId={} [입금-이자발생][{}][{}] 출금 금액: {}, 현재 잔액: {}", userId, account.getType().getName(), dateTime, interest, account.getBalance());
+
+    // 입출금 -> 저축
+    public TransactionResult moveToSavings(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, String memo) {
+        try {
+            var logs = accountDomainService.transfer(userId, sessionId, localDateTime, amount, AccountType.CHECKING, AccountType.SAVINGS, "저축 이체(입출금→저축)", memo);
+            return TransactionResult.ok(logs);
+        } catch(CoreException e) {
+            return TransactionResult.fail(e.getMessage());
+        }
     }
 
     public Account getAccountByType(Long userId, AccountType type) {
