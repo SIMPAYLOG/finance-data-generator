@@ -45,7 +45,7 @@ public final class SimpleEnvelopeScaler {
         double lambda = clamp(lambdaBD.doubleValue(), lamdaMin, lamdaMax);
         // 최종 금액(반올림/10원 단위 정리)
         BigDecimal cost = sampleAmount.multiply(BigDecimal.valueOf(lambda)).setScale(0, RoundingMode.HALF_UP);
-        BigDecimal finalAmount = MoneyUtil.roundTo10(cost);
+        BigDecimal finalAmount = MoneyUtil.roundTo100(cost);
         return finalAmount;
     }
 
@@ -76,6 +76,14 @@ public final class SimpleEnvelopeScaler {
         }
         return true;
     }
+    public BigDecimal getRemainingBudget(CategoryType categoryType) {
+        return remainingBudget.getOrDefault(categoryType, BigDecimal.ZERO);
+    }
+
+    public int getRemainingEvents(CategoryType categoryType) {
+        return remainingEvents.getOrDefault(categoryType, 0);
+    }
+
 
     private double clamp(double value, double min, double max) {
         return Math.min(max, Math.max(min, value));

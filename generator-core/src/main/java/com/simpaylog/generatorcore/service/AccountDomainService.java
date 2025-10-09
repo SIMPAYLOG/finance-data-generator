@@ -25,7 +25,7 @@ public class AccountDomainService {
         Account target = getAccountByType(userId, accountType);
 
         var balanceBefore = target.getBalance();
-        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.DEPOSIT, detailType, description, counterparty, memo, balanceBefore, amount);
+        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.DEPOSIT, detailType, description, counterparty, memo, amount, balanceBefore);
         target.setBalance(transactionLog.balanceAfter());
         return transactionLog;
     }
@@ -36,7 +36,7 @@ public class AccountDomainService {
         validateSufficientBalance(target, amount);
 
         var balanceBefore = target.getBalance();
-        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.WITHDRAW, detailType, description, counterparty, memo, balanceBefore, amount);
+        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.WITHDRAW, detailType, description, counterparty, memo, amount, balanceBefore);
         target.setBalance(transactionLog.balanceAfter());
         return transactionLog;
     }
@@ -58,8 +58,8 @@ public class AccountDomainService {
                 description + " 출금",
                 dest.getUser().getName(),
                 memo,
-                source.getBalance(),
-                amount
+                amount,
+                source.getBalance()
         );
         source.setBalance(out.balanceAfter());
 
@@ -71,8 +71,8 @@ public class AccountDomainService {
                 description + " 입금",
                 source.getUser().getName(),
                 memo,
-                dest.getBalance(),
-                amount
+                amount,
+                dest.getBalance()
         );
         dest.setBalance(in.balanceAfter());
 

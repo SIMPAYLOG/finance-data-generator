@@ -184,13 +184,17 @@ public class TransactionService {
         events.add(new TimedEvent(
                 payTime,
                 () -> {
-                    accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, "counterparty", "급여");
+                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, "counterparty", "급여");
+                    generateMessage(result.logs());
                 }
         ));
         LocalDateTime saveTime = payTime.plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1);
         events.add(new TimedEvent(
                 saveTime,
-                () -> accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount, "일부 급여 저축")
+                () -> {
+                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount, "일부 급여 저축");
+                    generateMessage(result.logs());
+                }
         ));
 
         return events;
@@ -221,11 +225,17 @@ public class TransactionService {
             LocalDateTime time = date.atTime(9, 30);
             if (item.transactionType() == TransactionType.DEPOSIT) {  // 수입
                 events.add(new TimedEvent(
-                        time, () -> accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), "sender", item.description())
+                        time, () -> {
+                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), "sender", item.description());
+                    generateMessage(result.logs());
+                }
                 ));
             } else { // 지출
                 events.add(new TimedEvent(
-                        time, () -> accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), item.description(), null)
+                        time, () -> {
+                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), item.description(), null);
+                    generateMessage(result.logs());
+                }
                 ));
             }
         }
@@ -249,10 +259,10 @@ public class TransactionService {
 
     private void generateMessage(List<TransactionLog> transactionLogs) {
         try {
-            for (TransactionLog log : transactionLogs) {
-                transactionLogProducer.send(log);
+            for (TransactionLog transactionLog : transactionLogs) {
+                transactionLogProducer.send(transactionLog);
+                log.info("{}", transactionLog);
             }
-//            log.info("{}", transactionLog);
         } catch (Exception e) {
             // 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
 //            log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
@@ -287,8 +297,8 @@ public class TransactionService {
         Account checking = accountService.getAccountByType(userId, AccountType.CHECKING);
         Account saving = accountService.getAccountByType(userId, AccountType.SAVINGS);
         double need = amount.doubleValue();
-        double chk  = checking.getBalance().doubleValue();
-        double sav  = saving.getBalance().doubleValue();
+        double chk = checking.getBalance().doubleValue();
+        double sav = saving.getBalance().doubleValue();
 
         // 1) 체크 통장 잔액만으로 가능한 경우
         if (chk >= need) return false;

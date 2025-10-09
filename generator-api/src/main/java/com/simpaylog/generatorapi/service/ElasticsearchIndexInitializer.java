@@ -23,7 +23,7 @@ public class ElasticsearchIndexInitializer {
     @PostConstruct
     public void init() throws InterruptedException {
         int retry = 0;
-        int maxRetry = 10;
+        int maxRetry = 20;
         while (retry < maxRetry) {
             try {
                 Response response = elasticsearchRestClient.performRequest(new Request("HEAD", ES_END_POINT));
@@ -51,6 +51,14 @@ public class ElasticsearchIndexInitializer {
                     "properties": {
                       "timestamp":        { "type": "date" },
                       "amount":           { "type": "scaled_float", "scaling_factor": 100 },
+                      "balanceBefore":    { "type": "scaled_float", "scaling_factor": 100 },
+                      "balanceAfter":     { "type": "scaled_float", "scaling_factor": 100 },
+                      "memo":      {
+                        "type": "text",
+                        "fields": {
+                          "keyword": { "type": "keyword" }
+                        }
+                      },
                       "description":      {
                         "type": "text",
                         "fields": {
@@ -58,13 +66,17 @@ public class ElasticsearchIndexInitializer {
                         }
                       },
                       "userId":           { "type": "long" },
-                      "uuid":             { "type": "keyword" },
+                      "transactionId":    { "type": "keyword" },
                       "sessionId":        { "type": "keyword" },
                       "transactionType":  { "type": "keyword" },
+                      "detailType":       { "type": "keyword" },
                       "@timestamp":       { "type": "date" },
                       "@version":         { "type": "keyword" },
                       "category":         { "type": "keyword" },
-                      "subcategory":      { "type": "keyword" }
+                      "subcategory":      { "type": "keyword" },
+                      "channel":          { "type": "keyword" },
+                      "location":         { "type": "keyword" },
+                      "counterparty":     { "type": "keyword" }
                     }
                   }
                 }

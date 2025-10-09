@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public record TransactionLog(
 
-        String uuid,                        // 거래 고유 ID
-        String sessionId,                   // 시뮬레이션 세션 ID
+        String transactionId,                        // 거래 고유 ID
         Long userId,                        // 사용자 ID
+        String sessionId,                   // 시뮬레이션 세션 ID
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp,             // 거래 발생 시각
@@ -33,8 +33,8 @@ public record TransactionLog(
 
     // ---- 정적 생성 메서드 ----
     public static TransactionLog of(
-            String sessionId,
             Long userId,
+            String sessionId,
             LocalDateTime timestamp,
             TransactionType transactionType,
             TransactionDetailType detailType,
@@ -54,8 +54,8 @@ public record TransactionLog(
 
         return new TransactionLog(
                 UUID.randomUUID().toString(),
-                sessionId,
                 userId,
+                sessionId,
                 timestamp,
                 transactionType,
                 detailType,
