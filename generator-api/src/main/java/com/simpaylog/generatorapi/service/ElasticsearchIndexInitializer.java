@@ -6,21 +6,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Slf4j
+@Profile("!test")
 @Component
 @RequiredArgsConstructor
 public class ElasticsearchIndexInitializer {
     private final RestClient elasticsearchRestClient;
     private static final String ES_END_POINT = "/transaction-logs";
 
+
     @PostConstruct
-    public void init() throws IOException, InterruptedException {
+    public void init() throws InterruptedException {
         int retry = 0;
-        int maxRetry = 10;
+        int maxRetry = 20;
         while (retry < maxRetry) {
             try {
                 Response response = elasticsearchRestClient.performRequest(new Request("HEAD", ES_END_POINT));
@@ -48,6 +51,14 @@ public class ElasticsearchIndexInitializer {
                     "properties": {
                       "timestamp":        { "type": "date" },
                       "amount":           { "type": "scaled_float", "scaling_factor": 100 },
+                      "balanceBefore":    { "type": "scaled_float", "scaling_factor": 100 },
+                      "balanceAfter":     { "type": "scaled_float", "scaling_factor": 100 },
+                      "memo":      {
+                        "type": "text",
+                        "fields": {
+                          "keyword": { "type": "keyword" }
+                        }
+                      },
                       "description":      {
                         "type": "text",
                         "fields": {
@@ -55,13 +66,17 @@ public class ElasticsearchIndexInitializer {
                         }
                       },
                       "userId":           { "type": "long" },
-                      "uuid":             { "type": "keyword" },
+                      "transactionId":    { "type": "keyword" },
                       "sessionId":        { "type": "keyword" },
                       "transactionType":  { "type": "keyword" },
+                      "detailType":       { "type": "keyword" },
                       "@timestamp":       { "type": "date" },
                       "@version":         { "type": "keyword" },
                       "category":         { "type": "keyword" },
-                      "subcategory":      { "type": "keyword" }
+                      "subcategory":      { "type": "keyword" },
+                      "channel":          { "type": "keyword" },
+                      "location":         { "type": "keyword" },
+                      "counterparty":     { "type": "keyword" }
                     }
                   }
                 }

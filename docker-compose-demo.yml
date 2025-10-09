@@ -42,11 +42,11 @@ services:
     container_name: logstash
     ports: ["9600:9600"]
     volumes:
-      - ${PWD}/infra/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
-      - ${PWD}/infra/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ${PWD}/infra/elk/logstash/pipeline:/usr/share/logstash/pipeline
+      - ${PWD}/infra/elk/logstash/config:/usr/share/logstash/config
+      - ${PWD}/infra/elk/logstash/scripts:/usr/share/logstash/scripts
       # 여러 파이프라인이면 아래 주석 해제
       # - ${PWD}/infra/elk/logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro
-      - ${PWD}/infra/elk/logstash/scripts:/usr/share/logstash/scripts
     environment:
       - LS_JAVA_OPTS=-Xmx512m -Xms512m
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200

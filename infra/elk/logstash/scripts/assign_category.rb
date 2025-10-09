@@ -7,7 +7,7 @@ def filter(event)
     $category_map = JSON.parse(File.read(path))
   end
 
-  desc = event.get("description")
+  desc = event.get("memo")
   if desc && $category_map[desc]
     main_cat, sub_cat = $category_map[desc]
     event.set("category", main_cat)

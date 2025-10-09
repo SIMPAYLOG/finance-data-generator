@@ -20,8 +20,6 @@ public class Account {
     @Setter
     private BigDecimal balance;
     private BigDecimal interestRate;
-    @Column(precision = 12, scale = 2)
-    private BigDecimal overdraftLimit;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -29,19 +27,18 @@ public class Account {
     protected Account() {
     }
 
-    private Account(AccountType type, BigDecimal balance, BigDecimal interestRate, BigDecimal overdraftLimit) {
+    private Account(AccountType type, BigDecimal balance, BigDecimal interestRate) {
         this.type = type;
         this.balance = balance;
         this.interestRate = interestRate;
-        this.overdraftLimit = overdraftLimit;
     }
 
-    public static Account ofChecking(BigDecimal balance, BigDecimal overdraftLimit) {
-        return new Account(AccountType.CHECKING, balance, BigDecimal.ZERO, overdraftLimit);
+    public static Account ofChecking(BigDecimal balance) {
+        return new Account(AccountType.CHECKING, balance, BigDecimal.ZERO);
     }
 
     public static Account ofSavings(BigDecimal balance, BigDecimal interestRate) {
-        return new Account(AccountType.SAVINGS, balance, interestRate, BigDecimal.ZERO);
+        return new Account(AccountType.SAVINGS, balance, interestRate);
     }
 
     public void setUser(User user) {
