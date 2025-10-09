@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class LocationLocalCacheTest extends TestConfig {
 
     private final String[] locationNames = new String[] {
-            "", "서울", "인천", "수원", "대전", "천안", "청주", "전주", "광주", "부산", "대구"
+            "", "서울", "부산", "인천", "대구", "대전", "광주", "울산", "세종", "제주도"
     };
 
     @Autowired
@@ -46,7 +46,7 @@ public class LocationLocalCacheTest extends TestConfig {
             );
         } else {
             // ID가 존재하지 않으면 테스트 스킵
-            System.out.printf("⚠️ locationId=%d 는 현재 캐시에 존재하지 않아 스킵%n", locationId);
+            System.out.printf("locationId=%d 는 현재 캐시에 존재하지 않아 스킵%n", locationId);
         }
     }
 }
