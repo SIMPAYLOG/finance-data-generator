@@ -195,7 +195,7 @@ class AccountDomainServiceTest extends TestConfig {
     }
 
     private User createUser(Account check, Account saving) {
-        UserBehaviorProfile profile = UserBehaviorProfile.of(PreferenceType.DEFAULT, WageType.DAILY, getIncomeValue(), getAssetValue(), BigDecimal.ZERO);
+        UserBehaviorProfile profile = UserBehaviorProfile.of(PreferenceType.DEFAULT, WageType.DAILY, getIncomeValue(), getAssetValue(), BigDecimal.ZERO, 1);
         User mockUser = User.of("test-name", profile, 8, 1, Gender.M, 1, "TEST-OCCUPATION", 1, List.of(check, saving));
         mockUser.setSessionId("TEST-sessionId");
         return mockUser;
