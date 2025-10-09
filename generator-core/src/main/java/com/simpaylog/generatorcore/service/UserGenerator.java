@@ -38,7 +38,6 @@ public class UserGenerator {
     private final OccupationLocalCache occupationLocalCache;
     private final DetailOccupationLocalCache detailOccupationLocalCache;
     private final PreferenceLocalCache preferenceLocalCache;
-    private final LocationLocalCache locationLocalCache;
     private final Random random = new Random();
     private final AccountFactory accountFactory = new AccountFactory();
     private final NameUtil nameUtil;
