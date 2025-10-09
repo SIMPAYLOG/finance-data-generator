@@ -2,6 +2,7 @@ package com.simpaylog.generatorapi.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorcore.enums.export.TransactionCsvExportHeader;
 import com.simpaylog.generatorcore.exception.CoreException;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +26,23 @@ public class FileExporter {
     private final ObjectMapper objectMapper;
     private static final DateTimeFormatter CSV_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public void writeCsv(OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
+    public void writeCsv(ExportRequest request, OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
         int[] counter = {0};
         try (OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
              CSVPrinter printer = new CSVPrinter(osw, CSVFormat.DEFAULT)) {
 
-            printer.printRecord((Object[]) getHeaderValues());
+            // request.columns 기반으로 헤더 선택
+            var selectedHeaders = java.util.Arrays.stream(TransactionCsvExportHeader.values())
+                    .filter(h -> request.columns().contains(h.getFieldName()))
+                    .toList();
 
-            Consumer<TransactionLogDocument> recordConsumer = createCsvConsumer(printer, counter);
+            // CSV 헤더 출력
+            printer.printRecord(selectedHeaders.stream()
+                    .map(TransactionCsvExportHeader::getDisplayName)
+                    .toArray(String[]::new));
+
+            // 동적 Consumer 생성
+            Consumer<TransactionLogDocument> recordConsumer = createCsvConsumer(printer, counter, request);
             fetcher.accept(recordConsumer);
 
             printer.flush();
@@ -41,6 +51,7 @@ public class FileExporter {
             throw new CoreException("CSV 파일 쓰기 중 오류 발생");
         }
     }
+
 
     public void writeJson(OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
         int[] counter = {0};
@@ -60,19 +71,21 @@ public class FileExporter {
         }
     }
 
-    private Consumer<TransactionLogDocument> createCsvConsumer(CSVPrinter printer, int[] counter) {
+    private Consumer<TransactionLogDocument> createCsvConsumer(CSVPrinter printer, int[] counter, ExportRequest request) {
+        // request.columns 기반으로 출력할 컬럼 enum 선택
+        var selectedHeaders = java.util.Arrays.stream(TransactionCsvExportHeader.values())
+                .filter(h -> request.columns().contains(h.getFieldName()))
+                .toList();
+
         return t -> {
             try {
                 validateTransactionLog(t);
 
-                printer.printRecord(
-                        t.uuid(),
-                        t.userId(),
-                        t.timestamp().format(CSV_DATE_FORMATTER),
-                        t.transactionType().name(),
-                        t.description(),
-                        t.amount().toPlainString()
-                );
+                var values = selectedHeaders.stream()
+                        .map(h -> getFieldValue(t, h.getFieldName()))
+                        .toArray();
+
+                printer.printRecord(values);
                 counter[0]++;
                 if (counter[0] % 1000 == 0) {
                     printer.flush();
@@ -112,7 +125,7 @@ public class FileExporter {
     }
 
     private void validateTransactionLog(TransactionLogDocument t) {
-        if (t.uuid() == null ||
+        if (t.transactionId() == null ||
                 t.userId() == null ||
                 t.timestamp() == null ||
                 t.transactionType() == null ||
@@ -120,5 +133,30 @@ public class FileExporter {
                 t.amount() == null) {
             throw new CoreException("TransactionLogDocument 필드 중 null 값이 존재합니다");
         }
+    }
+
+    /**
+     * TransactionLogDocument 필드값 또는 집계 컬럼 값을 가져오는 메서드
+     */
+    private Object getFieldValue(TransactionLogDocument t, String fieldName) {
+        return switch (fieldName) {
+            case "transactionId" -> t.transactionId();
+            case "userId" -> t.userId();
+            case "timestamp" -> t.timestamp().format(CSV_DATE_FORMATTER);
+            case "transactionType" -> t.transactionType().name();
+            case "detailType" -> t.detailType();
+            case "category" -> t.category();
+            case "subcategory" -> t.subcategory();
+            case "counterparty" -> t.counterparty();
+            case "channel" -> t.channel();
+            case "balanceBefore" -> t.balanceBefore() != null ? t.balanceBefore().toPlainString() : "";
+            case "balanceAfter" -> t.balanceAfter() != null ? t.balanceAfter().toPlainString() : "";
+            case "description" -> t.description();
+            case "memo" -> t.memo();
+            case "amount" -> t.amount() != null ? t.amount().toPlainString() : "";
+            // 집계 컬럼은 나중에 DTO로 받을 경우 처리
+            case "totalSpent", "avgTransaction", "categoryRatios", "incomeVsSpending" -> "";
+            default -> "";
+        };
     }
 }

@@ -17,6 +17,7 @@ import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
@@ -281,7 +282,7 @@ public class TransactionAggregationRepository {
         return finalResults;
     }
 
-    public void findAllTransactionsForExport(String sessionId, Consumer<TransactionLogDocument> consumer) {
+    public void findTransactionsForExport(ExportRequest request, Consumer<TransactionLogDocument> consumer) {
         List<FieldValue> searchAfter = null;
         try {
             while (true) {
@@ -289,9 +290,20 @@ public class TransactionAggregationRepository {
                         .index("transaction-logs")
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("uuid").order(SortOrder.Asc)))  // _id 추가
-                        .query(q -> q.term(t -> t.field("sessionId").value(sessionId)));
+                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)));
+//                        .sort(s -> s.field(f -> f.field("_id").order(SortOrder.Asc))); // _id 사용
+
+                // 쿼리 조건: sessionId + 날짜 범위
+                searchBuilder.query(q -> q
+                        .bool(b -> b
+                                .must(m -> m.term(t -> t.field("sessionId").value(request.sessionId())))
+                                .must(m -> m.range(r -> r.date(d -> d.field("timestamp")
+                                        .from(request.durationStart())
+                                        .to(request.durationEnd())
+                                        .timeZone("Asia/Seoul")
+                                )))
+                        )
+                );
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
@@ -323,6 +335,7 @@ public class TransactionAggregationRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
+
 
     public List<ChartIncomeCountDto> searchAllCategoryInfo(
             String sessionId,
