@@ -821,7 +821,7 @@ public class TransactionAggregationRepository {
                             ? 0 : depositSum / (withdrawSum + depositSum);
 
                     AggregatedTransactionDocument dto = new AggregatedTransactionDocument(
-                            "U"+userIdStr,
+                            userIdStr,
                             period,
                             BigDecimal.valueOf(totalSpent).setScale(0, RoundingMode.DOWN),
                             BigDecimal.valueOf(avgTxn).setScale(2, RoundingMode.HALF_UP),

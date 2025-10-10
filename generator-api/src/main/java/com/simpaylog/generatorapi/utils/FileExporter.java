@@ -183,9 +183,12 @@ public class FileExporter {
      */
     private Object getFieldValue(TransactionLogDocument t, String fieldName, boolean isMasked) {
         return switch (fieldName) {
-            case "transactionId" -> isMasked ? maskMiddle(t.transactionId(), 4, 4) : t.transactionId();
+            case "transactionId" -> {
+                String transactionIdStr = "TX-" + t.transactionId();
+                yield isMasked ? maskMiddle(transactionIdStr, 4, 4) : transactionIdStr;
+            }
             case "userId" -> {
-                String userIdStr = "U" + t.userId();
+                String userIdStr = "U-" + t.userId();
                 yield isMasked ? maskMiddle(userIdStr, 2, 2) : userIdStr;
             }
             case "timestamp" -> t.timestamp().format(CSV_DATE_FORMATTER);
@@ -206,7 +209,7 @@ public class FileExporter {
 
     private Object getAggregatedFieldValue(AggregatedTransactionDocument t, String fieldName) {
         return switch (fieldName) {
-            case "userId" -> t.userId();
+            case "userId" -> "U-" + t.userId();
             case "period" -> t.period();
             case "totalSpent" -> t.totalSpent();
             case "avgTxn" -> t.avgTxn();
