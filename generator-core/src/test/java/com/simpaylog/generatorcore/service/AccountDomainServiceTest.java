@@ -88,7 +88,7 @@ class AccountDomainServiceTest extends TestConfig {
 
 
             // When
-            TransactionLog result = sut.debit(userId, sessionId, now, amount, AccountType.CHECKING, TransactionDetailType.WITHDRAWAL, "출금 테스트", "test-NPC", "테스트 출금");
+            TransactionLog result = sut.debit(userId, sessionId, now, amount, AccountType.CHECKING, TransactionDetailType.WITHDRAWAL, ChannelType.TRANSFER,"출금 테스트", "test-NPC", "테스트 출금");
             // Then
             assertThat(mockChecking.getBalance()).isEqualByComparingTo("60000");
             assertThat(result).isNotNull();
@@ -109,7 +109,7 @@ class AccountDomainServiceTest extends TestConfig {
 
 
             // When & Then
-            assertThatThrownBy(() -> sut.debit(userId, sessionId, now, amount, AccountType.CHECKING, TransactionDetailType.WITHDRAWAL, "출금 테스트", "test-NPC", "테스트 출금"))
+            assertThatThrownBy(() -> sut.debit(userId, sessionId, now, amount, AccountType.CHECKING, TransactionDetailType.WITHDRAWAL, ChannelType.TRANSFER, "출금 테스트", "test-NPC", "테스트 출금"))
                     .isInstanceOf(CoreException.class)
                     .hasMessage("잔액이 부족합니다.");
             assertThat(mockChecking.getBalance()).isEqualByComparingTo(initBalance);
@@ -138,7 +138,7 @@ class AccountDomainServiceTest extends TestConfig {
             when(accountRepository.findAccountByUser_IdAndType(userId, AccountType.SAVINGS)).thenReturn(Optional.of(mockSaving));
 
             // When
-            List<TransactionLog> logs = sut.transfer(userId, sessionId, now, transferMoney, AccountType.CHECKING, AccountType.SAVINGS, "내부이체", "메모-내부 이체");
+            List<TransactionLog> logs = sut.transfer(userId, sessionId, now, transferMoney, AccountType.CHECKING, AccountType.SAVINGS);
             // Then
             assertThat(logs).hasSize(2);
             var out = logs.get(0); // WITHDRAW
@@ -184,7 +184,7 @@ class AccountDomainServiceTest extends TestConfig {
             // When
             assertThatThrownBy(() -> sut.transfer(
                     userId, sessionId, now, transferMoney,
-                    AccountType.CHECKING, AccountType.SAVINGS, "desc", "memo"
+                    AccountType.CHECKING, AccountType.SAVINGS
             )).isInstanceOf(CoreException.class)
                     .hasMessage("잔액이 부족합니다.");
 

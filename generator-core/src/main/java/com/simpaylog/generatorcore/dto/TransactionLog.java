@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.simpaylog.generatorcore.enums.TransactionDetailType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.ChannelType;
+import com.simpaylog.generatorcore.utils.MoneyUtil;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -38,14 +40,13 @@ public record TransactionLog(
             LocalDateTime timestamp,
             TransactionType transactionType,
             TransactionDetailType detailType,
+            ChannelType channelType,
             String description,
             String counterparty,
             String memo,
             BigDecimal amount,
             BigDecimal balanceBefore
     ) {
-        ChannelType channel = detailType.getChannel();
-
         // 거래 방향에 따라 잔액 계산
         BigDecimal balanceAfter = switch (transactionType) {
             case DEPOSIT -> balanceBefore.add(amount);
@@ -59,13 +60,13 @@ public record TransactionLog(
                 timestamp,
                 transactionType,
                 detailType,
-                channel,
+                channelType,
                 description,
                 counterparty,
                 memo,
                 amount,
-                balanceBefore,
-                balanceAfter
+                MoneyUtil.adjust(balanceBefore, 1, RoundingMode.DOWN),
+                MoneyUtil.adjust(balanceAfter, 1, RoundingMode.DOWN)
         );
     }
 
