@@ -8,14 +8,23 @@ def filter(event)
   end
 
   desc = event.get("memo")
-  if desc && $category_map[desc]
-    main_cat, sub_cat = $category_map[desc]
-    event.set("category", main_cat)
-    event.set("subcategory", sub_cat)
-  else
-    event.set("category", "otherGoodsServices")
-    event.set("subcategory", "miscellaneous")
-  end
+    transaction_type = event.get("transactionType")
 
-  return [event]
-end
+    # transactionType이 WITHDRAW인 경우만 카테고리 매핑
+    if transaction_type == "WITHDRAW"
+      if desc && $category_map[desc]
+        main_cat, sub_cat = $category_map[desc]
+        event.set("category", main_cat)
+        event.set("subcategory", sub_cat)
+      else
+        event.set("category", "otherGoodsServices")
+        event.set("subcategory", "miscellaneous")
+      end
+    else
+      # 그 외 타입은 빈 값
+      event.set("category", "")
+      event.set("subcategory", "")
+    end
+
+    return [event]
+  end
