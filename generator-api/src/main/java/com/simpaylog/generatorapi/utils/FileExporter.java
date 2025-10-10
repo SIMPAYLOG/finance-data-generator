@@ -1,6 +1,7 @@
 package com.simpaylog.generatorapi.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.simpaylog.generatorapi.dto.document.AggregatedTransactionDocument;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorcore.enums.export.TransactionCsvExportHeader;
@@ -37,9 +38,12 @@ public class FileExporter {
                     .toList();
 
             // CSV 헤더 출력
-            printer.printRecord(selectedHeaders.stream()
-                    .map(TransactionCsvExportHeader::getDisplayName)
-                    .toArray(String[]::new));
+            printer.printRecord(
+                    selectedHeaders.stream()
+                            .map(TransactionCsvExportHeader::getDisplayName)
+                            .toList()
+            );
+
 
             // 동적 Consumer 생성
             Consumer<TransactionLogDocument> recordConsumer = createCsvConsumer(printer, counter, request);
@@ -51,6 +55,45 @@ public class FileExporter {
             throw new CoreException("CSV 파일 쓰기 중 오류 발생");
         }
     }
+
+    public void writeCsvForAggregated(ExportRequest request, OutputStream os, Consumer<Consumer<AggregatedTransactionDocument>> fetcher) {
+        int[] counter = {0};
+        try (OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+             CSVPrinter printer = new CSVPrinter(osw, CSVFormat.DEFAULT)) {
+
+            // 요청된 컬럼 필터링
+            var selectedHeaders = java.util.Arrays.stream(TransactionCsvExportHeader.values())
+                    .filter(h -> request.columns().contains(h.getFieldName()))
+                    .toList();
+
+            printer.printRecord(
+                    selectedHeaders.stream()
+                            .map(TransactionCsvExportHeader::getDisplayName)
+                            .toList()
+            );
+
+            Consumer<AggregatedTransactionDocument> recordConsumer = dto -> {
+                try {
+                    var values = selectedHeaders.stream()
+                            .map(h -> getAggregatedFieldValue(dto, h.getFieldName()))
+                            .toArray();
+
+                    printer.printRecord(values);
+                    counter[0]++;
+                    if (counter[0] % 1000 == 0) printer.flush();
+                } catch (IOException e) {
+                    throw new CoreException("CSV 레코드 쓰기 중 오류 발생");
+                }
+            };
+
+            fetcher.accept(recordConsumer);
+            printer.flush();
+            log.info("집계 CSV로 저장된 총 건수: {}", counter[0]);
+        } catch (IOException e) {
+            throw new CoreException("집계 CSV 파일 쓰기 중 오류 발생");
+        }
+    }
+
 
 
     public void writeJson(OutputStream os, Consumer<Consumer<TransactionLogDocument>> fetcher) {
@@ -154,8 +197,21 @@ public class FileExporter {
             case "description" -> t.description();
             case "memo" -> t.memo();
             case "amount" -> t.amount() != null ? t.amount().toPlainString() : "";
-            // 집계 컬럼은 나중에 DTO로 받을 경우 처리
-            case "totalSpent", "avgTransaction", "categoryRatios", "incomeVsSpending" -> "";
+            default -> "";
+        };
+    }
+
+    private Object getAggregatedFieldValue(AggregatedTransactionDocument t, String fieldName) {
+        return switch (fieldName) {
+            case "userId" -> t.userId();
+            case "period" -> t.period();
+            case "totalSpent" -> t.totalSpent();
+            case "avgTxn" -> t.avgTxn();
+            case "top3Categories" -> String.join(", ", t.top3Categories());
+            case "foodRatio" -> String.format("%.3f", t.foodRatio());
+            case "transportRatio" -> String.format("%.3f", t.transportRatio());
+            case "leisureRatio" -> String.format("%.3f", t.leisureRatio());
+            case "incomeVsSpending" -> String.format("%.3f", t.incomeVsSpending());
             default -> "";
         };
     }

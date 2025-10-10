@@ -7,5 +7,7 @@ public record ExportRequest(
         String format, // "csv" or "json"
         String durationStart,
         String durationEnd,
-        List<String> columns // requested columns (원본 + 집계 컬럼명 혼합 가능)
+        List<String> columns,
+        boolean isAggregated,
+        boolean isMasked
 ) { }

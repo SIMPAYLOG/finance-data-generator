@@ -36,7 +36,8 @@ public class TransactionExportService {
         try {
             switch (format) {
                 case CSV:
-                    fileExporter.writeCsv(request, outputStream, consumer -> repository.findTransactionsForExport(request, consumer));
+                    if(!request.isAggregated()) fileExporter.writeCsv(request, outputStream, consumer -> repository.findTransactionsForExport(request, consumer));
+                    else fileExporter.writeCsvForAggregated(request, outputStream, consumer -> repository.findAggregatedTransactionsForExport(request, consumer));
                     break;
                 case JSON:
                     fileExporter.writeJson(outputStream, consumer -> repository.findTransactionsForExport(request, consumer));

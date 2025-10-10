@@ -4,6 +4,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -16,6 +17,7 @@ import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
+import com.simpaylog.generatorapi.dto.document.AggregatedTransactionDocument;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
 import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
@@ -33,6 +35,8 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -712,5 +716,127 @@ public class TransactionAggregationRepository {
         }
 
         return new TransactionHistoryResponseDto(transactions, nextSearchAfter);
+    }
+
+    //집계 데이터 다운로드용
+    public void findAggregatedTransactionsForExport(ExportRequest request, Consumer<AggregatedTransactionDocument> consumer) {
+        try {
+            SearchRequest searchRequest = new SearchRequest.Builder()
+                    .index("transaction-logs")
+                    .size(0) // 집계만
+                    .query(q -> q
+                            .bool(b -> b
+                                    .must(m -> m.term(t -> t.field("sessionId").value(request.sessionId())))
+                                    .must(m -> m.range(r -> r
+                                            .date(d -> d
+                                                    .field("timestamp")
+                                                    .from(request.durationStart())
+                                                    .to(request.durationEnd())
+                                                    .timeZone("Asia/Seoul")
+                                            )
+                                    ))
+                            )
+                    )
+                    .aggregations("by_user", a -> a
+                            .terms(t -> t.field("userId").size(10000))
+                            .aggregations("by_month", b -> b
+                                    .dateHistogram(d -> d
+                                            .field("timestamp")
+                                            .calendarInterval(CalendarInterval.Month)
+                                            .format("yyyy-MM")
+                                    )
+                                    // 총 지출액 (Withdraw만)
+                                    .aggregations("totalSpent", aa -> aa
+                                            .filter(f -> f.term(tt -> tt.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("sum_amount", s -> s.sum(sum -> sum.field("amount")))
+                                    )
+                                    // 평균 거래액 (Withdraw만)
+                                    .aggregations("avgTxn", aa -> aa
+                                            .filter(f -> f.term(tt -> tt.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("avg_amount", s -> s.avg(sum -> sum.field("amount")))
+                                    )
+                                    // top3 카테고리
+                                    .aggregations("top3Categories", aa -> aa
+                                            .terms(t -> t.field("category").size(3))
+                                    )
+                                    // food, transport, leisure 비율
+                                    .aggregations("foodRatio", r -> r
+                                            .filter(f -> f.term(t -> t.field("category").value("food")))
+                                    )
+                                    .aggregations("transportRatio", r -> r
+                                            .filter(f -> f.term(t -> t.field("category").value("transport")))
+                                    )
+                                    .aggregations("leisureRatio", r -> r
+                                            .filter(f -> f.term(t -> t.field("category").value("leisure")))
+                                    )
+                                    // income vs spending
+                                    .aggregations("withdrawTotal", a2 -> a2
+                                            .filter(f -> f.term(t -> t.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("sum", s -> s.sum(ss -> ss.field("amount")))
+                                    )
+                                    .aggregations("depositTotal", a2 -> a2
+                                            .filter(f -> f.term(t -> t.field("transactionType").value("DEPOSIT")))
+                                            .aggregations("sum", s -> s.sum(ss -> ss.field("amount")))
+                                    )
+                            )
+                    )
+                    .build();
+
+            SearchResponse<Void> response = elasticsearchClient.search(searchRequest, Void.class);
+
+            // 결과 파싱
+            response.aggregations().get("by_user").lterms().buckets().array().forEach(userBucket -> {
+                long userId = userBucket.key();
+
+                userBucket.aggregations().get("by_month").dateHistogram().buckets().array().forEach(monthBucket -> {
+                    String period = monthBucket.keyAsString();
+
+                    double totalSpent = monthBucket.aggregations()
+                            .get("totalSpent").filter().aggregations()
+                            .get("sum_amount").sum().value();
+
+                    double avgTxn = monthBucket.aggregations()
+                            .get("avgTxn").filter().aggregations()
+                            .get("avg_amount").avg().value();
+
+                    List<String> top3 = monthBucket.aggregations()
+                            .get("top3Categories").sterms().buckets().array()
+                            .stream().map(b -> b.key().stringValue()).toList();
+
+                    double docCount = monthBucket.docCount();
+                    double foodRatio = monthBucket.aggregations().get("foodRatio").filter().docCount() / docCount;
+                    double transportRatio = monthBucket.aggregations().get("transportRatio").filter().docCount() / docCount;
+                    double leisureRatio = monthBucket.aggregations().get("leisureRatio").filter().docCount() / docCount;
+
+                    double withdrawSum = monthBucket.aggregations()
+                            .get("withdrawTotal").filter().aggregations()
+                            .get("sum").sum().value();
+
+                    double depositSum = monthBucket.aggregations()
+                            .get("depositTotal").filter().aggregations()
+                            .get("sum").sum().value();
+
+                    double incomeVsSpending = (withdrawSum + depositSum == 0)
+                            ? 0 : depositSum / (withdrawSum + depositSum);
+
+                    AggregatedTransactionDocument dto = new AggregatedTransactionDocument(
+                            userId,
+                            period,
+                            BigDecimal.valueOf(totalSpent).setScale(0, RoundingMode.DOWN),
+                            BigDecimal.valueOf(avgTxn).setScale(2, RoundingMode.HALF_UP),
+                            top3,
+                            foodRatio,
+                            transportRatio,
+                            leisureRatio,
+                            incomeVsSpending
+                    );
+
+                    consumer.accept(dto);
+                });
+            });
+        } catch (Exception e) {
+            log.error("집계 데이터 조회 중 오류: {}", e.getMessage());
+            throw new CoreException("Elasticsearch 집계 조회 실패");
+        }
     }
 }
