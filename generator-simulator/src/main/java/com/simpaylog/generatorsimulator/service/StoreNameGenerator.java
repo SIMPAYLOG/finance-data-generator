@@ -292,9 +292,6 @@ public class StoreNameGenerator {
     private String ensureUserRegion(Long userId, String region) {
         String k = "user:" + userId + ":region";
         String r = redisTemplate.opsForValue().get(k);
-
-        if (region == null) region = "서울";
-
         if (r == null) {
             redisTemplate.opsForValue().set(k, region, 3, TimeUnit.HOURS);
         }
