@@ -12,5 +12,14 @@ public record AggregatedTransactionDocument(
         Double foodRatio,
         Double transportRatio,
         Double leisureRatio,
+        Double groceriesNonAlcoholicBeveragesRatio,
+        Double alcoholicBeveragesTobaccoRatio,
+        Double clothingFootwearRatio,
+        Double housingUtilitiesFuelRatio,
+        Double householdGoodsServicesRatio,
+        Double healthRatio,
+        Double communicationRatio,
+        Double educationRatio,
+        Double otherGoodsServicesRatio,
         Double incomeVsSpending
 ) { }
