@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -14,7 +14,7 @@ import java.util.*;
 public class StoreNameGenerator {
 
     private final StringRedisTemplate redisTemplate;
-    private static final Random RND = new Random(123456789); // deterministic seed 사용하고 싶으면 고정, 아니면 제거
+    private static final Random RND = new Random(123456789);
 
     private static final Map<String, List<String>> REGION_AREAS = Map.of(
             "서울", List.of(
@@ -90,16 +90,6 @@ public class StoreNameGenerator {
     private static final List<String> INTERNET_BRANDS = List.of("KT인터넷", "SK브로드밴드", "LG U+인터넷");
 
     private static final List<String> BANKS = List.of("KB국민은행", "신한은행", "우리은행", "하나은행", "NH농협은행", "IBK기업은행", "카카오뱅크");
-
-    // ---------------- 체인/프랜차이즈 대표(예시)
-    private static final List<String> CONVENIENCE_CHAINS = List.of("CU", "GS25", "세븐일레븐", "이마트24");
-    private static final List<String> CAFE_CHAINS = List.of("스타벅스", "이디야", "투썸", "빽다방");
-    private static final List<String> BULK_CHAINS = List.of("이마트 트레이더스", "코스트코", "노브랜드");
-    private static final List<String> FASTFOOD_CHAINS = List.of("맥도날드", "버거킹", "KFC");
-    private static final List<String> MART_CHAINS = List.of("이마트", "롯데마트", "홈플러스");
-    private static final List<String> PHARMACY_CHAINS = List.of("우리약국", "메디팜", "굿모닝약국");
-    private static final List<String> APPLIANCES_CHAINS = List.of("전자랜드", "하이마트", "일렉트로마트");
-    private static final List<String> STATIONERY_CHAINS = List.of("교보문고", "영풍문고", "알라딘");
 
 
     public String getVendor(Long userId, String key, String category, String region) {
@@ -301,7 +291,11 @@ public class StoreNameGenerator {
     private String ensureUserRegion(Long userId, String region) {
         String k = "user:" + userId + ":region";
         String r = redisTemplate.opsForValue().get(k);
+
+        if (region == null) region = "서울";
+
         if (r == null) {
+            redisTemplate.opsForValue().set(k, region, 3, TimeUnit.HOURS);
             redisTemplate.opsForValue().set(k, region);
         }
         return r;
@@ -313,7 +307,7 @@ public class StoreNameGenerator {
         if (a == null) {
             List<String> areas = REGION_AREAS.getOrDefault(region, List.of("서울"));
             a = areas.get(RND.nextInt(areas.size()));
-            redisTemplate.opsForValue().set(k, a);
+            redisTemplate.opsForValue().set(k, a, 3, TimeUnit.HOURS);
         }
         return a;
     }
@@ -323,7 +317,7 @@ public class StoreNameGenerator {
         String bank = redisTemplate.opsForValue().get(key);
         if (bank == null) {
             bank = BANKS.get(Math.abs(userId.hashCode()) % BANKS.size());
-            redisTemplate.opsForValue().set(key, bank);
+            redisTemplate.opsForValue().set(key, bank, 3, TimeUnit.HOURS);
         }
         return bank;
     }
