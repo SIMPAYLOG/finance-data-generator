@@ -77,11 +77,14 @@ class UserServiceTest extends TestConfig {
                 "test-sessionId",
                 1,
                 10,
+                1,
+                "test",
                 PreferenceType.DEFAULT,
                 WageType.REGULAR,
                 "TEST-active-hour",
                 BigDecimal.valueOf(3000000),
-                BigDecimal.ZERO
+                BigDecimal.ZERO,
+                1
         );
     }
 

@@ -9,6 +9,7 @@ import com.simpaylog.generatorcore.dto.TransactionResult;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.PreferenceType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
@@ -60,6 +61,8 @@ class TransactionServiceTest extends TestConfig {
     RedisPaydayRepository redisPaydayRepository;
     @MockitoBean
     FixedObligationRepository fixedObligationRepository;
+    @MockitoBean
+    StoreNameGenerator storeNameGenerator;
 
     // 0. 정상 케이스
     @Test
@@ -102,8 +105,10 @@ class TransactionServiceTest extends TestConfig {
                 .thenReturn(createCheckingAccount(BigDecimal.valueOf(100000)));
         when(accountService.getAccountByType(anyLong(), eq(AccountType.SAVINGS)))
                 .thenReturn(createSavingAccount(BigDecimal.valueOf(100000)));
+        when(storeNameGenerator.getVendor(anyLong(), anyString(), any()))
+                .thenReturn("test-vendor");
         // 6. 결제 성공
-        when(accountService.spendCard(anyLong(), anyString(), any(LocalDateTime.class), any(BigDecimal.class), anyString(), anyString()))
+        when(accountService.spendCard(anyLong(), anyString(), any(LocalDateTime.class), any(BigDecimal.class), anyString(), any(ChannelType.class), anyString()))
                 .thenReturn(result);
         // When
         transactionService.generate(mockUser, from, to);
@@ -111,7 +116,7 @@ class TransactionServiceTest extends TestConfig {
 
         // 출금된 금액 체크
         ArgumentCaptor<BigDecimal> captor = ArgumentCaptor.forClass(BigDecimal.class);
-        verify(accountService, atLeastOnce()).spendCard(any(), any(), any(), captor.capture(), any(), any());
+        verify(accountService, atLeastOnce()).spendCard(any(), any(), any(), captor.capture(), any(), any(), any());
         BigDecimal spent = captor.getAllValues().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // 세그먼트 예산 = 월예산 × (3 / 31) -> 5%이내의 오차
@@ -216,11 +221,14 @@ class TransactionServiceTest extends TestConfig {
                 "test-sessionId",
                 decile,
                 10,
+                1,
+                "test-name",
                 PreferenceType.DEFAULT,
                 wageType,
                 "TEST-active-hour",
                 BigDecimal.valueOf(3000000),
-                BigDecimal.ZERO
+                BigDecimal.ZERO,
+                1
         );
     }
 
