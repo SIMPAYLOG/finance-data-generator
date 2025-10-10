@@ -11,24 +11,14 @@ public record TransactionUserDto(
     String sessionId,
     Integer decile,
     Integer age,
+    Integer occupationCode,
+    String occupationName,
     PreferenceType preferenceType,
     WageType wageType,
     String activeHour,
     BigDecimal incomeValue,
-    BigDecimal savingRate
+    BigDecimal savingRate,
+    Integer locationId
 ) {
 
-    public static TransactionUserDto fromEntity(User entity) {
-        return new TransactionUserDto(
-                entity.getId(),
-                entity.getSessionId(),
-                entity.getDecile(),
-                entity.getAge(),
-                entity.getUserBehaviorProfile().getPreferenceType(),
-                entity.getUserBehaviorProfile().getWageType(),
-                entity.getUserBehaviorProfile().getActiveHours(),
-                entity.getUserBehaviorProfile().getIncomeValue(),
-                entity.getUserBehaviorProfile().getSavingRate()
-        );
-    }
 }

@@ -6,14 +6,15 @@ import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorcore.utils.LocationAllocator;
 import com.simpaylog.generatorcore.utils.MoneyUtil;
+import com.simpaylog.generatorsimulator.cache.ChannelWeightLocalCache;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -44,7 +45,6 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final FixedObligationRepository fixedObligationRepository;
     private final TradeGenerator tradeGenerator;
-    private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final StoreNameGenerator storeNameGenerator;
     private final LocationAllocator locationAllocator;
 
@@ -192,7 +192,7 @@ public class TransactionService {
         events.add(new TimedEvent(
                 payTime,
                 () -> {
-                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, "counterparty", "급여");
+                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, WageCounterpartyNameGenerator.pickCounterparty(user.wageType(), user.occupationCode(), user.occupationName(), user.userId()), "급여");
                     generateMessage(result.logs());
                 }
         ));
@@ -200,7 +200,7 @@ public class TransactionService {
         events.add(new TimedEvent(
                 saveTime,
                 () -> {
-                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount, "일부 급여 저축");
+                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount);
                     generateMessage(result.logs());
                 }
         ));
@@ -234,14 +234,15 @@ public class TransactionService {
             if (item.transactionType() == TransactionType.DEPOSIT) {  // 수입
                 events.add(new TimedEvent(
                         time, () -> {
-                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), "sender", item.description());
+                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), item.description(), "");
                     generateMessage(result.logs());
                 }
                 ));
             } else { // 지출
                 events.add(new TimedEvent(
                         time, () -> {
-                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), item.description(), null);
+                    String vendorName = storeNameGenerator.getVendor(user.userId(), item.description(), locationAllocator.getRandomLocation(user.locationId()));
+                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), vendorName, item.description());
                     generateMessage(result.logs());
                 }
                 ));

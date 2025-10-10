@@ -3,12 +3,13 @@ package com.simpaylog.generatorsimulator.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Slf4j
-@Service
+@Component
 @AllArgsConstructor
 public class StoreNameGenerator {
 
@@ -141,7 +142,7 @@ public class StoreNameGenerator {
             return ensureUserBank(userId);
         }
 
-                String vendorKey = "user:" + userId + ":vendor:" + normalize(category);
+        String vendorKey = "user:" + userId + ":vendor:" + normalize(category);
         String existing = redisTemplate.opsForValue().get(vendorKey);
         if (existing != null) {
             incrementVendorCount(userId, existing);
@@ -454,12 +455,14 @@ public class StoreNameGenerator {
             return Group.FOOD_RESTAURANT;
         if (c.contains("마트") || c.contains("장보기") || c.contains("냉동") || c.contains("간편식") || c.contains("hmr") || c.contains("요거트") || c.contains("식빵"))
             return Group.GROCERY;
-        if (c.contains("소주") || c.contains("맥주") || c.contains("와인") || c.contains("양주") || c.contains("막걸리")) return Group.ALCOHOL;
+        if (c.contains("소주") || c.contains("맥주") || c.contains("와인") || c.contains("양주") || c.contains("막걸리"))
+            return Group.ALCOHOL;
         if (c.contains("담배") || c.contains("전자담배") || c.contains("궐련형")) return Group.TOBACCO;
 
         // clothing / shopping
-        if (c.contains("의류") || c.contains("티셔츠") || c.contains("신발") || c.contains("슈즈") || c.contains("아울렛") || c.contains("중고")) return Group.CLOTHING;
-        if (c.contains("생활용품") || c.contains("다이소") || c.contains("청소") ) return Group.HOME_LIVING;
+        if (c.contains("의류") || c.contains("티셔츠") || c.contains("신발") || c.contains("슈즈") || c.contains("아울렛") || c.contains("중고"))
+            return Group.CLOTHING;
+        if (c.contains("생활용품") || c.contains("다이소") || c.contains("청소")) return Group.HOME_LIVING;
 
         if (c.contains("대용량")) return Group.BULK;
 
@@ -478,20 +481,20 @@ public class StoreNameGenerator {
         if (c.contains("수선")) return Group.REPAIR;
         if (c.contains("가사") || c.contains("도우미")) return Group.HOUSEKEEPING;
 
-        if (c.contains("도서") ||  c.contains("문구")) return Group.STATIONERY;
+        if (c.contains("도서") || c.contains("문구")) return Group.STATIONERY;
 
         // education
         if (c.contains("학원") || c.contains("학습") || c.contains("인터넷 강의") || c.contains("자격증") || c.contains("학습지"))
             return Group.EDUCATION;
 
         // leisure / service fallback
-        if (c.contains("영화") || c.contains("공연") ) return Group.LEISURE_MOVIE;
+        if (c.contains("영화") || c.contains("공연")) return Group.LEISURE_MOVIE;
 
         if (c.contains("테마파크")) return Group.LEISURE_THEMEPARK;
 
-        if( c.contains(("피트니스"))) return Group.FITNESS;
+        if (c.contains(("피트니스"))) return Group.FITNESS;
 
-        if( c.contains(("가전제품"))) return Group.HOME_APPLIANCES;
+        if (c.contains(("가전제품"))) return Group.HOME_APPLIANCES;
 
         return Group.ETC;
     }
