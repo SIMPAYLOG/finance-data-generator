@@ -7,6 +7,7 @@ public record TransactionHistoryDataDto(
         String category,
         String description,
         BigDecimal amount,
-        String transactionType
+        String transactionType,
+        String channel
 ) {
 }
