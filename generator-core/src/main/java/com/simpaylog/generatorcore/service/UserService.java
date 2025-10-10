@@ -117,7 +117,7 @@ public class UserService {
 
     public Page<UserInfoResponse> findUsersByPage(Pageable pageable, String sessionId) {
         getSimulationSessionOrException(sessionId);
-        return userRepository.findAllBySessionIdOrderByName(pageable, sessionId)
+        return userRepository.findAllBySessionIdOrderById(pageable, sessionId)
                 .map(UserInfoResponse::userToUserInfoResponse);
     }
 

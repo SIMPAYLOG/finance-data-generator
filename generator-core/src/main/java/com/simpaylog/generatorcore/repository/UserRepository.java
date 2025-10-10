@@ -49,7 +49,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE u.sessionId = :sessionId")
     List<TransactionUserDto> findAllTransactionUserDtosBySessionId(String sessionId);
 
-    Page<User> findAllBySessionIdOrderByName(Pageable pageable, String sessionId);
+    Page<User> findAllBySessionIdOrderById(Pageable pageable, String sessionId);
 
     void deleteUsersBySessionId(String sessionId);
 
