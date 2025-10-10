@@ -9,7 +9,6 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Document(indexName = "transaction-logs")
 @JsonIgnoreProperties(ignoreUnknown = true)
