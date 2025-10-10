@@ -3,6 +3,7 @@ package com.simpaylog.generatorcore.service;
 import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.TransactionDetailType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.exception.CoreException;
@@ -25,23 +26,23 @@ public class AccountDomainService {
         Account target = getAccountByType(userId, accountType);
 
         var balanceBefore = target.getBalance();
-        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.DEPOSIT, detailType, description, counterparty, memo, amount, balanceBefore);
+        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.DEPOSIT, detailType, detailType.getChannel(), description, counterparty, memo, amount, balanceBefore);
         target.setBalance(transactionLog.balanceAfter());
         return transactionLog;
     }
 
-    public TransactionLog debit(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, AccountType accountType, TransactionDetailType detailType, String description, String counterparty, String memo) {
+    public TransactionLog debit(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, AccountType accountType, TransactionDetailType detailType, ChannelType channelType, String description, String counterparty, String memo) {
         validateAmount(amount);
         Account target = getAccountByType(userId, accountType);
         validateSufficientBalance(target, amount);
 
         var balanceBefore = target.getBalance();
-        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.WITHDRAW, detailType, description, counterparty, memo, amount, balanceBefore);
+        var transactionLog = TransactionLog.of(userId, sessionId, localDateTime, TransactionType.WITHDRAW, detailType, channelType, description, counterparty, memo, amount, balanceBefore);
         target.setBalance(transactionLog.balanceAfter());
         return transactionLog;
     }
 
-    public List<TransactionLog> transfer(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, AccountType from, AccountType to, String description, String memo) {
+    public List<TransactionLog> transfer(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, AccountType from, AccountType to) {
         validateAmount(amount);
         if (from == to) throw new CoreException("동일한 계좌입니다.");
 
@@ -55,9 +56,10 @@ public class AccountDomainService {
                 userId, sessionId, localDateTime,
                 TransactionType.WITHDRAW,
                 TransactionDetailType.INTERNAL_TRANSFER_OUT,
-                description + " 출금",
+                ChannelType.SYSTEM,
                 dest.getUser().getName(),
-                memo,
+                dest.getUser().getName() + to.getName(),
+                TransactionDetailType.INTERNAL_TRANSFER_OUT.getLabel(),
                 amount,
                 source.getBalance()
         );
@@ -68,14 +70,14 @@ public class AccountDomainService {
                 userId, sessionId, localDateTime.plusMinutes((long) (Math.random() * 3)),
                 TransactionType.DEPOSIT,
                 TransactionDetailType.INTERNAL_TRANSFER_IN,
-                description + " 입금",
+                ChannelType.SYSTEM,
                 source.getUser().getName(),
-                memo,
+                source.getUser().getName() + from.getName(),
+                TransactionDetailType.INTERNAL_TRANSFER_IN.getLabel(),
                 amount,
                 dest.getBalance()
         );
         dest.setBalance(in.balanceAfter());
-
         return List.of(out, in);
     }
 

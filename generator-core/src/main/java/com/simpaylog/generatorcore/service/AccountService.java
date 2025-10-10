@@ -4,6 +4,7 @@ import com.simpaylog.generatorcore.dto.TransactionLog;
 import com.simpaylog.generatorcore.dto.TransactionResult;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.TransactionDetailType;
 import com.simpaylog.generatorcore.exception.CoreException;
 import com.simpaylog.generatorcore.repository.AccountRepository;
@@ -29,13 +30,13 @@ public class AccountService {
     /* 결제 */
     // [거래]입출금 통장 -> 결제 요청
     public TransactionResult spendCard(Long userId, String sessionId, LocalDateTime localDateTime,
-                                       BigDecimal amount, String merchant, String memo) {
+                                       BigDecimal amount, String merchant, ChannelType channel, String memo) {
         var logs = new ArrayList<TransactionLog>();
 
         try {
             // 1) 바로 출금 시도 (CHECKING)
             var out = accountDomainService.debit(userId, sessionId, localDateTime, amount, AccountType.CHECKING,
-                    TransactionDetailType.CARD_PAYMENT, "체크카드 결제 - " + merchant, merchant, memo);
+                    TransactionDetailType.CARD_PAYMENT, channel, merchant, merchant, memo);
             logs.add(out);
             return TransactionResult.ok(logs);
 
@@ -50,10 +51,10 @@ public class AccountService {
             }
 
             logs.addAll(accountDomainService.transfer(userId, sessionId, localDateTime, deficit,
-                    AccountType.SAVINGS, AccountType.CHECKING, "세이빙 스윕(부족분 충당)", "자동 충당"));
+                    AccountType.SAVINGS, AccountType.CHECKING));
 
             var out = accountDomainService.debit(userId, sessionId, localDateTime, amount, AccountType.CHECKING,
-                     TransactionDetailType.CARD_PAYMENT, "체크카드 결제 - " + merchant, merchant, memo);
+                     TransactionDetailType.CARD_PAYMENT, channel, merchant, merchant, memo);
             logs.add(out);
 
             return TransactionResult.ok(logs);
@@ -64,13 +65,13 @@ public class AccountService {
                                              BigDecimal amount, String biller, String memo) {
         try {
             var out = accountDomainService.debit(userId, sessionId, ts, amount, AccountType.CHECKING,
-                    TransactionDetailType.AUTO_PAYMENT, "자동이체 - " + biller, biller, memo);
+                    TransactionDetailType.AUTO_PAYMENT, ChannelType.AUTO,"자동이체 - " + biller, biller, memo);
             return TransactionResult.ok(out);
         } catch (CoreException e) {
             return TransactionResult.fail(e.getMessage());
         }
     }
-    // 이자
+
     private BigDecimal getBalance(Long userId, AccountType accountType) {
         return getAccountByType(userId, accountType).getBalance();
     }
@@ -88,7 +89,7 @@ public class AccountService {
                                             BigDecimal amount, String counterparty, String memo) {
         var in = accountDomainService.credit(
                 userId, sessionId, localDateTime, amount, AccountType.CHECKING,
-                TransactionDetailType.DEPOSIT,"급여이체" ,counterparty, memo
+                TransactionDetailType.DEPOSIT,"급여" ,counterparty, memo
         );
         return TransactionResult.ok(in);
     }
@@ -101,15 +102,15 @@ public class AccountService {
                 .multiply(monthlyRate)
                 .divide(BigDecimal.valueOf(100), 0, RoundingMode.DOWN); // 퍼센트로 계산
         var in = accountDomainService.credit(userId, sessionId, localDateTime, interest, AccountType.SAVINGS,
-                TransactionDetailType.INTEREST, "월 이자지급(세전)", null, null);
+                TransactionDetailType.INTEREST, "이자 지급", "OO은행", "월 정기 이자");
         return TransactionResult.ok(in);
     }
 
 
     // 입출금 -> 저축
-    public TransactionResult moveToSavings(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount, String memo) {
+    public TransactionResult moveToSavings(Long userId, String sessionId, LocalDateTime localDateTime, BigDecimal amount) {
         try {
-            var logs = accountDomainService.transfer(userId, sessionId, localDateTime, amount, AccountType.CHECKING, AccountType.SAVINGS, "저축 이체(입출금→저축)", memo);
+            var logs = accountDomainService.transfer(userId, sessionId, localDateTime, amount, AccountType.CHECKING, AccountType.SAVINGS);
             return TransactionResult.ok(logs);
         } catch(CoreException e) {
             return TransactionResult.fail(e.getMessage());

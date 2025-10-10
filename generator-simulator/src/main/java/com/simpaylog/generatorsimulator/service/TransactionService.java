@@ -6,14 +6,15 @@ import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
-import com.simpaylog.generatorcore.repository.UserBehaviorProfileRepository;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
 import com.simpaylog.generatorcore.utils.LocationAllocator;
 import com.simpaylog.generatorcore.utils.MoneyUtil;
+import com.simpaylog.generatorsimulator.cache.ChannelWeightLocalCache;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -44,7 +45,6 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final FixedObligationRepository fixedObligationRepository;
     private final TradeGenerator tradeGenerator;
-    private final UserBehaviorProfileRepository userBehaviorProfileRepository;
     private final StoreNameGenerator storeNameGenerator;
     private final LocationAllocator locationAllocator;
 
@@ -93,14 +93,14 @@ public class TransactionService {
                 // 3. 유저가 해당 카테고리에서 소비한 상품 및 금액 추출
                 Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked); // 금액 추출
                 BigDecimal scaledAmount = scaler.computeScaledAmount(picked, userTrade.cost());
-                if(shouldSkipThin(dto.userId(), userTrade.cost())) { // 발생 가능한 소비인지 체크
+                ChannelType channel = pick(picked, scaledAmount, curTime);
+                if (shouldSkipThin(dto.userId(), userTrade.cost())) { // 발생 가능한 소비인지 체크
                     continue;
                 }
 
-                int locationId = userBehaviorProfileRepository.findLocationIdById(dto.userId());
-                String vendorName = storeNameGenerator.getVendor(dto.userId(), userTrade.tradeName(), locationAllocator.getRandomLocation(locationId));
+                String vendorName = storeNameGenerator.getVendor(dto.userId(), userTrade.tradeName(), locationAllocator.getRandomLocation(dto.locationId()));
                 // 4. 결제 요청
-                TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, vendorName, userTrade.tradeName());
+                TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, vendorName, channel, userTrade.tradeName());
                 if (result.success()) {
                     scaler.applySpend(picked, scaledAmount);
                     lastUsedMap.put(picked, curTime);
@@ -192,7 +192,7 @@ public class TransactionService {
         events.add(new TimedEvent(
                 payTime,
                 () -> {
-                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, "counterparty", "급여");
+                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, WageCounterpartyNameGenerator.pickCounterparty(user.wageType(), user.occupationCode(), user.occupationName(), user.userId()), "급여");
                     generateMessage(result.logs());
                 }
         ));
@@ -200,7 +200,7 @@ public class TransactionService {
         events.add(new TimedEvent(
                 saveTime,
                 () -> {
-                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount, "일부 급여 저축");
+                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount);
                     generateMessage(result.logs());
                 }
         ));
@@ -234,14 +234,15 @@ public class TransactionService {
             if (item.transactionType() == TransactionType.DEPOSIT) {  // 수입
                 events.add(new TimedEvent(
                         time, () -> {
-                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), "sender", item.description());
+                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), item.description(), "");
                     generateMessage(result.logs());
                 }
                 ));
             } else { // 지출
                 events.add(new TimedEvent(
                         time, () -> {
-                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), item.description(), null);
+                    String vendorName = storeNameGenerator.getVendor(user.userId(), item.description(), locationAllocator.getRandomLocation(user.locationId()));
+                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), vendorName, item.description());
                     generateMessage(result.logs());
                 }
                 ));
@@ -318,6 +319,52 @@ public class TransactionService {
             return r > PROCEED_PROB_THIN; // 70% 스킵, 30%만 진행
         }
         return true;
+    }
+
+    private ChannelType pick(CategoryType category, BigDecimal amount, LocalDateTime time) {
+        Map<ChannelType, Double> w = new EnumMap<>(ChannelType.class);
+        var base = ChannelWeightLocalCache.getBaseWeights(category);
+        if (base.isEmpty()) {
+            // 기본 분포: 카드/모바일 중심
+            w.put(ChannelType.CARD, 0.60);
+            w.put(ChannelType.TRANSFER, 0.10);
+        } else {
+            w.putAll(base); // Map.of -> 불변이므로 복사본에 담음
+        }
+
+        // 3) 금액 기반 보정 (고액은 이체 선호, 소액은 모바일 미세상향)
+        if (amount != null) {
+            if (amount.compareTo(new BigDecimal("300000")) > 0) {
+                mergeDelta(w, ChannelType.TRANSFER, +0.08);
+                mergeDelta(w, ChannelType.CARD, -0.04);
+            } else if (amount.compareTo(new BigDecimal("10000")) < 0) {
+                mergeDelta(w, ChannelType.CARD, -0.03);
+            }
+        }
+
+        normalize(w);
+
+        Random r = new Random();
+        double roll = r.nextDouble(), acc = 0.0;
+        for (var e : w.entrySet()) {
+            acc += e.getValue();
+            if (roll <= acc) return e.getKey();
+        }
+        // 안전장치: 분포가 0인 경우 대비
+        return ChannelType.CARD;
+    }
+
+    private static void mergeDelta(Map<ChannelType, Double> w, ChannelType k, double d) {
+        w.merge(k, d, Double::sum);
+    }
+
+    private static void normalize(Map<ChannelType, Double> w) {
+        double sum = 0.0;
+        for (var v : w.values()) sum += Math.max(0.0, v);
+        if (sum <= 0.0) return;
+        for (var k : w.keySet()) {
+            w.put(k, Math.max(0.0, w.get(k)) / sum);
+        }
     }
 
 }
