@@ -289,6 +289,12 @@ public class StoreNameGenerator {
     }
 
     private String ensureUserRegion(Long userId, String region) {
+        if (region == null) {
+            log.error("region is null for user {}", userId, new Exception("Null region trace"));
+        } else {
+            log.debug("ensureUserArea called with region={} for user={}", region, userId);
+        }
+
         String k = "user:" + userId + ":region";
         String r = redisTemplate.opsForValue().get(k);
 
@@ -296,7 +302,6 @@ public class StoreNameGenerator {
 
         if (r == null) {
             redisTemplate.opsForValue().set(k, region, 3, TimeUnit.HOURS);
-            redisTemplate.opsForValue().set(k, region);
         }
         return r;
     }
@@ -304,6 +309,12 @@ public class StoreNameGenerator {
     private String ensureUserArea(Long userId, String region) {
         String k = "user:" + userId + ":area";
         String a = redisTemplate.opsForValue().get(k);
+
+        if (region == null || region.isBlank()) {
+            log.warn("User {} has no region info. Defaulting to '서울'", userId);
+            region = "서울";
+        }
+
         if (a == null) {
             List<String> areas = REGION_AREAS.getOrDefault(region, List.of("서울"));
             a = areas.get(RND.nextInt(areas.size()));
