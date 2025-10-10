@@ -2,19 +2,19 @@ package com.simpaylog.generatorsimulator.service;
 
 import com.simpaylog.generatorcore.cache.DecileStatsLocalCache;
 import com.simpaylog.generatorcore.cache.dto.DecileStat;
-import com.simpaylog.generatorcore.dto.CategoryType;
-import com.simpaylog.generatorcore.dto.DailyTransactionResult;
-import com.simpaylog.generatorcore.dto.FixedObligation;
-import com.simpaylog.generatorcore.dto.TransactionLog;
+import com.simpaylog.generatorcore.dto.*;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.dto.TransactionUserDto;
 import com.simpaylog.generatorcore.enums.AccountType;
+import com.simpaylog.generatorcore.enums.ChannelType;
 import com.simpaylog.generatorcore.enums.TransactionType;
 import com.simpaylog.generatorcore.enums.WageType;
 import com.simpaylog.generatorcore.repository.redis.FixedObligationRepository;
 import com.simpaylog.generatorcore.repository.redis.RedisPaydayRepository;
 import com.simpaylog.generatorcore.service.AccountService;
+import com.simpaylog.generatorcore.utils.LocationAllocator;
 import com.simpaylog.generatorcore.utils.MoneyUtil;
+import com.simpaylog.generatorsimulator.cache.ChannelWeightLocalCache;
 import com.simpaylog.generatorsimulator.dto.Trade;
 import com.simpaylog.generatorsimulator.kafka.producer.DailyTransactionResultProducer;
 import com.simpaylog.generatorsimulator.kafka.producer.TransactionLogProducer;
@@ -45,9 +45,8 @@ public class TransactionService {
     private final TransactionGenerator transactionGenerator;
     private final FixedObligationRepository fixedObligationRepository;
     private final TradeGenerator tradeGenerator;
-
-    private static final double OVERDRAFT_BASE_PROB = 0.8;
-    private static final double OVERDRAFT_PROB_DELTA = 0.5;
+    private final StoreNameGenerator storeNameGenerator;
+    private final LocationAllocator locationAllocator;
 
     public void generate(TransactionUserDto dto, LocalDate from, LocalDate to) {
         for (MonthSegment seg : splitByMonth(from, to)) {
@@ -68,8 +67,52 @@ public class TransactionService {
         }
     }
 
+    private void generateTransaction(TransactionUserDto dto, LocalDate date, SimpleEnvelopeScaler scaler) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = date.atTime(23, 59);
+        List<OneTimeEvent> fixedEvents = prepareOneTimeEvents(dto, date);
+        Map<CategoryType, LocalDateTime> lastUsedMap = new HashMap<>();
+
+        long hours = ChronoUnit.HOURS.between(from, to);
+        for (int hour = 0; hour <= hours; hour++) {
+            LocalDateTime curTime = from.plusHours(hour);
+            List<Integer> minutes = getRandomMinutes(curTime.getHour(), fixedEvents);
+            LocalDateTime hourStart = from.plusHours(hour);
+
+            for (int minute : minutes) {
+                curTime = hourStart.plusMinutes(minute);
+                // 1. 고정 이벤트 처리
+                if (drainFixedEvents(fixedEvents, curTime)) {
+                    continue;
+                }
+                // 2. 해당 시간에 맞는 카테고리 선별하기
+                CategoryType picked = transactionGenerator.pickOneCategory(curTime, dto.preferenceType(), lastUsedMap).orElse(null);
+                if (picked == null) { // 해당 시간에 선택된 카테고리가 없음
+                    continue;
+                }
+                // 3. 유저가 해당 카테고리에서 소비한 상품 및 금액 추출
+                Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked); // 금액 추출
+                BigDecimal scaledAmount = scaler.computeScaledAmount(picked, userTrade.cost());
+                ChannelType channel = pick(picked, scaledAmount, curTime);
+                if (shouldSkipThin(dto.userId(), userTrade.cost())) { // 발생 가능한 소비인지 체크
+                    continue;
+                }
+
+                String vendorName = storeNameGenerator.getVendor(dto.userId(), picked.getKey(), userTrade.tradeName(), locationAllocator.getRandomLocation(dto.locationId()));
+                // 4. 결제 요청
+                TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, vendorName, channel, userTrade.tradeName());
+                if (result.success()) {
+                    scaler.applySpend(picked, scaledAmount);
+                    lastUsedMap.put(picked, curTime);
+                    generateMessage(result.logs());
+                }
+            }
+        }
+        dailyTransactionResultProducer.send(new DailyTransactionResult(dto.sessionId(), dto.userId(), true, date)); // 웹소켓 결과용 | 유저 한명에 대한 하루 작업 종료
+    }
+
     // 유저의 평균 급여, segBudget
-    public static Map<CategoryType, BigDecimal> readjustSegBudget(DecileStat decileStat, BigDecimal incomeValue) {
+    private Map<CategoryType, BigDecimal> readjustSegBudget(DecileStat decileStat, BigDecimal incomeValue) {
         Objects.requireNonNull(decileStat, "decileStat is required");
         Objects.requireNonNull(incomeValue, "incomeValue is required");
         // 1. 카테고리별 총 소비 금액 가져오기
@@ -110,55 +153,7 @@ public class TransactionService {
         return scaledBudget;
     }
 
-    private void generateTransaction(TransactionUserDto dto, LocalDate date, SimpleEnvelopeScaler scaler) {
-        LocalDateTime from = date.atStartOfDay();
-        LocalDateTime to = date.atTime(23, 59);
-        List<OneTimeEvent> fixedEvents = prepareOneTimeEvents(dto, date);
-        Map<CategoryType, LocalDateTime> lastUsedMap = new HashMap<>();
-
-        long hours = ChronoUnit.HOURS.between(from, to);
-        for (int hour = 0; hour <= hours; hour++) {
-            LocalDateTime curTime = from.plusHours(hour);
-            List<Integer> minutes = getRandomMinutes(curTime.getHour(), fixedEvents);
-            LocalDateTime hourStart = from.plusHours(hour);
-
-            for (int minute : minutes) {
-                curTime = hourStart.plusMinutes(minute);
-
-                // 1. 고정 이벤트 처리
-                if (drainFixedEvents(fixedEvents, curTime)) {
-                    continue;
-                }
-                // 2. 해당 시간에 맞는 카테고리 선별하기
-                CategoryType picked = transactionGenerator.pickOneCategory(curTime, dto.preferenceType(), lastUsedMap).orElse(null);
-                if (picked == null) { // 해당 시간에 선택된 카테고리가 없음
-                    continue;
-                }
-
-                // 3. 발생 가능한 소비인지 점검하기
-                Account checking = accountService.getAccountByType(dto.userId(), AccountType.CHECKING);
-                if (shouldSkipByOverdraft(checking)) {
-                    continue;
-                }
-
-                // 4. 유저가 해당 카테고리에서 소비한 상품 및 금액 추출
-                Trade userTrade = tradeGenerator.generateTrade(dto.decile(), picked);
-                BigDecimal scaledAmount = scaler.scale(picked, userTrade.cost());
-                if (scaledAmount.signum() <= 0) { // 0원일 경우 건너뜀
-                    continue;
-                }
-                // 5. 결제 요청
-                if (accountService.withdraw(dto.userId(), scaledAmount, curTime)) { // 잔액 체크 후 해당 카테고리 소비 -> true일 경우
-                    lastUsedMap.put(picked, curTime);
-                    generateMessage(TransactionLog.of(dto.userId(), dto.sessionId(), curTime, TransactionType.WITHDRAW, userTrade.tradeName(), scaledAmount));
-                } else {
-                    scaler.rollback(picked, scaledAmount);
-                }
-            }
-        }
-        dailyTransactionResultProducer.send(new DailyTransactionResult(dto.sessionId(), dto.userId(), true, date)); // 웹소켓 결과용 | 유저 한명에 대한 하루 작업 종료
-    }
-
+    // 고정 이벤트 처리
     private boolean drainFixedEvents(List<OneTimeEvent> events, LocalDateTime curTime) {
         boolean flag = false;
         while (!events.isEmpty() && events.getFirst().time().isEqual(curTime)) {
@@ -193,19 +188,21 @@ public class TransactionService {
 
         LocalDateTime payTime = date.atTime(ThreadLocalRandom.current().nextInt(7) + 8,
                 ThreadLocalRandom.current().nextInt(60));
+        BigDecimal savingAmount = user.incomeValue().multiply(user.savingRate()).setScale(0, RoundingMode.DOWN);
         events.add(new TimedEvent(
                 payTime,
                 () -> {
-                    accountService.deposit(user.userId(), finalWage, payTime);
-                    generateMessage(TransactionLog.of(
-                            user.userId(), user.sessionId(), payTime, TransactionType.DEPOSIT, "급여 입금", finalWage
-                    ));
+                    TransactionResult result = accountService.receivePayroll(user.userId(), user.sessionId(), payTime, finalWage, WageCounterpartyNameGenerator.pickCounterparty(user.wageType(), user.occupationCode(), user.occupationName(), user.userId()), "급여");
+                    generateMessage(result.logs());
                 }
         ));
         LocalDateTime saveTime = payTime.plusMinutes(ThreadLocalRandom.current().nextInt(30) + 1);
         events.add(new TimedEvent(
                 saveTime,
-                () -> accountService.transferToSavings(user.userId(), finalWage, user.savingRate(), saveTime)
+                () -> {
+                    TransactionResult result = accountService.moveToSavings(user.userId(), user.sessionId(), saveTime, savingAmount);
+                    generateMessage(result.logs());
+                }
         ));
 
         return events;
@@ -219,7 +216,7 @@ public class TransactionService {
                 ThreadLocalRandom.current().nextInt(60));
         return List.of(new TimedEvent(
                 interestTime,
-                () -> accountService.applyMonthlyInterest(user.userId(), interestTime)
+                () -> accountService.applyMonthlyInterest(user.userId(), user.sessionId(), interestTime)
         ));
     }
 
@@ -237,21 +234,16 @@ public class TransactionService {
             if (item.transactionType() == TransactionType.DEPOSIT) {  // 수입
                 events.add(new TimedEvent(
                         time, () -> {
-                    accountService.deposit(user.userId(), item.amount(), time);
-                    generateMessage(TransactionLog.of(
-                            user.userId(), user.sessionId(), time, TransactionType.DEPOSIT,
-                            item.description(), item.amount()
-                    ));
+                    TransactionResult result = accountService.receiveDeposit(user.userId(), user.sessionId(), time, item.amount(), item.description(), "");
+                    generateMessage(result.logs());
                 }
                 ));
             } else { // 지출
                 events.add(new TimedEvent(
                         time, () -> {
-                    accountService.withdraw(user.userId(), item.amount(), time);
-                    generateMessage(TransactionLog.of(
-                            user.userId(), user.sessionId(), time, TransactionType.WITHDRAW,
-                            item.description(), item.amount()
-                    ));
+                    String vendorName = storeNameGenerator.getVendor(user.userId(), item.categoryType(), item.description(), locationAllocator.getRandomLocation(user.locationId()));
+                    TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), vendorName, item.description());
+                    generateMessage(result.logs());
                 }
                 ));
             }
@@ -274,13 +266,15 @@ public class TransactionService {
         return dom != null && dom == date.getDayOfMonth();
     }
 
-    private void generateMessage(TransactionLog transactionLog) {
+    private void generateMessage(List<TransactionLog> transactionLogs) {
         try {
-            transactionLogProducer.send(transactionLog);
-//            log.info("{}", transactionLog);
+            for (TransactionLog transactionLog : transactionLogs) {
+                transactionLogProducer.send(transactionLog);
+                log.info("{}", transactionLog);
+            }
         } catch (Exception e) {
             // 필요 시 fallback 로직: DB 적재, 재시도 큐, 알림 등
-            log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
+//            log.error("[Kafka Send Fail] userId={}, type={}, time={}, error={}", transactionLog.userId(), transactionLog.transactionType(), transactionLog.timestamp(), e.getMessage());
         }
     }
 
@@ -306,16 +300,71 @@ public class TransactionService {
         return minutes;
     }
 
-    // 통장 잔고 마이너스일 시 가중치 높여 제한
-    private boolean shouldSkipByOverdraft(Account checking) {
-        if (checking.getBalance().compareTo((BigDecimal.ZERO)) >= 0) return false;  // 돈이 여유가 있는 경우
-        BigDecimal overDraftLimit = checking.getOverdraftLimit();                   // 마이너스 한도 체크
-        double limit = (overDraftLimit == null) ? 0.0 : overDraftLimit.doubleValue();
-        limit = Math.max(1.0, limit);                                               // 0으로 나누기 방지
-        double ratio = Math.min(checking.getBalance().abs().doubleValue() / limit, 1.0);
-        double prob = OVERDRAFT_BASE_PROB - (OVERDRAFT_PROB_DELTA * ratio);         // 최대 0.3까지 낮춤
+    private boolean shouldSkipThin(Long userId, BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0) return true;
+        double PROCEED_PROB_THIN = 0.30;
+        Account checking = accountService.getAccountByType(userId, AccountType.CHECKING);
+        Account saving = accountService.getAccountByType(userId, AccountType.SAVINGS);
+        double need = amount.doubleValue();
+        double chk = checking.getBalance().doubleValue();
+        double sav = saving.getBalance().doubleValue();
 
-        return ThreadLocalRandom.current().nextDouble() > prob;
+        // 1) 체크 통장 잔액만으로 가능한 경우
+        if (chk >= need) return false;
+
+        // 2) 체크 통장 부족, 저축 통장 체크
+        double shortage = need - chk;
+        if (sav >= shortage) {
+            double r = ThreadLocalRandom.current().nextDouble(); // 0~1
+            return r > PROCEED_PROB_THIN; // 70% 스킵, 30%만 진행
+        }
+        return true;
+    }
+
+    private ChannelType pick(CategoryType category, BigDecimal amount, LocalDateTime time) {
+        Map<ChannelType, Double> w = new EnumMap<>(ChannelType.class);
+        var base = ChannelWeightLocalCache.getBaseWeights(category);
+        if (base.isEmpty()) {
+            // 기본 분포: 카드/모바일 중심
+            w.put(ChannelType.CARD, 0.60);
+            w.put(ChannelType.TRANSFER, 0.10);
+        } else {
+            w.putAll(base); // Map.of -> 불변이므로 복사본에 담음
+        }
+
+        // 3) 금액 기반 보정 (고액은 이체 선호, 소액은 모바일 미세상향)
+        if (amount != null) {
+            if (amount.compareTo(new BigDecimal("300000")) > 0) {
+                mergeDelta(w, ChannelType.TRANSFER, +0.08);
+                mergeDelta(w, ChannelType.CARD, -0.04);
+            } else if (amount.compareTo(new BigDecimal("10000")) < 0) {
+                mergeDelta(w, ChannelType.CARD, -0.03);
+            }
+        }
+
+        normalize(w);
+
+        Random r = new Random();
+        double roll = r.nextDouble(), acc = 0.0;
+        for (var e : w.entrySet()) {
+            acc += e.getValue();
+            if (roll <= acc) return e.getKey();
+        }
+        // 안전장치: 분포가 0인 경우 대비
+        return ChannelType.CARD;
+    }
+
+    private static void mergeDelta(Map<ChannelType, Double> w, ChannelType k, double d) {
+        w.merge(k, d, Double::sum);
+    }
+
+    private static void normalize(Map<ChannelType, Double> w) {
+        double sum = 0.0;
+        for (var v : w.values()) sum += Math.max(0.0, v);
+        if (sum <= 0.0) return;
+        for (var k : w.keySet()) {
+            w.put(k, Math.max(0.0, w.get(k)) / sum);
+        }
     }
 
 }

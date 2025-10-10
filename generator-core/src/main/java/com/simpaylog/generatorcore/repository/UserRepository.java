@@ -44,12 +44,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<OccupationCodeStat> analyzeOccupation(@Param("sessionId") String sessionId);
 
     @Query("SELECT NEW com.simpaylog.generatorcore.entity.dto.TransactionUserDto(" +
-            "u.id, u.sessionId, u.decile, u.age, p.preferenceType, p.wageType, p.activeHours, p.incomeValue, p.savingRate) " +
+            "u.id, u.sessionId, u.decile, u.age, u.occupationCode, u.occupationName, p.preferenceType, p.wageType, p.activeHours, p.incomeValue, p.savingRate, p.locationId) " +
             "FROM User u JOIN u.userBehaviorProfile p " +
             "WHERE u.sessionId = :sessionId")
     List<TransactionUserDto> findAllTransactionUserDtosBySessionId(String sessionId);
 
-    Page<User> findAllBySessionIdOrderByName(Pageable pageable, String sessionId);
+    Page<User> findAllBySessionIdOrderById(Pageable pageable, String sessionId);
 
     void deleteUsersBySessionId(String sessionId);
 

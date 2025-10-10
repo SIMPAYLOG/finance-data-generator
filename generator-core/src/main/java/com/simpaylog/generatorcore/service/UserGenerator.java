@@ -1,14 +1,12 @@
 package com.simpaylog.generatorcore.service;
 
-import com.simpaylog.generatorcore.cache.DetailOccupationLocalCache;
-import com.simpaylog.generatorcore.cache.IncomeLevelLocalCache;
-import com.simpaylog.generatorcore.cache.OccupationLocalCache;
-import com.simpaylog.generatorcore.cache.PreferenceLocalCache;
+import com.simpaylog.generatorcore.cache.*;
 import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.Job;
 import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.SubOccupation;
 import com.simpaylog.generatorcore.cache.dto.IncomeLevelInfo.AssetRange;
 import com.simpaylog.generatorcore.cache.dto.OccupationInfos.AgeGroupInfo;
 import com.simpaylog.generatorcore.cache.dto.OccupationInfos.Occupation;
+import com.simpaylog.generatorcore.dto.LocationType;
 import com.simpaylog.generatorcore.dto.UserGenerationCondition;
 import com.simpaylog.generatorcore.entity.Account;
 import com.simpaylog.generatorcore.entity.User;
@@ -88,8 +86,9 @@ public class UserGenerator {
         AssetRange assetRange = incomeLevelLocalCache.get(decile).assetRange();
         BigDecimal assetValue = MoneyUtil.roundTo10(BigDecimal.valueOf((random.nextInt(assetRange.min(), assetRange.max()) + 1) / 10 * 10));
         BigDecimal savingRate = SavingRateCalculator.calculateSavingRate(decile, age, preferenceType);
-        List<Account> accounts = accountFactory.generateAccountsFor(incomeValue, assetValue, age, decile, preferenceType);
-        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, jobInfo.wageType(), incomeValue, assetValue, savingRate);
+        List<Account> accounts = accountFactory.generateAccountsFor(incomeValue, assetValue);
+        LocationType randomLocation = LocationType.random();
+        UserBehaviorProfile profile = UserBehaviorProfile.of(preferenceType, jobInfo.wageType(), incomeValue, assetValue, savingRate, randomLocation.getId());
         return User.of(name, profile, decile, (age + 1) * 10, gender, code, jobInfo.jobTitle(), condition.id(), accounts);
     }
 

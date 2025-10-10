@@ -1,5 +1,6 @@
 package com.simpaylog.generatorapi.service;
 
+import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorapi.exception.ApiException;
 import com.simpaylog.generatorapi.exception.ErrorCode;
 import com.simpaylog.generatorapi.repository.Elasticsearch.TransactionAggregationRepository;
@@ -24,25 +25,27 @@ public class TransactionExportService {
     private final FileExporter fileExporter;
 
     // TODO: sessionId 없는 경우 예외처리 필요
-    public StreamingResponseBody getExportStreamingBody(String format, String sessionId) {
-        ExportFormat exportFormat = ExportFormat.fromString(format)
+    public StreamingResponseBody getExportStreamingBody(ExportRequest request) {
+        ExportFormat exportFormat = ExportFormat.fromString(request.format())
                 .orElseThrow(() -> new ApiException(INVALID_EXPORT_FORMAT));
 
-        return outputStream -> exportAllTransactions(exportFormat, sessionId, outputStream);
+        return outputStream -> exportTransactions(exportFormat, request, outputStream);
     }
 
-    public void exportAllTransactions(ExportFormat format, String sessionId, OutputStream outputStream) {
+    public void exportTransactions(ExportFormat format, ExportRequest request, OutputStream outputStream) {
         try {
             switch (format) {
                 case CSV:
-                    fileExporter.writeCsv(outputStream, consumer -> repository.findAllTransactionsForExport(sessionId, consumer));
+                    if(!request.isAggregated()) fileExporter.writeCsv(request, outputStream, consumer -> repository.findTransactionsForExport(request, consumer));
+                    else fileExporter.writeCsvForAggregated(request, outputStream, consumer -> repository.findAggregatedTransactionsForExport(request, consumer));
                     break;
                 case JSON:
-                    fileExporter.writeJson(outputStream, consumer -> repository.findAllTransactionsForExport(sessionId, consumer));
+                    fileExporter.writeJson(outputStream, consumer -> repository.findTransactionsForExport(request, consumer));
                     break;
             }
         } catch (CoreException e) {
             log.error(e.getMessage());
+            System.out.println("Error: " + e.getMessage());
             throw new ApiException(ErrorCode.FILE_WRITE_ERROR);
         }
     }

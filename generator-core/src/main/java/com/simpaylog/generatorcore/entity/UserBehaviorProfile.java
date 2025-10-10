@@ -25,20 +25,22 @@ public class UserBehaviorProfile {
     private BigDecimal incomeValue;
     private BigDecimal assetValue;
     private BigDecimal savingRate;
+    private Integer locationId;
 
     protected UserBehaviorProfile() {
     }
 
-    private UserBehaviorProfile(PreferenceType preferenceType, WageType wageType, BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate) {
+    private UserBehaviorProfile(PreferenceType preferenceType, WageType wageType, BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate, Integer locationId) {
         this.preferenceType = preferenceType;
         this.wageType = wageType;
         this.activeHours = "{\"min\": 7, \"max\": 23}";
         this.incomeValue = incomeValue;
         this.assetValue = assetValue;
         this.savingRate = savingRate;
+        this.locationId = locationId;
     }
 
-    public static UserBehaviorProfile of(PreferenceType preferenceType, WageType wageType, BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate) {
-        return new UserBehaviorProfile(preferenceType, wageType, incomeValue, assetValue, savingRate);
+    public static UserBehaviorProfile of(PreferenceType preferenceType, WageType wageType, BigDecimal incomeValue, BigDecimal assetValue, BigDecimal savingRate, Integer locationId) {
+        return new UserBehaviorProfile(preferenceType, wageType, incomeValue, assetValue, savingRate, locationId);
     }
 }

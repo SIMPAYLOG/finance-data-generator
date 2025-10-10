@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
+import co.elastic.clients.elasticsearch._types.aggregations.LongTermsBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -16,7 +18,9 @@ import com.simpaylog.generatorapi.dto.analysis.*;
 import com.simpaylog.generatorapi.dto.chart.AgeGroupIncomeExpenseAverageDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeCountDto;
 import com.simpaylog.generatorapi.dto.chart.ChartIncomeIncomeExpenseDto;
+import com.simpaylog.generatorapi.dto.document.AggregatedTransactionDocument;
 import com.simpaylog.generatorapi.dto.document.TransactionLogDocument;
+import com.simpaylog.generatorapi.dto.request.ExportRequest;
 import com.simpaylog.generatorapi.dto.request.TransactionHistoryRequest;
 import com.simpaylog.generatorapi.utils.QueryBuilder;
 import com.simpaylog.generatorcore.dto.CategoryType;
@@ -32,6 +36,8 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -281,7 +287,7 @@ public class TransactionAggregationRepository {
         return finalResults;
     }
 
-    public void findAllTransactionsForExport(String sessionId, Consumer<TransactionLogDocument> consumer) {
+    public void findTransactionsForExport(ExportRequest request, Consumer<TransactionLogDocument> consumer) {
         List<FieldValue> searchAfter = null;
         try {
             while (true) {
@@ -289,9 +295,20 @@ public class TransactionAggregationRepository {
                         .index("transaction-logs")
                         .size(1000)
                         .sort(s -> s.field(f -> f.field("userId").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)))
-                        .sort(s -> s.field(f -> f.field("uuid").order(SortOrder.Asc)))  // _id 추가
-                        .query(q -> q.term(t -> t.field("sessionId").value(sessionId)));
+                        .sort(s -> s.field(f -> f.field("timestamp").order(SortOrder.Asc)));
+//                        .sort(s -> s.field(f -> f.field("_id").order(SortOrder.Asc))); // _id 사용
+
+                // 쿼리 조건: sessionId + 날짜 범위
+                searchBuilder.query(q -> q
+                        .bool(b -> b
+                                .must(m -> m.term(t -> t.field("sessionId").value(request.sessionId())))
+                                .must(m -> m.range(r -> r.date(d -> d.field("timestamp")
+                                        .from(request.durationStart())
+                                        .to(request.durationEnd())
+                                        .timeZone("Asia/Seoul")
+                                )))
+                        )
+                );
 
                 if (searchAfter != null) {
                     searchBuilder.searchAfter(searchAfter);
@@ -323,6 +340,7 @@ public class TransactionAggregationRepository {
             throw new CoreException("Elasticsearch 조회 중 알 수 없는 예외 발생");
         }
     }
+
 
     public List<ChartIncomeCountDto> searchAllCategoryInfo(
             String sessionId,
@@ -665,7 +683,7 @@ public class TransactionAggregationRepository {
                 .sort(sortTimestamp, sortDoc)
                 .source(s -> s
                         .filter(f -> f
-                                .includes("timestamp", "category", "description", "amount", "transactionType")
+                                .includes("timestamp", "category", "description", "amount", "transactionType", "channel")
                         )
                 );
 
@@ -699,5 +717,135 @@ public class TransactionAggregationRepository {
         }
 
         return new TransactionHistoryResponseDto(transactions, nextSearchAfter);
+    }
+
+    public void findAggregatedTransactionsForExport(ExportRequest request, Consumer<AggregatedTransactionDocument> consumer) {
+        try {
+            SearchRequest searchRequest = new SearchRequest.Builder()
+                    .index("transaction-logs")
+                    .size(0)
+                    .query(q -> q
+                            .bool(b -> b
+                                    .must(m -> m.term(t -> t.field("sessionId").value(request.sessionId())))
+                                    .must(m -> m.range(r -> r
+                                            .date(d -> d
+                                                    .field("timestamp")
+                                                    .from(request.durationStart())
+                                                    .to(request.durationEnd())
+                                                    .timeZone("Asia/Seoul")
+                                            )
+                                    ))
+                            )
+                    )
+                    .aggregations("by_user", a -> a
+                            .terms(t -> t.field("userId").size(10000))
+                            .aggregations("by_month", b -> b
+                                    .dateHistogram(d -> d
+                                            .field("timestamp")
+                                            .calendarInterval(CalendarInterval.Month)
+                                            .format("yyyy-MM")
+                                            .minDocCount(0)
+                                    )
+                                    .aggregations("totalDocs", t2 -> t2.valueCount(vc -> vc.field("transactionId")))
+                                    .aggregations("foodAccommodationRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("foodAccommodation"))))
+                                    .aggregations("transportationRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("transportation"))))
+                                    .aggregations("recreationCultureRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("recreationCulture"))))
+                                    .aggregations("groceriesNonAlcoholicBeveragesRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("groceriesNonAlcoholicBeverages"))))
+                                    .aggregations("alcoholicBeveragesTobaccoRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("alcoholicBeveragesTobacco"))))
+                                    .aggregations("clothingFootwearRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("clothingFootwear"))))
+                                    .aggregations("housingUtilitiesFuelRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("housingUtilitiesFuel"))))
+                                    .aggregations("householdGoodsServicesRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("householdGoodsServices"))))
+                                    .aggregations("healthRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("health"))))
+                                    .aggregations("communicationRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("communication"))))
+                                    .aggregations("educationRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("education"))))
+                                    .aggregations("otherGoodsServicesRatio", t2 -> t2.filter(f -> f.term(tt -> tt.field("category").value("otherGoodsServices"))))
+                                    .aggregations("totalSpent", aa -> aa.filter(f -> f.term(tt -> tt.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("sum_amount", s -> s.sum(sum -> sum.field("amount"))))
+                                    .aggregations("avgTxn", aa -> aa.filter(f -> f.term(tt -> tt.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("avg_amount", s -> s.avg(sum -> sum.field("amount"))))
+                                    .aggregations("top3Categories", aa -> aa.terms(t2 -> t2.field("category").size(3)))
+                                    .aggregations("withdrawTotal", a2 -> a2.filter(f -> f.term(tt -> tt.field("transactionType").value("WITHDRAW")))
+                                            .aggregations("sum", s -> s.sum(ss -> ss.field("amount"))))
+                                    .aggregations("depositTotal", a2 -> a2.filter(f -> f.term(tt -> tt.field("transactionType").value("DEPOSIT")))
+                                            .aggregations("sum", s -> s.sum(ss -> ss.field("amount"))))
+                            )
+                    )
+                    .build();
+
+            SearchResponse<Void> response = elasticsearchClient.search(searchRequest, Void.class);
+
+            var userBucketsArray = response.aggregations().get("by_user").lterms().buckets().array();
+            List<LongTermsBucket> userBucketsList = new ArrayList<>(userBucketsArray);
+            userBucketsList.sort(Comparator.comparingLong(LongTermsBucket::key));
+
+            userBucketsList.forEach(userBucket -> {
+                String userIdStr = String.valueOf(userBucket.key());
+
+                userBucket.aggregations().get("by_month").dateHistogram().buckets().array().forEach(monthBucket -> {
+                    String period = monthBucket.keyAsString(); // yyyy-MM
+
+                    // bucket 시작/끝 날짜 계산
+                    LocalDate bucketStart = LocalDate.parse(period + "-01");
+                    LocalDate bucketEnd = bucketStart.withDayOfMonth(bucketStart.lengthOfMonth());
+
+                    LocalDate reqStart = LocalDate.parse(request.durationStart());
+                    LocalDate reqEnd = LocalDate.parse(request.durationEnd());
+
+                    // bucket과 요청 기간이 겹치지 않으면 skip
+                    if (bucketEnd.isBefore(reqStart) || bucketStart.isAfter(reqEnd)) return;
+
+                    double totalDocs = monthBucket.aggregations().get("totalDocs").valueCount().value();
+
+                    double totalSpent = monthBucket.aggregations().get("totalSpent").filter().aggregations().get("sum_amount").sum().value();
+                    double avgTxn = monthBucket.aggregations().get("avgTxn").filter().aggregations().get("avg_amount").avg().value();
+                    List<String> top3 = monthBucket.aggregations().get("top3Categories").sterms().buckets().array()
+                            .stream().map(b -> b.key().stringValue()).toList();
+
+                    double foodAccommodationRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("foodAccommodationRatio").filter().docCount()) / totalDocs;
+                    double transportationRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("transportationRatio").filter().docCount()) / totalDocs;
+                    double recreationCultureRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("recreationCultureRatio").filter().docCount()) / totalDocs;
+                    double groceriesNonAlcoholicBeveragesRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("groceriesNonAlcoholicBeveragesRatio").filter().docCount()) / totalDocs;
+                    double alcoholicBeveragesTobaccoRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("alcoholicBeveragesTobaccoRatio").filter().docCount()) / totalDocs;
+                    double clothingFootwearRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("clothingFootwearRatio").filter().docCount()) / totalDocs;
+                    double housingUtilitiesFuelRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("housingUtilitiesFuelRatio").filter().docCount()) / totalDocs;
+                    double householdGoodsServicesRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("householdGoodsServicesRatio").filter().docCount()) / totalDocs;
+                    double healthRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("healthRatio").filter().docCount()) / totalDocs;
+                    double communicationRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("communicationRatio").filter().docCount()) / totalDocs;
+                    double educationRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("educationRatio").filter().docCount()) / totalDocs;
+                    double otherGoodsServicesRatio = totalDocs == 0 ? 0 : ((double) monthBucket.aggregations().get("otherGoodsServicesRatio").filter().docCount()) / totalDocs;
+
+                    double withdrawSum = monthBucket.aggregations().get("withdrawTotal").filter().aggregations().get("sum").sum().value();
+                    double depositSum = monthBucket.aggregations().get("depositTotal").filter().aggregations().get("sum").sum().value();
+                    double incomeVsSpending = (withdrawSum + depositSum == 0) ? 0 : depositSum / (withdrawSum + depositSum);
+
+                    AggregatedTransactionDocument dto = new AggregatedTransactionDocument(
+                            userIdStr,
+                            period,
+                            BigDecimal.valueOf(totalSpent).setScale(0, RoundingMode.DOWN),
+                            BigDecimal.valueOf(avgTxn).setScale(2, RoundingMode.HALF_UP),
+                            top3,
+                            foodAccommodationRatio,
+                            transportationRatio,
+                            recreationCultureRatio,
+                            groceriesNonAlcoholicBeveragesRatio,
+                            alcoholicBeveragesTobaccoRatio,
+                            clothingFootwearRatio,
+                            housingUtilitiesFuelRatio,
+                            householdGoodsServicesRatio,
+                            healthRatio,
+                            communicationRatio,
+                            educationRatio,
+                            otherGoodsServicesRatio,
+                            incomeVsSpending
+                    );
+
+                    consumer.accept(dto);
+                });
+            });
+
+        } catch (Exception e) {
+            log.error("집계 데이터 조회 중 오류: {}", e.getMessage());
+            throw new CoreException("Elasticsearch 집계 조회 실패");
+        }
     }
 }

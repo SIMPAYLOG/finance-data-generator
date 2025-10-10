@@ -3,7 +3,7 @@ package com.simpaylog.generatorcore.cache;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo;
-import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.*;
+import com.simpaylog.generatorcore.cache.dto.DetailOccupationInfo.SubOccupation;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,7 +33,8 @@ public class DetailOccupationLocalCache {
         try {
             ObjectMapper mapper = new ObjectMapper();
             InputStream input = new ClassPathResource("detail_occupation.json").getInputStream();
-            TypeReference<Map<String, DetailOccupationInfo>> typeRef = new TypeReference<>() {};
+            TypeReference<Map<String, DetailOccupationInfo>> typeRef = new TypeReference<>() {
+            };
 
             Map<String, DetailOccupationInfo> data = mapper.readValue(input, typeRef);
             for (String key : data.keySet()) {
