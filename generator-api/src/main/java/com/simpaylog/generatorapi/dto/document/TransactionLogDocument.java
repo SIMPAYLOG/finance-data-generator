@@ -17,8 +17,7 @@ public record TransactionLogDocument(
         @Id
         String transactionId,
 
-        @Field(type = FieldType.Long)
-        Long userId,
+        String userId,
 
         @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp,
@@ -60,42 +59,6 @@ public record TransactionLogDocument(
     public enum TransactionType {
         WITHDRAW,
         DEPOSIT
-    }
-
-    /**
-     * 모든 필드를 지정하여 문서 생성
-     */
-    public static TransactionLogDocument of(
-            Long userId,
-            LocalDateTime timestamp,
-            TransactionType transactionType,
-            String detailType,
-            String category,
-            String subcategory,
-            String counterparty,
-            String channel,
-            BigDecimal balanceBefore,
-            BigDecimal balanceAfter,
-            String description,
-            BigDecimal amount,
-            String memo
-    ) {
-        return new TransactionLogDocument(
-                UUID.randomUUID().toString(),
-                userId,
-                timestamp,
-                transactionType,
-                amount,
-                detailType,
-                category,
-                subcategory,
-                counterparty,
-                channel,
-                balanceBefore,
-                balanceAfter,
-                description,
-                memo
-        );
     }
 }
 

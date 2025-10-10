@@ -786,7 +786,8 @@ public class TransactionAggregationRepository {
 
             // 결과 파싱
             response.aggregations().get("by_user").lterms().buckets().array().forEach(userBucket -> {
-                long userId = userBucket.key();
+                Long userId = userBucket.key();
+                String userIdStr = userId.toString();
 
                 userBucket.aggregations().get("by_month").dateHistogram().buckets().array().forEach(monthBucket -> {
                     String period = monthBucket.keyAsString();
@@ -820,7 +821,7 @@ public class TransactionAggregationRepository {
                             ? 0 : depositSum / (withdrawSum + depositSum);
 
                     AggregatedTransactionDocument dto = new AggregatedTransactionDocument(
-                            userId,
+                            "U"+userIdStr,
                             period,
                             BigDecimal.valueOf(totalSpent).setScale(0, RoundingMode.DOWN),
                             BigDecimal.valueOf(avgTxn).setScale(2, RoundingMode.HALF_UP),

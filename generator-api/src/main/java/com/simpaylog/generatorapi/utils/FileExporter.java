@@ -125,7 +125,7 @@ public class FileExporter {
                 validateTransactionLog(t);
 
                 var values = selectedHeaders.stream()
-                        .map(h -> getFieldValue(t, h.getFieldName()))
+                        .map(h -> getFieldValue(t, h.getFieldName(), request.isMasked()))
                         .toArray();
 
                 printer.printRecord(values);
@@ -181,10 +181,13 @@ public class FileExporter {
     /**
      * TransactionLogDocument 필드값 또는 집계 컬럼 값을 가져오는 메서드
      */
-    private Object getFieldValue(TransactionLogDocument t, String fieldName) {
+    private Object getFieldValue(TransactionLogDocument t, String fieldName, boolean isMasked) {
         return switch (fieldName) {
-            case "transactionId" -> t.transactionId();
-            case "userId" -> t.userId();
+            case "transactionId" -> isMasked ? maskMiddle(t.transactionId(), 4, 4) : t.transactionId();
+            case "userId" -> {
+                String userIdStr = "U" + t.userId();
+                yield isMasked ? maskMiddle(userIdStr, 2, 2) : userIdStr;
+            }
             case "timestamp" -> t.timestamp().format(CSV_DATE_FORMATTER);
             case "transactionType" -> t.transactionType().name();
             case "detailType" -> t.detailType();
@@ -214,5 +217,34 @@ public class FileExporter {
             case "incomeVsSpending" -> String.format("%.3f", t.incomeVsSpending());
             default -> "";
         };
+    }
+
+    //데이터 마스킹 메서드
+    private String maskMiddle(String id, int prefixLen, int suffixLen) {
+        if (id == null || id.isEmpty()) return id;
+
+        int length = id.length();
+        int maskLen = length - prefixLen - suffixLen;
+
+        // 최소 1글자는 마스킹
+        if (maskLen < 1) {
+            maskLen = 1;
+            // prefixLen과 suffixLen 재조정
+            if (length <= 2) {
+                prefixLen = 1;
+                suffixLen = 0;
+            } else if (length == 3) {
+                prefixLen = 1;
+                suffixLen = 1;
+            } else {
+                prefixLen = Math.max(1, length - suffixLen - maskLen);
+            }
+        }
+
+        String prefix = id.substring(0, Math.min(prefixLen, length));
+        String suffix = length > prefixLen + maskLen ? id.substring(length - suffixLen) : "";
+        String masked = "*".repeat(maskLen);
+
+        return prefix + masked + suffix;
     }
 }

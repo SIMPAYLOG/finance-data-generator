@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record AggregatedTransactionDocument(
-        long userId,
+        String userId,
         String period, // yyyy-MM
         BigDecimal totalSpent,
         BigDecimal avgTxn,
