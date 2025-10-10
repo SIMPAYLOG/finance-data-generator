@@ -682,7 +682,7 @@ public class TransactionAggregationRepository {
                 .sort(sortTimestamp, sortDoc)
                 .source(s -> s
                         .filter(f -> f
-                                .includes("timestamp", "category", "description", "amount", "transactionType")
+                                .includes("timestamp", "category", "description", "amount", "transactionType", "channel")
                         )
                 );
 
