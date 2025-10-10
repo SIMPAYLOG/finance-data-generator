@@ -88,239 +88,119 @@ public class StoreNameGenerator {
     // ---------------- 고정 브랜드 그룹
     private static final List<String> TELECOM_BRANDS = List.of("KT", "SKT", "LG U+");
     private static final List<String> INTERNET_BRANDS = List.of("KT인터넷", "SK브로드밴드", "LG U+인터넷");
+    private static final List<String> ELECTRIC_BRANDS = List.of("한국전력공사");
 
     private static final List<String> BANKS = List.of("KB국민은행", "신한은행", "우리은행", "하나은행", "NH농협은행", "IBK기업은행", "카카오뱅크");
 
+    // ---------------- 체인/프랜차이즈 대표(예시)
+    private static final List<String> CONVENIENCE_CHAINS = List.of("CU", "GS25", "세븐일레븐", "이마트24");
+    private static final List<String> CAFE_CHAINS = List.of("스타벅스", "이디야", "투썸", "빽다방");
+    private static final List<String> BULK_CHAINS = List.of("이마트 트레이더스", "코스트코", "노브랜드");
+    private static final List<String> FASTFOOD_CHAINS = List.of("맥도날드", "버거킹", "KFC");
+    private static final List<String> MART_CHAINS = List.of("이마트", "롯데마트", "홈플러스");
+    private static final List<String> PHARMACY_CHAINS = List.of("우리약국", "메디팜", "굿모닝약국");
+    private static final List<String> APPLIANCES_CHAINS = List.of("전자랜드", "하이마트", "일렉트로마트");
+    private static final List<String> STATIONERY_CHAINS = List.of("교보문고", "영풍문고", "알라딘");
 
-    public String getVendor(Long userId, String key, String category, String region) {
-        region = ensureUserRegion(userId, region);
+    // ---------------- 업종 그룹
+    private enum Group {
+        CAFE, FAST_FOOD, CONVENIENCE, FOOD_RESTAURANT, GROCERY, ALCOHOL, TOBACCO,
+        CLOTHING, HOME_GOODS,
+        HEALTH_CLINIC, HEALTH_HOSPITAL, PHARMACY, HEALTH_CHECK, SUPPLEMENTS,
+        BEAUTY, LAUNDRY, REPAIR, HOUSEKEEPING,
+        TRANSPORT, COMM, UTIL, BANK, STATIONERY,
+        LEISURE_MOVIE, LEISURE_THEMEPARK, LEISURE_PERFORMANCE, LEISURE_BATH, ACCOMMODATION,
+        EDUCATION, SERVICE, HOME_LIVING, FITNESS, BULK, HOME_APPLIANCES, MOTEL, HOTEL, PARK, ETC
+    }
+
+    public String getVendor(Long userId, String category, String region) {
+        // 1) user region/area
+//        String location = ensureUserRegion(userId, region);
         String area = ensureUserArea(userId, region);
 
-        switch (key) {
-            case "groceriesNonAlcoholicBeverages":
-                switch (category) {
-                    case "시장 반찬":
-                    case "즉석 국/찌개/반찬류": return localName() + " 반찬";
-                    case "식빵/베이커리 번들": return pickRandom("뚜레쥬르", "파리바게뜨") + region + area + "점";
-                    case "간편식·HMR":
-                    case "편의점 도시락":
-                    case "라면 및 봉지면류": return pickRandom("CU", "GS25", "세븐일레븐") + region + area + "점";
-                    case "제철 채소·과일 박스":
-                    case "저가 채소/과일": return localName() + " 시장";
-                    case "요거트, 우유, 유제품 묶음":
-                    case "생수/음료 묶음":
-                    case "유통기한 임박 제품":
-                    case "냉동식품":
-                    case "대형마트 장보기": return pickRandom("이마트", "롯데마트", "홈플러스") + region + area + "점";
-                    case "대용량 음료 및 간식": return pickRandom("이마트트레이더스", "코스트코") + region + area + "점";
-                    default: return localName() + " 식료품점";
-                }
+        Group group = detectGroup(category);
 
-            case "alcoholicBeveragesTobacco":
-                switch (category) {
-                    case "수입 맥주": return localName() + " " + pickRandom("보틀샵", "비어", "맥주");
-                    case "막걸리": return localName() + " " + pickRandom("막걸리", "전통주마트");
-                    case "와인/양주": return localName() + " " + pickRandom("세계주류", "주류전문점");
-                    case "일반 소주/맥주":
-                    case "일반 담배": return pickRandom("CU", "GS25", "이마트") + " " + region + area + "점";
-                    case "궐련형 전자담배": return localName() + " 전자담배 전문점";
-                    default: return localName() + " 주류/담배판매점";
-                }
+        if (isUtility(category)) {
+            String utilKey = utilityKey(category);
+            String util = UTIL_BY_REGION.getOrDefault(region, Collections.emptyMap()).get(utilKey);
+            if (util != null) return util;
 
-            case "clothingFootwear":
-                switch (category) {
-                    case "중저가 캐주얼 브랜드 의류":
-                        return pickRandom("유니클로", "H&M", "지오다노") + " " + region + area + "점";
-                    case "저가 의류 잡화":
-                        return pickRandom(localName() + " " + "의류", "", "H&M");
-                    case "패션 브랜드 기본 티셔츠":
-                        return pickRandom("무신사 스토어", "스타일난다", "H&M") + " " + region + area + "점";
-                    case "신발 구매":
-                    case "데일리 슈즈":
-                    case "스포츠 브랜드 운동화":
-                        return pickRandom("ABC마트", "풋락커", localName() + "신발", "신세계백화점") + " " + region + area + "점";
-
-                    case "중고 의류":
-                        return localName() + " " + pickRandom("헌옷가게", "빈티지샵");
-                    case "의류 수선":
-                        return localName() + " " + pickRandom("수선", "리폼샵", "의류수선 전문점");
-                    case "보세 의류":
-                        return localName() + " " + pickRandom("보세의류샵", "의류점", "스트리트샵");
-                    case "SPA 브랜드 외투":
-                        return pickRandom("자라", "H&M", "유니클로") + " " + region + area + "점";
-                    default:
-                        return "무신사 스토어" + " " + region + area + "점";
-                }
-
-            case "housingUtilitiesFuel":
-                switch (category) {
-                    case "월세": return localName() + " " + localName() + " 아파트";
-                    case "수도요금":
-                    case "수도 요금": return UTIL_BY_REGION.get(region).get("수도");
-                    case "전기 요금":
-                    case "전기요금": return "한국전력공사";
-                    case "도시가스요금":
-                    case "도시가스 요금": return UTIL_BY_REGION.get(region).get("가스");
-                    default: return localName() +  " 공과금";
-                }
-
-            case "householdGoodsServices":
-                switch (category) {
-                    case "일반 가전제품": return pickRandom("하이마트", "전자랜드", "롯데하이마트") + " " + region + area + "점";
-                    case "기본적인 가구": return pickRandom("이케아", "한샘", "까사미아") + " " + region + area + "점";
-                    case "가사 도우미": return pickRandom("청소나라", "우리집 청소", "홈클린");
-                    case "다이소 소모품": return "다이소 "  + " " + region + area + "점";
-                    case "침구류 교체": return pickRandom("이케아", "한샘", "잠비")  + " " + region + area + "점";
-                    case "청소/세탁 용품":
-                    case "직접 청소 용품":
-                    case "저렴한 식기류":
-                    case "저가 생활용품": return pickRandom("다이소", "롯데마트", "이마트", "홈플러스") + " " + region + area + "점";
-                    case "대용량 생활용품 구매": return pickRandom("코스트코", "이마트 트레이더스") + " " + region + area + "점";
-                    default: return localName() + " 생활용품점";
-                }
-
-            case "health":
-                switch (category) {
-                    case "동네 피트니스 센터": return localName() + " " + pickRandom("휘트니스", "헬스클럽", "짐");
-                    case "일반 진료비":
-                    case "일반 의원 진료": return localName() + " " + pickRandom("동네의원", "건강의원", "정형외과");
-                    case "저가 상비약": return localName() + " " + pickRandom("약국", "동네약국");
-                    case "일반 건강검진": return localName() + " " + pickRandom("검진센터", "종합병원");
-                    case "영양제": return localName() + " " + pickRandom("약국", "건강보조식품");
-                    case "약국 약값":
-                    case "동네 약국 구매": return localName() + " " + pickRandom("약국", "약국체인");
-                    case "종합병원 외래 진료": return pickRandom("서울대병원", "삼성서울병원", "세브란스병원", "충남대학병원");
-                    case "기본 의료용품": return pickRandom("올리브영", "다이소", "약국");
-                    default: return localName() + " 건강센터";
-                }
-
-            case "transportation":
-                switch (category) {
-                    case "공유 자전거/킥보드": return pickRandom("따릉이", "씽씽", "라임");
-                    case "버스":
-                    case "지하철": return "대중교통";
-                    case "기차": return "코레일";
-                    case "택시": return localName() + " 운수";
-                    default: return localName() + " 교통수단";
-                }
-
-            case "communication":
-                switch (category) {
-                    case "인터넷 사용료": return INTERNET_BRANDS.get(RND.nextInt(INTERNET_BRANDS.size()));
-                    case "통신 요금":
-                    case "모바일 기기 구매": return TELECOM_BRANDS.get(RND.nextInt(TELECOM_BRANDS.size()));
-                    default: return localName() + " 통신";
-                }
-
-            case "recreationCulture":
-                switch (category) {
-                    case "영화관람":
-                    case "영화 관람": return pickRandom("CGV", "롯데시네마", "메가박스")  + region + area + "점";
-                    case "테마파크 입장권": return pickRandom("에버랜드", "롯데월드", "서울랜드");
-                    case "대중 공연": return localName() + " " + localName() + " 공연장";
-                    case "서점 도서 구매": return pickRandom("교보문고", "영풍문고", "반디앤루니스") + region + area + "점";
-                    case "공원 입장료": return localName() + " " + localName() + "공원";
-                    case "전시/행사": return localName() + " " + "전시관";
-                    case "장난감": return localName() + " " + pickRandom("토이월드", "장난감나라", "장난감세상");
-                    default: return localName() + " 문화시설";
-                }
-
-            case "education":
-                switch (category) {
-                    case "인터넷 강의": return pickRandom("메가스터디 온라인캠퍼스", "이투스 온라인", "대성마이맥");
-                    case "학원 수강":
-                    case "학원": return localName() + " " + "학원";
-                    case "학습지":
-                    case "도서 구매":
-                    case "문구류 구매": return pickRandom("교보문고", "영풍문고", localName() + " " + "문고");
-                    default: return localName() + " 교육센터";
-                }
-
-            case "foodAccommodation":
-                switch (category) {
-                    case "찜질방":
-                    case "사우나": return localName() + " 사우나";
-                    case "프랜차이즈 식당 외식": return pickRandom("스타벅스", "맥도날드", "버거킹", "롯데리아")  + region + area + "점";
-                    case "분식/국밥 등 저가 외식": return pickRandom("김밥천국", "천리김밥", localName() + " 국밥집");
-                    case "배달 음식": return pickRandom("배달의민족", "요기요", "배달통");
-                    case "카페 이용": return pickRandom("투썸플레이스", "이디야", "스타벅스") + region + area + "점";
-                    case "모텔": return localName() + " " + localName() + "모텔";
-                    case "호텔": return localName() + " " + localName() + "호텔";
-                    default: return localName() + " 숙박";
-                }
-
-            case "otherGoodsServices":
-                switch (category) {
-                    case "화장품": return pickRandom("올리브영", "롭스", "아리따움") + region + area + "점";
-                    case "일반 미용실":
-                    case "미용실": return localName() + " " + pickRandom("헤어살롱", "뷰티살롱", "헤어샵");
-                    case "생활 수선 서비스": return localName() + " " + pickRandom("수선집", "공방", "수선센터");
-                    case "은행 수수료":
-                        String bank = ensureUserBank(userId);
-                        return bank + " " + area + "점";
-                    case "잡화": return area + " " + pickRandom("다이소", "롯데마트", "이마트") + region + area + "점";
-                    case "향수": return area + " " + pickRandom("올리브영", "신세계백화점", "롯데백화점", "NC백화점") + region + area + "점";
-                    case "개인 위생용품": return area + " " + pickRandom("다이소", "올리브영", "홈플러스") + region + area + "점";
-                    default: return area + " 기타매장";
-                }
-
-            default:
-                return localName() + " " + category;
-        }
-    }
-
-    private String pickRandom(String... options) {
-        return options[RND.nextInt(options.length)];
-    }
-
-    private String localName() {
-        String[] locals = {
-                "가온", "푸른", "솔", "하늘", "빛", "다온", "새롬", "바다", "나래", "아라",
-
-                "가람", "이슬", "마루", "뫼", "윤슬", "여울", "안개", "노을", "구름", "미리내",
-
-                "꽃", "잎새", "열매", "라온", "새싹", "소나무", "난초", "버들", "뿌리", "으뜸",
-
-                "슬기", "보람", "한결", "힘찬", "고운", "다운", "별", "으뜸", "사랑", "맑음",
-
-                "겨루", "도담", "시내", "우람", "지음", "파란", "해솔", "흐름", "너울", "소미"
-        };
-        return locals[RND.nextInt(locals.length)];
-    }
-
-    private String ensureUserRegion(Long userId, String region) {
-        if (region == null) {
-            log.error("region is null for user {}", userId, new Exception("Null region trace"));
-        } else {
-            log.debug("ensureUserArea called with region={} for user={}", region, userId);
+            if ("수도".equals(utilKey)) return region + "상수도사업본부";
+            if ("가스".equals(utilKey)) return region + "도시가스";
+            if (category.toLowerCase().contains("전기")) return ELECTRIC_BRANDS.get(0);
         }
 
-        String k = "user:" + userId + ":region";
-        String r = redisTemplate.opsForValue().get(k);
-
-        if (region == null) region = "서울";
-
-        if (r == null) {
-            redisTemplate.opsForValue().set(k, region, 3, TimeUnit.HOURS);
+        if (group == Group.COMM) {
+            if (category.toLowerCase().contains("인터넷")) {
+                return pickFixedPerUser(userId, "internetBrand", INTERNET_BRANDS);
+            } else {
+                return pickFixedPerUser(userId, "telecomBrand", TELECOM_BRANDS);
+            }
         }
-        return r;
+
+        if (group == Group.BANK) {
+            return ensureUserBank(userId);
+        }
+
+        String vendorKey = "user:" + userId + ":vendor:" + normalize(category);
+        String existing = redisTemplate.opsForValue().get(vendorKey);
+        if (existing != null) {
+            incrementVendorCount(userId, existing);
+            return existing;
+        }
+
+        List<String> candidates = buildCandidatesFor(group, category, region, area);
+
+        String chosen = pickWeighted(userId, candidates);
+
+        redisTemplate.opsForValue().set(vendorKey, chosen);
+        incrementVendorCount(userId, chosen);
+
+        return chosen;
     }
+
+
+//    private String ensureUserRegion(Long userId, String region) {
+//        String k = "user:" + userId + ":region";
+//        String r = redisTemplate.opsForValue().get(k);
+//        if (r == null) {
+//            redisTemplate.opsForValue().set(k, region);
+//        }
+//        return r;
+//    }
 
     private String ensureUserArea(Long userId, String region) {
         String k = "user:" + userId + ":area";
         String a = redisTemplate.opsForValue().get(k);
-
-        if (region == null || region.isBlank()) {
-            log.warn("User {} has no region info. Defaulting to '서울'", userId);
-            region = "서울";
-        }
-
         if (a == null) {
             List<String> areas = REGION_AREAS.getOrDefault(region, List.of("서울"));
             a = areas.get(RND.nextInt(areas.size()));
             redisTemplate.opsForValue().set(k, a, 3, TimeUnit.HOURS);
         }
         return a;
+    }
+
+    private boolean isUtility(String category) {
+        String c = category == null ? "" : category.toLowerCase();
+        return c.contains("수도") || c.contains("가스") || c.contains("전기");
+    }
+
+    private String utilityKey(String category) {
+        String c = category == null ? "" : category.toLowerCase();
+        if (c.contains("수도")) return "수도";
+        if (c.contains("가스")) return "가스";
+        if (c.contains("전기")) return "전기";
+        return category;
+    }
+
+    private String pickFixedPerUser(Long userId, String suffix, List<String> brands) {
+        String key = "user:" + userId + ":" + suffix;
+        String v = redisTemplate.opsForValue().get(key);
+        if (v == null) {
+            v = brands.get(Math.abs(userId.hashCode()) % brands.size());
+            redisTemplate.opsForValue().set(key, v);
+        }
+        return v;
     }
 
     private String ensureUserBank(Long userId) {
@@ -331,5 +211,309 @@ public class StoreNameGenerator {
             redisTemplate.opsForValue().set(key, bank, 3, TimeUnit.HOURS);
         }
         return bank;
+    }
+
+    private void incrementVendorCount(Long userId, String vendor) {
+        String key = "user:" + userId + ":vendorcount:" + vendor;
+        redisTemplate.opsForValue().increment(key);
+    }
+
+    private List<String> buildCandidatesFor(Group group, String category, String region, String area) {
+        List<String> out = new ArrayList<>();
+
+        switch (group) {
+            case CAFE:
+                // chain + indie local
+                for (String c : CAFE_CHAINS) out.add(area + " " + c);
+                out.add(area + " " + localName() + "카페");
+                out.add(localName() + "카페");
+                break;
+
+            case FAST_FOOD:
+                for (String f : FASTFOOD_CHAINS) out.add(area + " " + f);
+                out.add(area + " " + localName() + "버거");
+                break;
+
+            case BULK:
+                for (String f : BULK_CHAINS) out.add(area + " " + f);
+                break;
+
+            case CONVENIENCE:
+                for (String c : CONVENIENCE_CHAINS) out.add(area + " " + c);
+                out.add(area + " 24편의");
+                out.add(localName() + "스토어");
+                break;
+
+            case FOOD_RESTAURANT:
+                out.add(area + " " + localName() + "식당");
+                out.add(localSurname() + "분식");
+                out.add(area + " " + localName() + "포차");
+                break;
+
+            case GROCERY:
+                for (String m : MART_CHAINS) out.add(m + " " + area);
+                out.add(area + " " + localName() + "마트");
+                out.add(localName() + "마켓");
+                break;
+
+            case ALCOHOL:
+                out.add(area + " " + localName() + "주류");
+                out.add(localName() + "포장주류");
+                break;
+
+            case TOBACCO:
+                out.add(area + " " + CONVENIENCE_CHAINS.get(RND.nextInt(CONVENIENCE_CHAINS.size())));
+                out.add(area + " " + localName() + "담배");
+                break;
+
+            case CLOTHING:
+                out.add(area + " " + localName() + "의류");
+                out.add(localName() + "샵");
+                break;
+
+            case HOME_LIVING:
+                out.add(area + " 다이소");
+                out.add(area + " " + localName() + "리빙");
+                break;
+
+            case HOME_GOODS:
+                out.add(area + " 이케아");
+                out.add(area + localName() + " 리빙");
+                break;
+
+            case HEALTH_CLINIC:
+                out.add(area + " " + localName() + "의원");
+                out.add(localName() + "클리닉");
+                break;
+
+            case STATIONERY:
+                for (String p : STATIONERY_CHAINS) out.add(area + " " + p);
+                break;
+
+            case HEALTH_HOSPITAL:
+                out.add(region + " 종합병원");
+                break;
+
+            case PHARMACY:
+                for (String p : PHARMACY_CHAINS) out.add(area + " " + p);
+                out.add(area + " " + localName() + "약국");
+                break;
+
+            case HEALTH_CHECK:
+                out.add(region + " 건강검진센터");
+                out.add(area + " " + localName() + "검진클리닉");
+                break;
+
+            case SUPPLEMENTS:
+                out.add(area + " " + localName() + "영양제샵");
+                out.add("헬스몰 " + localName());
+                break;
+
+            case BEAUTY:
+                out.add(area + " " + localName() + "뷰티");
+                break;
+
+            case LAUNDRY:
+                out.add(area + " " + localName() + "세탁");
+                break;
+
+            case REPAIR:
+                out.add(area + " " + localName() + "수선소");
+                out.add(localName() + "수선");
+                break;
+
+            case HOUSEKEEPING:
+                out.add(localName() + "홈클리닝");
+                break;
+
+            case TRANSPORT:
+                if (category.toLowerCase().contains("택시")) out.add(localName() + " 운수");
+                if (category.toLowerCase().contains("지하철") || category.toLowerCase().contains("버스"))
+                    out.add(region + "교통공사");
+                if (category.toLowerCase().contains("기차")) out.add("코레일");
+                if (category.toLowerCase().contains("킥보드") || category.toLowerCase().contains("자전거"))
+                    out.add(localName() + " 공유모빌리티");
+                break;
+
+            case LEISURE_MOVIE:
+                out.add(area + " CGV");
+                out.add(area + " 메가박스");
+                out.add(area + " 롯데시네마");
+                break;
+
+            case LEISURE_THEMEPARK:
+                out.add("에버랜드");
+                out.add("롯데월드");
+                out.add("서울랜드");
+                break;
+
+            case LEISURE_PERFORMANCE:
+                out.add(area + " 공연장");
+                out.add(region + " 공연티켓처");
+                break;
+
+            case LEISURE_BATH:
+                out.add(area + " 찜질방");
+                out.add(localName() + " 사우나");
+                break;
+
+            case MOTEL:
+                out.add(area + " " + localName() + "모텔");
+                break;
+
+            case HOTEL:
+                out.add(area + " " + localName() + "호텔");
+                break;
+
+            case PARK:
+                out.add(area + " " + localName() + "공원");
+                break;
+
+            case EDUCATION:
+                out.add(area + " " + localName() + "학원");
+                break;
+
+            case SERVICE:
+                out.add(area + " " + localName() + "서비스");
+                out.add(localName() + "공방");
+                break;
+
+            case FITNESS:
+                out.add(localName() + "피트니스");
+                break;
+
+            case HOME_APPLIANCES:
+                for (String f : APPLIANCES_CHAINS) out.add(area + " " + f);
+                break;
+
+            default:
+                out.add(area + " " + localName() + "상점");
+                break;
+        }
+
+        // dedupe & ensure non-empty
+        LinkedHashSet<String> set = new LinkedHashSet<>(out);
+        if (set.isEmpty()) set.add(area + " " + localName() + "상점");
+        return new ArrayList<>(set);
+    }
+
+    private String pickWeighted(Long userId, List<String> candidates) {
+        // weight = 1 + user-specific count
+        Map<String, Integer> weights = new LinkedHashMap<>();
+        int total = 0;
+        for (String c : candidates) {
+            String cntKey = "user:" + userId + ":vendorcount:" + c;
+            String s = redisTemplate.opsForValue().get(cntKey);
+            int cnt = s == null ? 0 : Integer.parseInt(s);
+            int w = 1 + cnt;
+            weights.put(c, w);
+            total += w;
+        }
+        int r = RND.nextInt(total);
+        int cum = 0;
+        for (Map.Entry<String, Integer> e : weights.entrySet()) {
+            cum += e.getValue();
+            if (r < cum) {
+                // increment
+                redisTemplate.opsForValue().increment("user:" + userId + ":vendorcount:" + e.getKey());
+                return e.getKey();
+            }
+        }
+        String fallback = candidates.get(0);
+        redisTemplate.opsForValue().increment("user:" + userId + ":vendorcount:" + fallback);
+        return fallback;
+    }
+
+    private Group detectGroup(String category) {
+        String c = (category == null) ? "" : category.toLowerCase();
+
+        // UTIL
+        if (c.contains("수도") || c.contains("가스") || c.contains("전기")) return Group.UTIL;
+
+        // COMM / BANK
+        if (c.contains("통신") || c.contains("인터넷")) return Group.COMM;
+        if (c.contains("은행") || c.contains("수수료")) return Group.BANK;
+
+        // transport
+        if (c.contains("버스") || c.contains("지하철") || c.contains("택시") || c.contains("기차") || c.contains("킥보드") || c.contains("자전거"))
+            return Group.TRANSPORT;
+
+        // leisure finer granularity
+        if (c.contains("영화")) return Group.LEISURE_MOVIE;
+        if (c.contains("테마파크")) return Group.LEISURE_THEMEPARK;
+        if (c.contains("공연") || c.contains("대중 공연")) return Group.LEISURE_PERFORMANCE;
+        if (c.contains("찜질") || c.contains("사우나")) return Group.LEISURE_BATH;
+        if (c.contains("모텔")) return Group.MOTEL;
+        if (c.contains("호텔")) return Group.HOTEL;
+        if (c.contains("공원")) return Group.PARK;
+
+        // food / convenience / grocery
+        if (c.contains("카페")) return Group.CAFE;
+        if (c.contains("패스트푸드") || c.contains("패스트푸드점")) return Group.FAST_FOOD;
+        if (c.contains("편의") || c.contains("도시락") || c.contains("편의점")) return Group.CONVENIENCE;
+        if (c.contains("배달") || c.contains("분식") || c.contains("외식") || c.contains("식당") || c.contains("국밥") || c.contains("찌개") || c.contains("국"))
+            return Group.FOOD_RESTAURANT;
+        if (c.contains("마트") || c.contains("장보기") || c.contains("냉동") || c.contains("간편식") || c.contains("hmr") || c.contains("요거트") || c.contains("식빵"))
+            return Group.GROCERY;
+        if (c.contains("소주") || c.contains("맥주") || c.contains("와인") || c.contains("양주") || c.contains("막걸리"))
+            return Group.ALCOHOL;
+        if (c.contains("담배") || c.contains("전자담배") || c.contains("궐련형")) return Group.TOBACCO;
+
+        // clothing / shopping
+        if (c.contains("의류") || c.contains("티셔츠") || c.contains("신발") || c.contains("슈즈") || c.contains("아울렛") || c.contains("중고"))
+            return Group.CLOTHING;
+        if (c.contains("생활용품") || c.contains("다이소") || c.contains("청소")) return Group.HOME_LIVING;
+
+        if (c.contains("대용량")) return Group.BULK;
+
+        if (c.contains("식기") || c.contains("가구") || c.contains("침구")) return Group.HOME_GOODS;
+
+        // health split
+        if (c.contains("병원") || c.contains("종합")) return Group.HEALTH_HOSPITAL;
+        if (c.contains("건강검진")) return Group.HEALTH_CHECK;
+        if (c.contains("의원") || c.contains("진료") || c.contains("진료비")) return Group.HEALTH_CLINIC;
+        if (c.contains("약국") || c.contains("상비약") || c.contains("약값")) return Group.PHARMACY;
+        if (c.contains("영양제")) return Group.SUPPLEMENTS;
+
+        // beauty / laundry / repair / housekeeping
+        if (c.contains("미용") || c.contains("헤어") || c.contains("화장품") || c.contains("향수")) return Group.BEAUTY;
+        if (c.contains("세탁")) return Group.LAUNDRY;
+        if (c.contains("수선")) return Group.REPAIR;
+        if (c.contains("가사") || c.contains("도우미")) return Group.HOUSEKEEPING;
+
+        if (c.contains("도서") || c.contains("문구")) return Group.STATIONERY;
+
+        // education
+        if (c.contains("학원") || c.contains("학습") || c.contains("인터넷 강의") || c.contains("자격증") || c.contains("학습지"))
+            return Group.EDUCATION;
+
+        // leisure / service fallback
+        if (c.contains("영화") || c.contains("공연")) return Group.LEISURE_MOVIE;
+
+        if (c.contains("테마파크")) return Group.LEISURE_THEMEPARK;
+
+        if (c.contains(("피트니스"))) return Group.FITNESS;
+
+        if (c.contains(("가전제품"))) return Group.HOME_APPLIANCES;
+
+        return Group.ETC;
+    }
+
+    private String localName() {
+        String[] parts = {
+                "하늘", "푸름", "행복", "별", "온기", "모아", "정원", "달빛", "해솔",
+                "구름", "바람", "이슬", "햇살", "노을", "새벽", "숲", "꽃잎", "바다",
+                "사랑", "미소", "희망", "꿈", "추억", "설렘", "평온", "향기",
+                "속삭임", "쉼"};
+        return parts[RND.nextInt(parts.length)];
+    }
+
+    private String localSurname() {
+        String[] s = {"김", "이", "박", "최", "정", "백", "강", "곽", "성", "하"};
+        return s[RND.nextInt(s.length)];
+    }
+
+    private String normalize(String category) {
+        return category == null ? "unknown" : category.replaceAll("\\s+", "_").toLowerCase();
     }
 }

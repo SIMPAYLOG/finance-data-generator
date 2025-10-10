@@ -98,7 +98,7 @@ public class TransactionService {
                     continue;
                 }
 
-                String vendorName = storeNameGenerator.getVendor(dto.userId(), picked.getKey(), userTrade.tradeName(), locationAllocator.getRandomLocation(dto.locationId()));
+                String vendorName = storeNameGenerator.getVendor(dto.userId(), userTrade.tradeName(), locationAllocator.getRandomLocation(dto.locationId()));
                 // 4. 결제 요청
                 TransactionResult result = accountService.spendCard(dto.userId(), dto.sessionId(), curTime, scaledAmount, vendorName, channel, userTrade.tradeName());
                 if (result.success()) {
@@ -241,7 +241,7 @@ public class TransactionService {
             } else { // 지출
                 events.add(new TimedEvent(
                         time, () -> {
-                    String vendorName = storeNameGenerator.getVendor(user.userId(), item.categoryType(), item.description(), locationAllocator.getRandomLocation(user.locationId()));
+                    String vendorName = storeNameGenerator.getVendor(user.userId(), item.description(), locationAllocator.getRandomLocation(user.locationId()));
                     TransactionResult result = accountService.paySubscription(user.userId(), user.sessionId(), time, item.amount(), vendorName, item.description());
                     generateMessage(result.logs());
                 }
