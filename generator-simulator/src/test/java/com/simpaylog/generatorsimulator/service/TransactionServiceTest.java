@@ -105,7 +105,7 @@ class TransactionServiceTest extends TestConfig {
                 .thenReturn(createCheckingAccount(BigDecimal.valueOf(100000)));
         when(accountService.getAccountByType(anyLong(), eq(AccountType.SAVINGS)))
                 .thenReturn(createSavingAccount(BigDecimal.valueOf(100000)));
-        when(storeNameGenerator.getVendor(anyLong(), anyString(), any()))
+        when(storeNameGenerator.getVendor(anyLong(), anyString(), anyString(), anyString()))
                 .thenReturn("test-vendor");
         // 6. 결제 성공
         when(accountService.spendCard(anyLong(), anyString(), any(LocalDateTime.class), any(BigDecimal.class), anyString(), any(ChannelType.class), anyString()))
