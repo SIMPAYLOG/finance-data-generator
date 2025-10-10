@@ -5,6 +5,7 @@ import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.CalendarInterval;
+import co.elastic.clients.elasticsearch._types.aggregations.LongTermsBucket;
 import co.elastic.clients.elasticsearch._types.aggregations.MaxAggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.MinAggregate;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -738,7 +739,10 @@ public class TransactionAggregationRepository {
                             )
                     )
                     .aggregations("by_user", a -> a
-                            .terms(t -> t.field("userId").size(10000))
+                            .terms(t -> t
+                                    .field("userId")
+                                    .size(10000)
+                            )
                             .aggregations("by_month", b -> b
                                     .dateHistogram(d -> d
                                             .field("timestamp")
@@ -757,25 +761,52 @@ public class TransactionAggregationRepository {
                                     )
                                     // top3 카테고리
                                     .aggregations("top3Categories", aa -> aa
-                                            .terms(t -> t.field("category").size(3))
+                                            .terms(t2 -> t2.field("category").size(3))
                                     )
-                                    // food, transport, leisure 비율
-                                    .aggregations("foodRatio", r -> r
-                                            .filter(f -> f.term(t -> t.field("category").value("food")))
+                                    // 카테고리 비율 (전체)
+                                    .aggregations("foodAccommodationRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("foodAccommodation")))
                                     )
-                                    .aggregations("transportRatio", r -> r
-                                            .filter(f -> f.term(t -> t.field("category").value("transport")))
+                                    .aggregations("transportationRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("transportation")))
                                     )
-                                    .aggregations("leisureRatio", r -> r
-                                            .filter(f -> f.term(t -> t.field("category").value("leisure")))
+                                    .aggregations("recreationCultureRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("recreationCulture")))
+                                    )
+                                    .aggregations("groceriesNonAlcoholicBeveragesRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("groceriesNonAlcoholicBeverages")))
+                                    )
+                                    .aggregations("alcoholicBeveragesTobaccoRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("alcoholicBeveragesTobacco")))
+                                    )
+                                    .aggregations("clothingFootwearRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("clothingFootwear")))
+                                    )
+                                    .aggregations("housingUtilitiesFuelRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("housingUtilitiesFuel")))
+                                    )
+                                    .aggregations("householdGoodsServicesRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("householdGoodsServices")))
+                                    )
+                                    .aggregations("healthRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("health")))
+                                    )
+                                    .aggregations("communicationRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("communication")))
+                                    )
+                                    .aggregations("educationRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("education")))
+                                    )
+                                    .aggregations("otherGoodsServicesRatio", r -> r
+                                            .filter(f -> f.term(t2 -> t2.field("category").value("otherGoodsServices")))
                                     )
                                     // income vs spending
                                     .aggregations("withdrawTotal", a2 -> a2
-                                            .filter(f -> f.term(t -> t.field("transactionType").value("WITHDRAW")))
+                                            .filter(f -> f.term(t2 -> t2.field("transactionType").value("WITHDRAW")))
                                             .aggregations("sum", s -> s.sum(ss -> ss.field("amount")))
                                     )
                                     .aggregations("depositTotal", a2 -> a2
-                                            .filter(f -> f.term(t -> t.field("transactionType").value("DEPOSIT")))
+                                            .filter(f -> f.term(t2 -> t2.field("transactionType").value("DEPOSIT")))
                                             .aggregations("sum", s -> s.sum(ss -> ss.field("amount")))
                                     )
                             )
@@ -784,8 +815,15 @@ public class TransactionAggregationRepository {
 
             SearchResponse<Void> response = elasticsearchClient.search(searchRequest, Void.class);
 
-            // 결과 파싱
-            response.aggregations().get("by_user").lterms().buckets().array().forEach(userBucket -> {
+            // aggregation 결과 가져오기
+            var userBucketsArray = response.aggregations().get("by_user").lterms().buckets().array();
+            // List로 변환
+            List<co.elastic.clients.elasticsearch._types.aggregations.LongTermsBucket> userBucketsList = new ArrayList<>(userBucketsArray);
+            // Java 단에서 userId 오름차순 정렬
+            userBucketsList.sort(Comparator.comparingLong(LongTermsBucket::key)); // Long key 기준
+
+            // 정렬된 리스트로 처리
+            userBucketsList.forEach(userBucket -> {
                 Long userId = userBucket.key();
                 String userIdStr = userId.toString();
 
@@ -805,9 +843,20 @@ public class TransactionAggregationRepository {
                             .stream().map(b -> b.key().stringValue()).toList();
 
                     double docCount = monthBucket.docCount();
-                    double foodRatio = monthBucket.aggregations().get("foodRatio").filter().docCount() / docCount;
-                    double transportRatio = monthBucket.aggregations().get("transportRatio").filter().docCount() / docCount;
-                    double leisureRatio = monthBucket.aggregations().get("leisureRatio").filter().docCount() / docCount;
+
+                    // 비율 계산
+                    double foodAccommodationRatio = monthBucket.aggregations().get("foodAccommodationRatio").filter().docCount() / docCount;
+                    double transportationRatio = monthBucket.aggregations().get("transportationRatio").filter().docCount() / docCount;
+                    double recreationCultureRatio = monthBucket.aggregations().get("recreationCultureRatio").filter().docCount() / docCount;
+                    double groceriesNonAlcoholicBeveragesRatio = monthBucket.aggregations().get("groceriesNonAlcoholicBeveragesRatio").filter().docCount() / docCount;
+                    double alcoholicBeveragesTobaccoRatio = monthBucket.aggregations().get("alcoholicBeveragesTobaccoRatio").filter().docCount() / docCount;
+                    double clothingFootwearRatio = monthBucket.aggregations().get("clothingFootwearRatio").filter().docCount() / docCount;
+                    double housingUtilitiesFuelRatio = monthBucket.aggregations().get("housingUtilitiesFuelRatio").filter().docCount() / docCount;
+                    double householdGoodsServicesRatio = monthBucket.aggregations().get("householdGoodsServicesRatio").filter().docCount() / docCount;
+                    double healthRatio = monthBucket.aggregations().get("healthRatio").filter().docCount() / docCount;
+                    double communicationRatio = monthBucket.aggregations().get("communicationRatio").filter().docCount() / docCount;
+                    double educationRatio = monthBucket.aggregations().get("educationRatio").filter().docCount() / docCount;
+                    double otherGoodsServicesRatio = monthBucket.aggregations().get("otherGoodsServicesRatio").filter().docCount() / docCount;
 
                     double withdrawSum = monthBucket.aggregations()
                             .get("withdrawTotal").filter().aggregations()
@@ -826,18 +875,30 @@ public class TransactionAggregationRepository {
                             BigDecimal.valueOf(totalSpent).setScale(0, RoundingMode.DOWN),
                             BigDecimal.valueOf(avgTxn).setScale(2, RoundingMode.HALF_UP),
                             top3,
-                            foodRatio,
-                            transportRatio,
-                            leisureRatio,
+                            foodAccommodationRatio,
+                            transportationRatio,
+                            recreationCultureRatio,
+                            groceriesNonAlcoholicBeveragesRatio,
+                            alcoholicBeveragesTobaccoRatio,
+                            clothingFootwearRatio,
+                            housingUtilitiesFuelRatio,
+                            householdGoodsServicesRatio,
+                            healthRatio,
+                            communicationRatio,
+                            educationRatio,
+                            otherGoodsServicesRatio,
                             incomeVsSpending
                     );
 
                     consumer.accept(dto);
                 });
             });
+
         } catch (Exception e) {
             log.error("집계 데이터 조회 중 오류: {}", e.getMessage());
             throw new CoreException("Elasticsearch 집계 조회 실패");
         }
     }
+
+
 }

@@ -185,11 +185,11 @@ public class FileExporter {
         return switch (fieldName) {
             case "transactionId" -> {
                 String transactionIdStr = "TX-" + t.transactionId();
-                yield isMasked ? maskMiddle(transactionIdStr, 4, 4) : transactionIdStr;
+                yield isMasked ? masking(transactionIdStr, 4, 4) : transactionIdStr;
             }
             case "userId" -> {
                 String userIdStr = "U-" + t.userId();
-                yield isMasked ? maskMiddle(userIdStr, 2, 2) : userIdStr;
+                yield isMasked ? masking(userIdStr, 2, 2) : userIdStr;
             }
             case "timestamp" -> t.timestamp().format(CSV_DATE_FORMATTER);
             case "transactionType" -> t.transactionType().name();
@@ -217,16 +217,27 @@ public class FileExporter {
             case "foodRatio" -> String.format("%.3f", t.foodRatio());
             case "transportRatio" -> String.format("%.3f", t.transportRatio());
             case "leisureRatio" -> String.format("%.3f", t.leisureRatio());
+            case "groceriesNonAlcoholicBeveragesRatio" -> String.format("%.3f", t.groceriesNonAlcoholicBeveragesRatio());
+            case "alcoholicBeveragesTobaccoRatio" -> String.format("%.3f", t.alcoholicBeveragesTobaccoRatio());
+            case "clothingFootwearRatio" -> String.format("%.3f", t.clothingFootwearRatio());
+            case "housingUtilitiesFuelRatio" -> String.format("%.3f", t.housingUtilitiesFuelRatio());
+            case "householdGoodsServicesRatio" -> String.format("%.3f", t.householdGoodsServicesRatio());
+            case "healthRatio" -> String.format("%.3f", t.healthRatio());
+            case "communicationRatio" -> String.format("%.3f", t.communicationRatio());
+            case "educationRatio" -> String.format("%.3f", t.educationRatio());
+            case "otherGoodsServicesRatio" -> String.format("%.3f", t.otherGoodsServicesRatio());
             case "incomeVsSpending" -> String.format("%.3f", t.incomeVsSpending());
             default -> "";
         };
     }
 
     //데이터 마스킹 메서드
-    private String maskMiddle(String id, int prefixLen, int suffixLen) {
+    private String masking(String id, int prefixLen, int suffixLen) {
         if (id == null || id.isEmpty()) return id;
 
         int length = id.length();
+        if(length == 3) suffixLen = 0;
+        else if(length == 4) suffixLen = 1;
         int maskLen = length - prefixLen - suffixLen;
 
         // 최소 1글자는 마스킹
